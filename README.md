@@ -51,3 +51,18 @@ Hopefully, this might provide some inspiration for others in regard to their aut
 
 #### <a name="overview"></a>Overview & Theory of Operation
 This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a singe plotting server (chisplot01) creating Chia plots. Once the plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once compelte was a little more interesting.
+
+The system designed for <em>our</em> needs ended up with the following configuration:
+<ul>
+  <li>27  x "Water" Zones (Expandable to 32 Zones total)</li>
+  <li>8 x "Power" Zones</li>
+  <li>6 x "Temperature" Zones (including one for our worm farm)</li>
+  <li>3 x "Humidity" Zones</li>
+  <li>1 x Barometric Sensor</li>
+  <li>DC Current and Voltage Sensors</li>
+  <li>AC Current and Voltage Sensors</li>
+  <li>4 x Ultrasonic Water Level Detectors</li>
+  <li>4 x Non-Contact Liquid Level Sensors</li>
+  <li>7" Touchscreen for local control</li>
+</ul>
+
