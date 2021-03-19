@@ -20,3 +20,41 @@ Hopefully if you are reading this you know what Chia is and what a plot is. I am
 
 Hopefully, this might provide some inspiration for others in regard to their automation projects. Contributions are always welcome.</p>
 <div align="center"><a name="top_menu"></a>
+
+<div align="center"><a name="top_menu"></a>
+  <h4>
+    <a href="https://github.com/rjsears/chia_plot_manager#overview">
+      Overview
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/GardenPi/blob/master/enclosure/readme.md">
+      Parts List
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager#dependencies">
+      Dependencies
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager#install">
+      Installation & Configuration
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager/tree/master/chia_plot_manager">
+      Code
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/GardenPi#schematics">
+      Schematics
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
+      Todo List
+    </a>
+    <span> | </span>
+    <a href="https://github.com/rjsears/GardenPi#icons">
+      Icons
+    </a>
+  </h4>
+</div>
+
+<hr>
