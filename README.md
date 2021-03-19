@@ -27,7 +27,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Overview
     </a>
     <span> | </span>
-    <a href="https://github.com/rjsears/GardenPi/blob/master/enclosure/readme.md">
+    <a href="https://github.com/rjsears/chia_plot_manager/blob/master/enclosure/readme.md">
       Parts List
     </a>
     <span> | </span>
@@ -42,10 +42,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
     <a href="https://github.com/rjsears/chia_plot_manager/tree/master/chia_plot_manager">
       Code
     </a>
-    <span> | </span>
-    <a href="https://github.com/rjsears/GardenPi#schematics">
-      Schematics
-    </a>
+    
     <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
