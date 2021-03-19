@@ -49,7 +49,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
   </h4>
 </div>
 
-#### <a name="overview"></a>Overview & Theory of Operation
+#### <a name="overview" align="left"></a>Overview & Theory of Operation
 This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a singe plotting server (chisplot01) creating Chia plots. Once the plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once compelte was a little more interesting.
 
 The system designed for <em>our</em> needs ended up with the following configuration:
