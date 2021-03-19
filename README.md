@@ -48,9 +48,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Todo List
     </a>
     <span> | </span>
-    <a href="https://github.com/rjsears/GardenPi#icons">
-      Icons
-    </a>
+   
   </h4>
 </div>
 
