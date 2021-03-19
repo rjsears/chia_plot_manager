@@ -27,10 +27,6 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Overview
     </a>
     <span> | </span>
-    <a href="https://github.com/rjsears/chia_plot_manager/blob/master/enclosure/readme.md">
-      Parts List
-    </a>
-    <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager#dependencies">
       Dependencies
     </a>
