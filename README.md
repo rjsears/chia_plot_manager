@@ -64,5 +64,5 @@ The system designed for <em>our</em> needs ended up with the following configura
   <li>4 x Ultrasonic Water Level Detectors</li>
   <li>4 x Non-Contact Liquid Level Sensors</li>
   <li>7" Touchscreen for local control</li>
-</ul>
+</ul></p>
 
