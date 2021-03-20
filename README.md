@@ -90,5 +90,39 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
 </ul>
 </p>
 
+<hr>
+###<a name="dependencies"></a>Dependencies
+This was designed and is running on Ubuntu 20.04 for both the Plotter and the NAS so pretty much any linux flavor should work. Listed below are the things that I am using on both systems. The one thing to watch out for on the NAS is the version of pySMART you are using. I ran into a bug with the version (1.0) on PyPi and ended up using the version from the TrueNAS Folks. DO NOT use the version from PyPi, it won't work until patched.
+
+<ul>
+  <li><a href="https://docs.sentry.io/platforms/python/">Sentry-SDK (Optional, I use it for error tracking)</a></li>
+  <li><a href="https://pypi.org/project/pushbullet.py/0.12.0/">Pushbullet (0.12.0) - (Optional, used for PB notifications)</a></li>
+  <li><a href="https://pypi.org/project/twilio/">Twilio (6.54.0) - (Optional, used for SMS notifications)</a></li>
+ <li><a href="https://pypi.org/project/Jinja2/">JinJa2 (2.11.3) - Used for Email notifications</a></li>
+ 
+  <li><a href="https://httpd.apache.org/">Apache2</a> or <a href="https://www.nginx.com/">Nginx</a> Web Server</li>
+  <li><a href="https://www.mysql.com/">MySQL</a> or other SQL server</li>
+  <li><a href="https://uwsgi-docs.readthedocs.io/en/latest/">Web Server Gateway Interface</a> (uWSGI) (for Flask)</li>
+  <li><a href="https://www.influxdata.com/">InfluxDB</a></li>
+  <li><a href="https://grafana.com/">Grafana</a></li>
+  <li><a href="https://flask.palletsprojects.com/en/1.1.x/">Flask (1.1.2)</a></li>
+  <li><a href="https://pypi.org/project/Flask-WTF/">Flask WTF (0.14.3)</a></li>
+  <li><a href="https://requests.readthedocs.io/en/master/">Requests</a></li>
+  <li><a href="https://pyyaml.org/wiki/PyYAMLDocumentation">PyYaml</a></li>
+  <li><a href="https://dev.mysql.com/doc/connector-python/en/">MySQL Connector</a></li>
+  <li><a href="https://github.com/influxdata/influxdb-python">InfluxDBClient</a></li>
+  <li><a href="https://www.sqlalchemy.org/">SQLAlchemy (1.3.18)</a></li>
+  <li><a href="https://docs.sentry.io/platforms/python/">Sentry-SDK (Optional, I use it for error tracking)</a></li>
+  <li><a href="https://pypi.org/project/pyserial/">PySerial (3.4)</a></li>
+  <li><a href="https://pypi.org/project/PyYAML/">PyYaml (5.3.1)</a></li>
+  <li><a href="https://wtforms.readthedocs.io/en/2.3.x/">WTForms (2.3.3)</a></li>
+  <li><a href="https://pypi.org/project/adafruit-circuitpython-bme280/">Adafruit BME280 Libraries (2.4.3)</a></li>
+  <li><a href="https://pypi.org/project/pi-ina219/">Pi INA219 Libraries (1.3.0)</a></li>
+  
+  <li><a href="https://pypi.org/project/twilio/">Twilio (6.44.1) - (Optional, used for notifications)</a></li>
+  <li><a href="https://pypi.org/project/wiringpi/">WiringPi (2.6.0)</a></li>
+  <li><a href="https://pypi.org/project/PyYAML/">PyYaml (5.3.1)</a></li>
+ </ul>
+ <hr>
 
 </p>
