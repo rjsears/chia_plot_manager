@@ -104,4 +104,23 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
  </ul>
  <hr>
 
+### <a name="install"></a>Installation
+
+The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. The plotter is pretty easy. 
+
+Here is the directry structure I use on my plotter for my main plotting and -d drives:
+
+```
+/mnt
+├── nvme
+│   ├── drive0
+│   ├── drive1
+│   ├── drive2
+│   └── drive3
+└── ssdraid
+    └── array0
+```
+The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These are Intel DC P4510 NVMe drives capable of running 10 plots each (based on k32 plot size). The ```/mnt/ssdraid/array0``` is my ```-d``` drive. This is a RAID0 array of HGST 1.6TB Enterprise SSD drives. This is where the completed plots are stored before they are moved by the plot_manager.py script.
+
+
 </p>
