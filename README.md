@@ -307,17 +307,17 @@ Until you are absolutely certain it is running the way that you would like it to
 Now on the NAS server, I run my script once per minute. This is what you should see if everything is going well:
 
 ```
-2021-03-19 19:38:01,810 - drive_manager:258 - update_receive_plot: DEBUG update_receive_plot() Started
-2021-03-19 19:38:01,811 - drive_manager:266 - update_receive_plot: DEBUG Currently Configured Plot Drive: /mnt/enclosure0/front/column0/drive18
-2021-03-19 19:38:01,812 - drive_manager:267 - update_receive_plot: DEBUG System Selected Plot Drive:      /mnt/enclosure0/front/column0/drive18
-2021-03-19 19:38:01,812 - drive_manager:268 - update_receive_plot: DEBUG Configured and Selected Drives Match!
-2021-03-19 19:38:01,812 - drive_manager:269 - update_receive_plot: DEBUG No changes necessary to /root/plot_manager/receive_plot.sh
-2021-03-19 19:38:01,812 - drive_manager:270 - update_receive_plot: DEBUG Plots left available on configured plotting drive: 58
+drive_manager:258 - update_receive_plot: DEBUG update_receive_plot() Started
+drive_manager:266 - update_receive_plot: DEBUG Currently Configured Plot Drive: /mnt/enclosure0/front/column0/drive18
+drive_manager:267 - update_receive_plot: DEBUG System Selected Plot Drive:      /mnt/enclosure0/front/column0/drive18
+drive_manager:268 - update_receive_plot: DEBUG Configured and Selected Drives Match!
+drive_manager:269 - update_receive_plot: DEBUG No changes necessary to /root/plot_manager/receive_plot.sh
+drive_manager:270 - update_receive_plot: DEBUG Plots left available on configured plotting drive: 58
 ```
-
+<br><br>
 
 ```
-Server: chiaplot01
+<b>Server: chiaplot01</b>
 New Plot Drive Selected at 23:34:01
 Previous Plotting Drive....................................../mnt/enclosure0/front/column0/drive5
 # of Plots on Previous Plotting Drive.................0
