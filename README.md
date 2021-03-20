@@ -176,6 +176,7 @@ sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
 
 Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.
 <hr>
+
 #### NAS Configuration
 
 The NAS setup is pretty unique to me but it should be pretty easy to reconfigure the script to meet other needs. <br>
