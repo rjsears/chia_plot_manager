@@ -265,7 +265,7 @@ f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()}/$1" < /dev/null')
 f.close()
 ```
 
-Once the system detemines which drive it wants to use to store plots, it stores that information in a configuration file called ```plot_manager_config``` and it looks like this:
+Once the system determines which drive it wants to use to store plots, it stores that information in a configuration file called ```plot_manager_config``` and it looks like this:
 ```
 [plotting_drives]
 current_plotting_drive = /mnt/enclosure0/front/column3/drive18
