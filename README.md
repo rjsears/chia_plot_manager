@@ -88,7 +88,7 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
 
 This was designed and is running on Ubuntu 20.04 for both the Plotter and the NAS so pretty much any linux flavor should work. Listed below are the things that I am using on both systems. The one thing to watch out for on the NAS is the version of pySMART you are using. I ran into a bug with the version (1.0) on PyPi and ended up using the version from the TrueNAS Folks. DO NOT use the version from PyPi, it won't work until patched.<br>
 
-I am running on Python 3.8.5 and pretty much everything else came installed with the default Ubuntu Server 20.04 installation. 
+I am running on Python 3.8.5 and pretty much everything else came installed with the default Ubuntu Server 20.04 installation. Be sure to install smartmontools ```apt install smartmontools``` as well as the following:
 
 <ul>
   <li><a href="https://docs.sentry.io/platforms/python/">Sentry-SDK</a> - (Optional, I use it for error tracking)</li>
