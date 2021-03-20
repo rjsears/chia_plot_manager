@@ -66,7 +66,7 @@ As far as plots go, most folks recommend not using some type of RAID array to pr
 
 Welcome to my project! I ended up with basically a client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to the NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work. 
 
-On the Plotter side (every 5 minutes):
+<b>On the Plotter side (every 5 minutes):</b>
 <ul>
   <li>Monitors my -d directory for completed plots</li>
   <li>Determines if the plot is complete based on the size and name of the plot (currently k32 only)</li>
@@ -77,9 +77,9 @@ On the Plotter side (every 5 minutes):
   <li>Once files sizes are verified, deletes the sent plot</li>
   <li>Kills any lingering netcat connections on the NAS</li>
 </ul>
+<br><br>
 
-
-On the NAS side (every 1 minute):
+<b>On the NAS side (every 1 minute):</b>
 <ul>
   <li>Checks for all available plot storage drives on the system in real time (in case new ones were added)</li>
   <li>Based on number of plots on drives, selects the next available plot drive to receive plots</li>
