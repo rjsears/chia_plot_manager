@@ -316,6 +316,7 @@ drive_manager:270 - update_receive_plot: DEBUG Plots left available on configure
 ```
 <br><br>
 
+When the plot drives does change, you get a nicely formatted email:
 ```
 Server: chiaplot01
 New Plot Drive Selected at 23:34:01
@@ -338,6 +339,8 @@ Number of k32 Plots until full........................787
 Max # of Plots with current # of Drives...............2640
 ```
 
+and a text or pushbullet message:
+```Plot Drive Updated: Was: /mnt/enclosure0/front/column0/drive17,  Now: /mnt/enclosure0/front/column0/drive18```
 
 
 
