@@ -62,15 +62,19 @@ I spent a <em>lot</em> of time playing around with all of the network settings, 
 
 After reading up on the pros and cons of netcat vs rsync (which most recommended) I decided to give it a test. I tested cp, mv, rsync, scp and HPSSH across NFS, SMB (miserable) and SSH. With the exception of SMB they all pretty much worked the same. I was getting better performance than I had been using the stock Ubuntu ssh after replacing it with the High Perfomance SSH and nuking encryption, but still nothing to write home about. Then I tested Netcat. I was blown away. I went from much less than 1Gbe to peaks of 5Gbe with netcat. 100G files that had been taking 18 minutes to transfer were now transferring in 3 to 4 minutes. <br>
 
-The system designed for <em>our</em> needs ended up with the following configuration:
+As far as plots go, most folks recommend not using some type of RAID array to protect your plots from loss. the thought process is that if you lose a single plotting drive, no big deal, tos itin the trash and put a replacement drive in and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine drive RAIDZ2 vdevs in place and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a jbod as usggested by many others. The question was how to manage getting the plots onto the drives and what to do when the drives filled up.<br>
+
+Welcome to my project! I ended up with basically a client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to the NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work. 
+
+On the Plotter side:
 <ul>
-  <li>27  x "Water" Zones (Expandable to 32 Zones total)</li>
-  <li>8 x "Power" Zones</li>
-  <li>6 x "Temperature" Zones (including one for our worm farm)</li>
-  <li>3 x "Humidity" Zones</li>
-  <li>1 x Barometric Sensor</li>
-  <li>DC Current and Voltage Sensors</li>
-  <li>AC Current and Voltage Sensors</li>
+  <li>Monitors my -d directory for completed plots</li>
+  <li>Determines if the plot is complete based on the size of the plot (currently k32 only)</li>
+  <li>Checks to see if we are already sending a plot to the NAS, if so, stops.</li>
+  <li>When it is clear to send, picks which plot to send and netcats it to the NAS</li>
+  <li>Utilizing an ssh subprocess, starts a recevining netcat on the NAS</li>
+  <li>After the transfer is complete, checks the exact file sixe of the plot on both systems as a basic verification</li>
+  <li>Once files sizes are verified, deletes the sent plot</li>
   <li>4 x Ultrasonic Water Level Detectors</li>
   <li>4 x Non-Contact Liquid Level Sensors</li>
   <li>7" Touchscreen for local control</li>
