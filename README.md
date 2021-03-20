@@ -38,7 +38,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Code
     </a>
    <span> | </span>
-    <a href="https://github.com/rjsears/GardenPi/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
+    <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
     </a>
   </h4>
