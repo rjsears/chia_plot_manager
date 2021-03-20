@@ -156,12 +156,27 @@ remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
 
 ```status_file``` is a local file that is created when we start a plot move and deleted once we have completed that move. We check for that when we first run to make sure we are not attempting to move several plots at the same time. 
 
-You will see this in the logs:
+You will see this in the logs:<br>
 ```2021-03-19 18:50:01,830 - plot_manager:155 - process_control: DEBUG Checkfile Exists, We are currently Running a Transfer, Exiting```
 
 As I grow, I plan on adding in a second dedicated 10Gbe link for moving plots and I can expand this out to include the ability to track sessions across each link.
+<br>
+```remote_checkfile``` is used on the NAS system to prevent our NAS drive_manager.py script from altering the destination drive in the middle of a plot move. On the NAS, I run everything as the ```root``` user hence the directory path. Alter to meet your needs.
 
-```remote_checkfile``` is used on the NAS system to prevent our drive_manager.py script from altering the destination drive in the middle of a plot move. On the NAS, I run everything as the ```root``` user hence the directory path. Alter to meet your needs.
+That is pretty much everything on the plotter side. The final part of the puzzle is the ```send_plot.sh``` shell script. On line 99 of the ```plot_manager.py``` script you will find this line:<br>
+```subprocess.call(['/home/chia/plot_manager/send_plot.sh', plot_path, plot_to_process])```
+You need to alter the directory and name of the script to suite you needs. This is the script that is called that actually send the plot to the nas. This is the contents:
+
+```
+#!/bin/bash
+#
+ssh root@chianas01-internal "nohup /root/plot_manager/receive_plot.sh $2 > foo.out 2> foo.err < /dev/null &"
+sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
+```
+
+Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.
+
+
 
 
 
