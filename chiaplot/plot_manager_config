@@ -1,0 +1,6 @@
+[system_settings]
+debug = True
+
+[system_logging]
+logging = True
+log_level = DEBUG
