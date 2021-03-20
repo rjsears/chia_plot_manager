@@ -49,7 +49,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
 
 <hr>
 
-#### <a name="overview"></a>Overview & Theory of Operation
+### <a name="overview"></a>Overview & Theory of Operation
 <div align="left">
 This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a singe plotting server (chisplot01) creating Chia plots. Once the plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once compelte was a little more interesting. My plotting server has the capacity to plot 40 parallel plots at a time and that is where I started to have issues.<br><br>
 
