@@ -33,10 +33,6 @@ Hopefully, this might provide some inspiration for others in regard to their aut
     <a href="https://github.com/rjsears/chia_plot_manager#install">
       Installation & Configuration
     </a>
-    <span> | </span>
-    <a href="https://github.com/rjsears/chia_plot_manager/tree/master/chia_plot_manager">
-      Code
-    </a>
    <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
