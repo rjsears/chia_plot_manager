@@ -57,7 +57,7 @@ I spent a <em>lot</em> of time playing around with all of the network settings, 
 
 After reading up on the pros and cons of netcat vs rsync (which most recommended) I decided to give it a test. I tested cp, mv, rsync, scp and HPSSH across NFS, SMB (miserable) and SSH. With the exception of SMB they all pretty much worked the same. I was getting better performance than I had been using the stock Ubuntu ssh after replacing it with the High Perfomance SSH and nuking encryption, but still nothing to write home about. Then I tested Netcat. I was blown away. I went from much less than 1Gbe to peaks of 5Gbe with netcat. 100G files that had been taking 18 minutes to transfer were now transferring in 3 to 4 minutes. <br>
 
-As far as plots go, most folks recommend not using some type of RAID array to protect your plots from loss. the thought process is that if you lose a single plotting drive, no big deal, tos itin the trash and put a replacement drive in and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine drive RAIDZ2 vdevs in place and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a jbod as usggested by many others. The question was how to manage getting the plots onto the drives and what to do when the drives filled up.<br>
+As far as plots go, most folks recommend not using some type of RAID array to protect your plots from loss. the thought process is that if you lose a single plotting drive, no big deal, tos itin the trash and put a replacement drive in and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine drive RAIDZ2 vdevs in place and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a jbod as suggested by many others. The question was how to manage getting the plots onto the drives and what to do when the drives filled up.<br>
 
 Welcome to my project! I ended up with basically a client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to the NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work. 
 
@@ -160,7 +160,7 @@ You will see this in the logs:<br>
 ```2021-03-19 18:50:01,830 - plot_manager:155 - process_control: DEBUG Checkfile Exists, We are currently Running a Transfer, Exiting```
 <br>
 As I grow, I plan on adding in a second dedicated 10Gbe link for moving plots and I can expand this out to include the ability to track sessions across each link.
-<br>
+<br><br>
 ```remote_checkfile``` is used on the NAS system to prevent our NAS drive_manager.py script from altering the destination drive in the middle of a plot move. On the NAS, I run everything as the ```root``` user hence the directory path. Alter to meet your needs.
 
 That is pretty much everything on the plotter side. The final part of the puzzle is the ```send_plot.sh``` shell script. On line 99 of the ```plot_manager.py``` script you will find this line:<br>
@@ -175,6 +175,168 @@ sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
 ```
 
 Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.
+<hr>
+#### NAS Configuration
+
+The NAS setup is pretty unique to me but it should be pretty easy to reconfigure the script to meet other needs. <br>
+Coming from running three very large Plex systems (PBs worth), I designed my drive layout and naming so that I could at any moment just by looking at a mountpoint go pull a drive if I needed to do so. 
+
+My basic layout is a single SuperMicro storage server with motherboard, 256GB ram and 36 drive bays. This I call ```enclosure0```. This is a Supermicro 847, it has 24 drive bays in front and 12 in the rear. This is my directory structure for that system:
+
+```
+/mnt/enclosure0
+├── front
+│   ├── column0
+│   │   ├── drive0
+│   │   ├── drive1
+│   │   ├── drive2
+│   │   ├── drive3
+│   │   ├── drive4
+│   │   └── drive5
+│   ├── column1
+│   │   ├── drive10
+│   │   ├── drive11
+│   │   ├── drive6
+│   │   ├── drive7
+│   │   ├── drive8
+│   │   └── drive9
+│   ├── column2
+│   │   ├── drive12
+│   │   ├── drive13
+│   │   ├── drive14
+│   │   ├── drive15
+│   │   ├── drive16
+│   │   └── drive17
+│   └── column3
+│       ├── drive18
+│       ├── drive19
+│       ├── drive20
+│       ├── drive21
+│       ├── drive22
+│       └── drive23
+└── rear
+    ├── column0
+    │   ├── drive24
+    │   ├── drive25
+    │   └── drive26
+    ├── column1
+    │   ├── drive27
+    │   ├── drive28
+    │   └── drive29
+    ├── column2
+    │   ├── drive30
+    │   ├── drive31
+    │   └── drive32
+    └── column3
+        ├── drive33
+        ├── drive34
+        └── drive35
+```       
+
+As you can see just by looking at a mount point I can tell exactly where a drive is located in my system. In addition to that, when I add additional external drive arrays, I just do the same thing with ```enclosure1```, ```enclosure2```, etc and my ```drive_manager.py``` script will work no problem.
+
+
+I am basically using ``psutil`` to get drive space information and then use that to determine where to put plots. When I call ```psutil``` I just tell it I want it to look at any device that starts with ```/dev/sd``` and any mountpoint that includes ```enclosure``` and ends with the word ```drive```:
+
+```
+if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/enclosure') and p.mountpoint.endswith(drive):
+```
+
+In this manner I will never get swap, temp, boot, home, etc. Nothing at all but my plot storage drives. In order for this to work with your setup, you would have to modify all of these lines to match your paticular configuration. 
+
+Once you have that figured out, there are just a couple of other little things that need to be set:
+
+At the top of the script you want to set these to meet your needs:
+
+```
+nas_server = 'chiaplot01'
+plot_size_k = 108995911228
+plot_size_g = 101.3623551
+receive_script = '/root/plot_manager/receive_plot.sh'
+```
+
+The ```receive_plot.sh``` script is created dynamically by the script here:
+
+```
+f = open(receive_script, 'w+')
+f.write('#! /bin/bash \n')
+f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()}/$1" < /dev/null')
+f.close()
+```
+
+Once the system detemines which drive it wants to use to store plots, it stores that information in a configuration file called ```plot_manager_config``` and it looks like this:
+```
+[plotting_drives]
+current_plotting_drive = /mnt/enclosure0/front/column0/drive18
+```
+This is important for several reasons. First this is what tells the system our current plotting drive and it is also used by the plotting server to map the correct path for file size verification after a plot is sent. If you change this file or it's location, you need to update lines 167 on the plotter. Notice that I am specifically grepping for the word ```enclosure```, you want to make sure all of this matches up with how you plan on doing things!
+
+```
+remote_mount = str(subprocess.check_output(['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")
+```
+
+OK, once you have everything setup, on the plotter you simply run the script and if everything is setup correctly you should see the following:
+
+```
+2021-03-19 19:20:01,543 - plot_manager:92 - process_plot: DEBUG process_plot() Started
+2021-03-19 19:20:01,543 - plot_manager:126 - process_control: DEBUG process_control() called with [check_status] and [0]
+2021-03-19 19:20:01,543 - plot_manager:158 - process_control: DEBUG Checkfile Does Not Exist
+2021-03-19 19:20:01,543 - plot_manager:74 - get_list_of_plots: DEBUG get_list_of_plots() Started
+2021-03-19 19:20:01,544 - plot_manager:77 - get_list_of_plots: DEBUG plot-k32-2021-03-18-02-33-xxx.plot
+2021-03-19 19:20:01,544 - plot_manager:82 - get_list_of_plots: INFO We will process this plot next: plot-k32-2021-03-18-02-33-xxx.plot
+2021-03-19 19:20:01,545 - plot_manager:126 - process_control: DEBUG process_control() called with [set_status] and [start]
+2021-03-19 19:20:02,228 - plot_manager:98 - process_plot: INFO Processing Plot: /mnt/ssdraid/array0/plot-k32-2021-03-18-02-33-xxx.plot
+2021-03-19 19:25:00,697 - plot_manager:165 - verify_plot_move: DEBUG verify_plot_move() Started
+2021-03-19 19:25:01,433 - plot_manager:171 - verify_plot_move: DEBUG Verifing: chianas01-internal: /mnt/enclosure0/front/column0/drive5/plot-k32-2021-03-18-02-33-xxx.plot
+2021-03-19 19:25:02,102 - plot_manager:176 - verify_plot_move: DEBUG Remote Plot Size Reported as: 108898704182
+2021-03-19 19:25:02,103 - plot_manager:178 - verify_plot_move: DEBUG Local Plot Size Reported as: 108898704182
+2021-03-19 19:25:02,103 - plot_manager:101 - process_plot: INFO Plot Sizes Match, we have a good plot move!
+2021-03-19 19:25:02,103 - plot_manager:126 - process_control: DEBUG process_control() called with [set_status] and [stop]
+2021-03-19 19:25:03,465 - plot_manager:147 - process_control: DEBUG Remote nc kill called!
+2021-03-19 19:25:06,741 - plot_manager:109 - process_plot: INFO Removing: /mnt/ssdraid/array0/plot-k32-2021-03-18-02-33-xxx.plot
+```
+
+This tells you that everything has gone smoothly. You should be able to log into your NAS and verify that the plot is where it is supposed to be. Needless to say I would stick with a bunch of test plots until I had it right, I would also comment out this line:
+
+```
+os.remove(plot_path)
+```
+
+Until you are absolutely certain it is running the way that you would like it to run!
+
+Now on the NAS server, I run my script once per minute. This is what you should see if everything is going well:
+
+```
+2021-03-19 19:38:01,810 - drive_manager:258 - update_receive_plot: DEBUG update_receive_plot() Started
+2021-03-19 19:38:01,811 - drive_manager:266 - update_receive_plot: DEBUG Currently Configured Plot Drive: /mnt/enclosure0/front/column0/drive18
+2021-03-19 19:38:01,812 - drive_manager:267 - update_receive_plot: DEBUG System Selected Plot Drive:      /mnt/enclosure0/front/column0/drive18
+2021-03-19 19:38:01,812 - drive_manager:268 - update_receive_plot: DEBUG Configured and Selected Drives Match!
+2021-03-19 19:38:01,812 - drive_manager:269 - update_receive_plot: DEBUG No changes necessary to /root/plot_manager/receive_plot.sh
+2021-03-19 19:38:01,812 - drive_manager:270 - update_receive_plot: DEBUG Plots left available on configured plotting drive: 58
+```
+
+
+```
+Server: chiaplot01
+New Plot Drive Selected at 23:34:01
+Previous Plotting Drive....................................../mnt/enclosure0/front/column0/drive5
+# of Plots on Previous Plotting Drive.................0
+New Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column0/drive5
+New Plotting Drive (by device).........................../dev/sdg1
+Drive Size..........................................................10.9T
+# of Plots on we can put on this Drive...............109
+
+Environmental & Health
+Drive Serial Number..........................................00000000
+Current Drive Temperature................................23°C
+Last Smart Test Health Assessment..................PASS
+
+Other Information
+Total Plots on chiaplot01..................................545
+Current Total Number of Plot Drives..................24
+Number of k32 Plots until full.............................2071
+Max # of Plots with current # of Drives..............2640
+```
 
 
 
