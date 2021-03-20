@@ -41,10 +41,6 @@ Hopefully, this might provide some inspiration for others in regard to their aut
     <a href="https://github.com/rjsears/GardenPi/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
     </a>
-    <span> | </span>
-    <a href="https://github.com/rjsears/GardenPi#icons">
-      Icons
-    </a>
   </h4>
 
 <hr>
