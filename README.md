@@ -344,13 +344,30 @@ and a text or pushbullet message:
 ```Plot Drive Updated: Was: /mnt/enclosure0/front/column3/drive17,  Now: /mnt/enclosure0/front/column3/drive18```
 
 
+And if you choose, once a day you can get a daily update email:
+
+```
+NAS Server: chiaplot01
+Daily Update Email - Generated at 01:01:01
+Current Plotting Drive (by mountpoint)................../mnt/enclosure0/front/column3/drive18
+Current Plotting Drive (by device)....................../dev/sgx1
+Drive Size..............................................10.9T
+
+Environmental & Health
+Drive Serial Number.....................................00000000
+Current Drive Temperature...............................22°C
+Last Smart Test Health Assessment.......................PASS
+
+Other Information
+Total Plots on chiaplot01...............................1853
+Current Total Number of Plot Drives.....................24
+Number of k32 Plots until full..........................780
 
 
+Max # of Plots with current # of Drives.................2640
+```
 
 
-
-
-
-
+I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
 </p>
