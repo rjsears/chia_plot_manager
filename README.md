@@ -49,7 +49,7 @@ Hopefully, this might provide some inspiration for others in regard to their aut
   </h4>
 
 <hr>
-
+<div align="left">
 #### <a name="overview"></a>Overview & Theory of Operation
 
 
