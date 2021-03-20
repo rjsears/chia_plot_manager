@@ -104,9 +104,11 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
  </ul>
  <hr>
 
-### <a name="install"></a>Installation
+### <a name="install"></a>Installation & Configuration
 
 The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. The plotter is pretty easy. 
+
+#### Plotter Configuration
 
 Here is the directry structure I use on my plotter for my main plotting and -d drives:
 
@@ -121,6 +123,53 @@ Here is the directry structure I use on my plotter for my main plotting and -d d
     └── array0
 ```
 The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These are Intel DC P4510 NVMe drives capable of running 10 plots each (based on k32 plot size). The ```/mnt/ssdraid/array0``` is my ```-d``` drive. This is a RAID0 array of HGST 1.6TB Enterprise SSD drives. This is where the completed plots are stored before they are moved by the plot_manager.py script.
+
+All of my plotting is done as the ```chia``` user and so all of my plot_manager files are stored in the ```/home/chia``` directory. I do have a little bit of testing built into the script and that is what the test_plots directory is used for. I simple ```dd``` 10G of zeros into a test plot file and turn on testing in the script to test everything before going live.
+
+```
+/home/chia/plot_manager
+├── logs
+└── test_plots
+```
+
+Depending on how your system is set up, you need to make changes at the top of the ```plot_manager.py``` script:
+
+```
+# Are we testing?
+testing = False
+if testing:
+    plot_dir = '/home/chia/plot_manager/test_plots/'
+    plot_size = 10000000
+else:
+    plot_dir = "/mnt/ssdraid/array0/"
+    plot_size = 108644374730  # Based on K32 plot size
+```
+
+Change the ```plot_dir``` and ```plot_size``` for both testing and not testing to suit your system and needs. 
+
+Next you will need to update these status and checkfile locations to meet your needs:
+
+```
+status_file = '/home/chia/plot_manager/transfer_job_running'
+remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
+```
+
+```status_file``` is a local file that is created when we start a plot move and deleted once we have completed that move. We check for that when we first run to make sure we are not attempting to move several plots at the same time. 
+
+You will see this in the logs:
+```2021-03-19 18:50:01,830 - plot_manager:155 - process_control: DEBUG Checkfile Exists, We are currently Running a Transfer, Exiting```
+
+As I grow, I plan on adding in a second dedicated 10Gbe link for moving plots and I can expand this out to include the ability to track sessions across each link.
+
+```remote_checkfile``` is used on the NAS system to prevent our drive_manager.py script from altering the destination drive in the middle of a plot move. On the NAS, I run everything as the ```root``` user hence the directory path. Alter to meet your needs.
+
+
+
+
+
+
+
+
 
 
 </p>
