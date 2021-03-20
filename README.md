@@ -317,25 +317,25 @@ drive_manager:270 - update_receive_plot: DEBUG Plots left available on configure
 <br><br>
 
 ```
-<b>Server: chiaplot01</b>
+Server: chiaplot01
 New Plot Drive Selected at 23:34:01
-Previous Plotting Drive....................................../mnt/enclosure0/front/column0/drive5
-# of Plots on Previous Plotting Drive.................0
-New Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column0/drive5
-New Plotting Drive (by device).........................../dev/sdg1
-Drive Size..........................................................10.9T
-# of Plots on we can put on this Drive...............109
+Previous Plotting Drive.............................../mnt/enclosure0/front/column0/drive17
+# of Plots on Previous Plotting Drive.................109
+New Plotting Drive (by mountpoint)..................../mnt/enclosure0/front/column0/drive18
+New Plotting Drive (by device)......................../dev/sdx1
+Drive Size............................................10.9T
+# of Plots on we can put on this Drive................109
 
 Environmental & Health
-Drive Serial Number..........................................00000000
-Current Drive Temperature................................23°C
-Last Smart Test Health Assessment..................PASS
+Drive Serial Number...................................00000000
+Current Drive Temperature.............................23°C
+Last Smart Test Health Assessment.....................PASS
 
 Other Information
-Total Plots on chiaplot01..................................545
-Current Total Number of Plot Drives..................24
-Number of k32 Plots until full.............................2071
-Max # of Plots with current # of Drives..............2640
+Total Plots on chiaplot01.............................1853
+Current Total Number of Plot Drives...................24
+Number of k32 Plots until full........................787
+Max # of Plots with current # of Drives...............2640
 ```
 
 
