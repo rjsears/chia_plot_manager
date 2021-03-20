@@ -77,4 +77,20 @@ On the Plotter side (every 5 minutes):
   <li>Once files sizes are verified, deletes the sent plot</li>
   <li>Kills any lingering netcat connections on the NAS</li>
 </ul>
+
+
+On the NAS side (every 1 minute):
+<ul>
+  <li>Checks for all available plot storage drives on the system in real time (in case new ones were added)</li>
+  <li>Based on number of plots on drives, selects the next available plot drive to receive plots</li>
+  <li>Updates the receive script with the currently selected plot drive</li>
+  <li>Once that drive is full, selects the next available plot drive and updates the receive script </li>
+  <li>Send out selectable notifications via EMail, SMS and Pushbullet about the drive change, includes some SMART drive information</li>
+  <li>Sends a daily email report including # of drives, # of plots currently and # of plots total based on current drive storage</li>
+  <li>Once files sizes are verified, deletes the sent plot</li>
+  <li>Kills any lingering netcat connections on the NAS</li>
+</ul>
+</p>
+
+
 </p>
