@@ -194,12 +194,12 @@ My basic layout is a single SuperMicro storage server with motherboard, 256GB ra
 │   │   ├── drive4
 │   │   └── drive5
 │   ├── column1
-│   │   ├── drive10
-│   │   ├── drive11
 │   │   ├── drive6
 │   │   ├── drive7
 │   │   ├── drive8
-│   │   └── drive9
+│   │   ├── drive9
+│   │   ├── drive10
+│   │   └── drive11
 │   ├── column2
 │   │   ├── drive12
 │   │   ├── drive13
@@ -233,7 +233,7 @@ My basic layout is a single SuperMicro storage server with motherboard, 256GB ra
         └── drive35
 ```       
 
-As you can see just by looking at a mount point I can tell exactly where a drive is located in my system. In addition to that, when I add additional external drive arrays, I just do the same thing with ```enclosure1```, ```enclosure2```, etc and my ```drive_manager.py``` script will work no problem.
+As you can see just by looking at a mount point I can tell exactly where a drive is located in my system. In addition to that, when I add additional external drive arrays, I just do the same thing with ```enclosure1```, ```enclosure2```, etc and my ```drive_manager.py``` script will work no problem. I plug in a new drive, format it ```XFS```, mount it, add it to ```fstab``` and that's it. The script does everything else.
 
 
 I am basically using ``psutil`` to get drive space information and then use that to determine where to put plots. When I call ```psutil``` I just tell it I want it to look at any device that starts with ```/dev/sd``` and any mountpoint that includes ```enclosure``` and ends with the word ```drive```:
@@ -267,7 +267,7 @@ f.close()
 Once the system detemines which drive it wants to use to store plots, it stores that information in a configuration file called ```plot_manager_config``` and it looks like this:
 ```
 [plotting_drives]
-current_plotting_drive = /mnt/enclosure0/front/column0/drive18
+current_plotting_drive = /mnt/enclosure0/front/column3/drive18
 ```
 This is important for several reasons. First this is what tells the system our current plotting drive and it is also used by the plotting server to map the correct path for file size verification after a plot is sent. If you change this file or it's location, you need to update lines 167 on the plotter. Notice that I am specifically grepping for the word ```enclosure```, you want to make sure all of this matches up with how you plan on doing things!
 
@@ -287,7 +287,7 @@ OK, once you have everything setup, on the plotter you simply run the script and
 2021-03-19 19:20:01,545 - plot_manager:126 - process_control: DEBUG process_control() called with [set_status] and [start]
 2021-03-19 19:20:02,228 - plot_manager:98 - process_plot: INFO Processing Plot: /mnt/ssdraid/array0/plot-k32-2021-03-18-02-33-xxx.plot
 2021-03-19 19:25:00,697 - plot_manager:165 - verify_plot_move: DEBUG verify_plot_move() Started
-2021-03-19 19:25:01,433 - plot_manager:171 - verify_plot_move: DEBUG Verifing: chianas01-internal: /mnt/enclosure0/front/column0/drive5/plot-k32-2021-03-18-02-33-xxx.plot
+2021-03-19 19:25:01,433 - plot_manager:171 - verify_plot_move: DEBUG Verifing: chianas01-internal: /mnt/enclosure0/front/column3/drive18/plot-k32-2021-03-18-02-33-xxx.plot
 2021-03-19 19:25:02,102 - plot_manager:176 - verify_plot_move: DEBUG Remote Plot Size Reported as: 108898704182
 2021-03-19 19:25:02,103 - plot_manager:178 - verify_plot_move: DEBUG Local Plot Size Reported as: 108898704182
 2021-03-19 19:25:02,103 - plot_manager:101 - process_plot: INFO Plot Sizes Match, we have a good plot move!
@@ -308,8 +308,8 @@ Now on the NAS server, I run my script once per minute. This is what you should 
 
 ```
 drive_manager:258 - update_receive_plot: DEBUG update_receive_plot() Started
-drive_manager:266 - update_receive_plot: DEBUG Currently Configured Plot Drive: /mnt/enclosure0/front/column0/drive18
-drive_manager:267 - update_receive_plot: DEBUG System Selected Plot Drive:      /mnt/enclosure0/front/column0/drive18
+drive_manager:266 - update_receive_plot: DEBUG Currently Configured Plot Drive: /mnt/enclosure0/front/column3/drive18
+drive_manager:267 - update_receive_plot: DEBUG System Selected Plot Drive:      /mnt/enclosure0/front/column3/drive18
 drive_manager:268 - update_receive_plot: DEBUG Configured and Selected Drives Match!
 drive_manager:269 - update_receive_plot: DEBUG No changes necessary to /root/plot_manager/receive_plot.sh
 drive_manager:270 - update_receive_plot: DEBUG Plots left available on configured plotting drive: 58
@@ -320,9 +320,9 @@ When the plot drives does change, you get a nicely formatted email:
 ```
 Server: chiaplot01
 New Plot Drive Selected at 23:34:01
-Previous Plotting Drive.............................../mnt/enclosure0/front/column0/drive17
+Previous Plotting Drive.............................../mnt/enclosure0/front/column3/drive17
 # of Plots on Previous Plotting Drive.................109
-New Plotting Drive (by mountpoint)..................../mnt/enclosure0/front/column0/drive18
+New Plotting Drive (by mountpoint)..................../mnt/enclosure0/front/column3/drive18
 New Plotting Drive (by device)......................../dev/sdx1
 Drive Size............................................10.9T
 # of Plots on we can put on this Drive................109
@@ -340,7 +340,7 @@ Max # of Plots with current # of Drives...............2640
 ```
 
 and a text or pushbullet message:
-```Plot Drive Updated: Was: /mnt/enclosure0/front/column0/drive17,  Now: /mnt/enclosure0/front/column0/drive18```
+```Plot Drive Updated: Was: /mnt/enclosure0/front/column3/drive17,  Now: /mnt/enclosure0/front/column3/drive18```
 
 
 
