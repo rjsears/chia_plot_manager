@@ -76,7 +76,6 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Once files sizes are verified, deletes the sent plot</li>
   <li>Kills any lingering netcat connections on the NAS</li>
 </ul>
-<br>
 
 <b>On the NAS side (every 1 minute):</b>
 <ul>
@@ -87,6 +86,7 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Complete, selectable notifications via EMail, SMS and Pushbullet about the drive change, includes some SMART drive information</li>
   <li>Sends a daily email report including # of drives, # of plots currently and # of plots total based on current drive storage</li>
   <li>Since notifications are already built in, will extend it to alert on drive temps and smartctl warnings</li>
+  <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
 </p>
 
