@@ -19,7 +19,6 @@ Hopefully if you are reading this you know what Chia is and what a plot is. I am
   
 
 Hopefully, this might provide some inspiration for others in regard to their automation projects. Contributions are always welcome.</p>
-<div align="center"><a name="top_menu"></a>
 
 <div align="center"><a name="top_menu"></a>
   <h4>
