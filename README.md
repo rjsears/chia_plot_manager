@@ -66,17 +66,15 @@ As far as plots go, most folks recommend not using some type of RAID array to pr
 
 Welcome to my project! I ended up with basically a client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to the NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work. 
 
-On the Plotter side:
+On the Plotter side (every 5 minutes):
 <ul>
   <li>Monitors my -d directory for completed plots</li>
-  <li>Determines if the plot is complete based on the size of the plot (currently k32 only)</li>
-  <li>Checks to see if we are already sending a plot to the NAS, if so, stops.</li>
+  <li>Determines if the plot is complete based on the size and name of the plot (currently k32 only)</li>
+  <li>Checks to see if we are already sending a plot to the NAS, if so, stops</li>
   <li>When it is clear to send, picks which plot to send and netcats it to the NAS</li>
-  <li>Utilizing an ssh subprocess, starts a recevining netcat on the NAS</li>
-  <li>After the transfer is complete, checks the exact file sixe of the plot on both systems as a basic verification</li>
+  <li>Utilizing an ssh subprocess, starts a receiving netcat on the NAS</li>
+  <li>After the transfer is complete, checks the exact file size of the plot on both systems as a basic verification</li>
   <li>Once files sizes are verified, deletes the sent plot</li>
-  <li>4 x Ultrasonic Water Level Detectors</li>
-  <li>4 x Non-Contact Liquid Level Sensors</li>
-  <li>7" Touchscreen for local control</li>
+  <li>Kills any lingering netcat connections on the NAS</li>
 </ul>
 </p>
