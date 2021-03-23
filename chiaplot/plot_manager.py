@@ -188,7 +188,7 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
     log.debug(f'Local Plot Size Reported as: {local_plot_size}')
     if remote_plot_size == local_plot_size:
         try:
-            subprocess.check_output(['ssh', nas_server, 'touch %s' % new_plot_received])
+            subprocess.check_output(['ssh', nas_server, 'touch %s' % 'new_plot_received'])
         except subprocess.CalledProcessError as e:
             log.warning(e.output)  # Nothing to add here yet as we are not using this function remotely (yet)
         return True
