@@ -14,6 +14,13 @@ VERSION = "0.2 (2021-03-23)"
 # the incoming plots will be placed. This script simply sends those plots when
 # they are ready to send.
 
+#   Updates
+#   V0.2 2021-03-23
+# - Added per_plot system notification function (send_new_plot_notification()
+#   in chianas drive_manager.py and updated process_plot() and verify_plot_move()
+#   to support the new function
+# - Moved remote_mount lookup to happen before starting the plot move
+
 import os
 import sys
 import subprocess
@@ -180,6 +187,10 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
     local_plot_size = os.path.getsize(plot_path)
     log.debug(f'Local Plot Size Reported as: {local_plot_size}')
     if remote_plot_size == local_plot_size:
+        try:
+            subprocess.check_output(['ssh', nas_server, 'touch %s' % new_plot_received])
+        except subprocess.CalledProcessError as e:
+            log.warning(e.output)  # Nothing to add here yet as we are not using this function remotely (yet)
         return True
     else:
         log.debug(f'Plot Size Mismatch!')
