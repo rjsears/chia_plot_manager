@@ -5,15 +5,7 @@
 system_info.py for use with drive_manager.py
 """
 
-VERSION = "V0.1 (2021-03-16)"
-
-# Are notifications Enabled?
-notifications = True
-
-# Which notification types do we want to use?
-sms = False
-email = True
-pushbullet = False
+VERSION = "V0.2 (2021-03-23)"
 
 ## Set Notification Accounts#
 alert_email = ['email_one@gmail.com', 'email_two@gmail.com']
