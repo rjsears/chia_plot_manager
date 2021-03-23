@@ -426,11 +426,11 @@ def send_daily_email():
 
 def send_new_plot_notification():
     log.debug('send_new_plot_notification() Started')
-    if os.path.isfile('new_plot_received'):
+    if os.path.isfile('/root/plot_manager/new_plot_received'):
         log.debug('New Plot Received')
         if read_config_data('plot_manager_config', 'notifications', 'per_plot', True):
             notify('New Plot Received', 'New Plot Received')
-        os.remove('new_plot_received')
+        os.remove('/root/plot_manager/new_plot_received')
 
 
 def main():
