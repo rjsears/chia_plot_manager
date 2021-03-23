@@ -3,13 +3,22 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.1 (2021-03-19)"
+VERSION = "0.2 (2021-03-23)"
 
 ### Simple python script that helps to move my chia plots from my plotter to
 ### my nas. I wanted to use netcat as it was much faster on my 10GBe link than
 ### rsync and the servers are secure so I wrote this script to manage that
 ### move process. It will get better with time as I add in error checking and
 ### other things like notifications and stuff.
+
+# Updates
+#   V0.2 2021-30-23
+# - Moved system logging types to plot_manager_config and update
+#   necessary functions.
+# - Added per_plot system notification function (send_new_plot_notification())
+# - Updated read_config_data() to support ConfigParser boolean returns
+# - Updated necessary functions for read_config_data() change
+
 
 import os
 import sys
@@ -61,12 +70,16 @@ level = logging._checkLevel(level)
 log = logging.getLogger(__name__)
 log.setLevel(level)
 
-
-# Setup to read and write to our config file:
-def read_config_data(file, section, item):
+# Setup to read and write to our config file.
+# If we are expecting a boolean back pass True/1 for bool,
+# otherwise False/0
+def read_config_data(file, section, item, bool):
     pathname = '/root/plot_manager/' + file
     config.read(pathname)
-    return config.get(section, item)
+    if bool:
+        return config.getboolean(section, item)
+    else:
+        return config.get(section, item)
 
 def update_config_data(file, section, item, value):
     pathname = '/root/plot_manager/' + file
@@ -281,48 +294,50 @@ def update_receive_plot():
 
 def send_new_plot_disk_email():
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
-    current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive')
-    if read_config_data('plot_manager_config', 'notifications', 'new_plot_drive'):
+    current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
+    if read_config_data('plot_manager_config', 'notifications', 'new_plot_drive', True):
         for email_address in system_info.alert_email:
             send_template_email(template='new_plotting_drive.html',
-                        recipient=email_address,
-                        subject='New Plotting Drive Selected\nContent-Type: text/html',
-                        current_time=current_military_time,
-                        nas_server=nas_server,
-                        previous_plotting_drive=current_plotting_drive,
-                        plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint', current_plotting_drive),
-                        current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
-                        current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
-                        drive_size=bytes2human(usage.total),
-                        plots_available=get_drive_info('space_free_plots_by_mountpoint', (get_plot_drive_to_use())),
-                        drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
-                        current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
-                        smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
-                        total_serverwide_plots=get_all_available_system_space('used')[1],
-                        total_number_of_drives=get_all_available_system_space('total')[0],
-                        total_k32_plots_until_full=get_all_available_system_space('free')[1],
-                        max_number_of_plots = get_all_available_system_space('total')[1])
+                                recipient=email_address,
+                                subject='New Plotting Drive Selected\nContent-Type: text/html',
+                                current_time=current_military_time,
+                                nas_server=nas_server,
+                                previous_plotting_drive=current_plotting_drive,
+                                plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint',
+                                                                                current_plotting_drive),
+                                current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
+                                current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
+                                drive_size=bytes2human(usage.total),
+                                plots_available=get_drive_info('space_free_plots_by_mountpoint', (get_plot_drive_to_use())),
+                                drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
+                                current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
+                                smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
+                                total_serverwide_plots=get_all_available_system_space('used')[1],
+                                total_number_of_drives=get_all_available_system_space('total')[0],
+                                total_k32_plots_until_full=get_all_available_system_space('free')[1],
+                                max_number_of_plots=get_all_available_system_space('total')[1])
     else:
         pass
 
+
 def send_daily_update_email():
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
-    if read_config_data('plot_manager_config', 'notifications', 'daily_update'):
+    if read_config_data('plot_manager_config', 'notifications', 'daily_update', True):
         for email_address in system_info.alert_email:
             send_template_email(template='daily_update.html',
-                        recipient=email_address,
-                        subject='NAS Server Daily Update\nContent-Type: text/html',
-                        current_time=current_military_time,
-                        nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
-                        current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
-                        drive_size=bytes2human(usage.total),
-                        drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
-                        current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
-                        smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
-                        total_serverwide_plots=get_all_available_system_space('used')[1],
-                        total_number_of_drives=get_all_available_system_space('total')[0],
-                        total_k32_plots_until_full=get_all_available_system_space('free')[1],
-                        max_number_of_plots = get_all_available_system_space('total')[1])
+                                recipient=email_address,
+                                subject='NAS Server Daily Update\nContent-Type: text/html',
+                                current_time=current_military_time,
+                                nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
+                                current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
+                                drive_size=bytes2human(usage.total),
+                                drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
+                                current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
+                                smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
+                                total_serverwide_plots=get_all_available_system_space('used')[1],
+                                total_number_of_drives=get_all_available_system_space('total')[0],
+                                total_k32_plots_until_full=get_all_available_system_space('free')[1],
+                                max_number_of_plots=get_all_available_system_space('total')[1])
     else:
         pass
 
@@ -378,13 +393,13 @@ def send_sms_notification(body, phone_number):
 
 def notify(title, message):
     """ Notify system for email, pushbullet and sms (via Twilio)"""
-    if system_info.notifications:   # Are notifications enabled at the system level?
-        if system_info.pushbullet:
+    if (read_config_data('plot_manager_config', 'notifications', 'alerting', True)):
+        if (read_config_data('plot_manager_config', 'notifications', 'pb', True)):
             send_push_notification(title, message)
-        if system_info.email:
+        if (read_config_data('plot_manager_config', 'notifications', 'email', True)):
             for email_address in system_info.alert_email:
                 send_email(email_address, title, message)
-        if system_info.sms:
+        if (read_config_data('plot_manager_config', 'notifications', 'sms', True)):
             for phone_number in system_info.twilio_to:
                 send_sms_notification(message, phone_number)
     else:
@@ -400,15 +415,25 @@ def send_template_email(template, recipient, subject, **kwargs):
     template = env.get_template(template)
     send_email(recipient, subject, template.render(**kwargs))
 
-
+# This function called from crontab:
+# 01 01 * * * cd /root/plot_manager/ && /usr/bin/python3 -c 'from drive_manager import *; send_daily_email()' >/dev/null 2>&1
 def send_daily_email():
     log.debug('send_daily_email() Started')
     send_daily_update_email()
     log.info('Daily Update Email Sent!')
 
 
+def send_new_plot_notification():
+    log.debug('send_new_plot_notification() Started')
+    if os.path.isfile('new_plot_received'):
+        log.debug('New Plot Received')
+        if read_config_data('plot_manager_config', 'notifications', 'per_plot', True):
+            notify('New Plot Received', 'New Plot Received')
+        os.remove('new_plot_received')
+
 
 def main():
+    send_new_plot_notification()
     update_receive_plot()
 
 
