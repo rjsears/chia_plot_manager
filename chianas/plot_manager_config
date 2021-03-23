@@ -6,15 +6,17 @@ logging = True
 log_level = DEBUG
 
 [notifications]
-alerting = True
-pb = True
+alerting = False
+pb = False
 email = True
-sms = True
+sms = False
 new_plot_drive = True
 daily_update = True
+per_plot = True
+
 
 [plotting_drives]
-current_plotting_drive = /mnt/enclosure0/front/column3/drive18
+current_plotting_drive = /mnt/enclosure0/front/column1/drive7
 
 [remote_transfer]
 remote_transfer_active = remote_transfer_is_active
