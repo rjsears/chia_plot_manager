@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.1 (2021-03-17)"
+VERSION = "0.2 (2021-03-23)"
 
 # Simple python script that helps to move my chia plots from my plotter to
 # my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -96,6 +96,14 @@ def process_plot():
             process_control('set_status', 'start')
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
+            try:
+                remote_mount = str(subprocess.check_output(
+                    ['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(
+                    ('utf-8'))).strip("\n")
+            except subprocess.CalledProcessError as e:
+                log.warning(e.output)  # TODO Do something here...cannot go on...
+                quit()
+            log.debug(f'{nas_server} reports remote mount as {remote_mount}')
             subprocess.call(['/home/chia/plot_manager/send_plot.sh', plot_path, plot_to_process])
             try:
                 subprocess.call(
@@ -103,7 +111,7 @@ def process_plot():
                 log.debug('Remote nc kill called!')
             except subprocess.CalledProcessError as e:
                 log.warning(e.output)
-            if verify_plot_move(plot_path, plot_to_process):
+            if verify_plot_move(remote_mount, plot_path, plot_to_process):
                 log.info('Plot Sizes Match, we have a good plot move!')
             else:
                 log.debug('FAILURE - Plot sizes DO NOT Match - Exiting') # ToDo Do some notification here and then...?
@@ -160,20 +168,13 @@ def process_control(command, action):
     else:
         return
 
-
-def verify_plot_move(plot_path, plot_to_process):
+def verify_plot_move(remote_mount, plot_path, plot_to_process):
     log.debug('verify_plot_move() Started')
-    try:
-        remote_mount = str(subprocess.check_output(
-            ['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")
-    except subprocess.CalledProcessError as e:
-        log.warning(e.output)
-        quit()
     log.debug (f'Verifing: {nas_server}: {remote_mount}/{plot_to_process}')
     try:
         remote_plot_size = (int(subprocess.check_output(['ssh', nas_server, 'ls -al %s | awk {\'print $5\'}' % f'{remote_mount}/{plot_to_process}'])))
     except subprocess.CalledProcessError as e:
-        log.warning(e.output)
+        log.warning(e.output) #TODO Do something here...cannot go on...
         quit()
     log.debug(f'Remote Plot Size Reported as: {remote_plot_size}')
     local_plot_size = os.path.getsize(plot_path)
