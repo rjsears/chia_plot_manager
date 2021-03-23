@@ -1,6 +1,6 @@
  <h2 align="center">
  <br>
-  Chia Plot and Drive Manager (V0.1 - March 19th, 2021)
+  Chia Plot and Drive Manager (V0.2 - March 23rd, 2021)
   </h2>
   <p align="center">
    Multi Server Chia Plot and Drive Management Solution
