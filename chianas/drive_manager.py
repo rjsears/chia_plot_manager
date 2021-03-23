@@ -267,17 +267,18 @@ def update_receive_plot():
 
     log.debug("update_receive_plot() Started")
     # First determine if there is a remote file transfer in process. If there is, pass until it is done:
-    if os.path.isfile(read_config_data('plot_manager_config', 'remote_transfer', 'remote_transfer_active')):
+    if os.path.isfile(read_config_data('plot_manager_config', 'remote_transfer', 'remote_transfer_active', False)):
         log.debug('Remote Transfer in Progress, will try again soon!')
         quit()
     else:
-        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive')
+        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
         if current_plotting_drive == get_plot_drive_to_use():
             log.debug(f'Currently Configured Plot Drive: {current_plotting_drive}')
             log.debug(f'System Selected Plot Drive:      {get_plot_drive_to_use()}')
             log.debug('Configured and Selected Drives Match!')
             log.debug(f'No changes necessary to {receive_script}')
-            log.debug(f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", current_plotting_drive)}')
+            log.debug(
+                f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", current_plotting_drive)}')
         else:
             send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
             # notify() function.
