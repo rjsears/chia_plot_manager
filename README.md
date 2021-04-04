@@ -72,7 +72,7 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Once files sizes are verified, deletes the sent plot</li>
   <li>Kills any lingering netcat connections on the NAS</li>
 </ul>
-
+<br>
 <b>On the NAS side (every 1 minute):</b>
 <ul>
   <li>Checks for all available plot storage drives on the system in real time (in case new ones were added)</li>
@@ -86,7 +86,7 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
 <br>
-<b>Commnad Line Options</b>
+<b>Command Line Options on the NAS</b>
 <ul>
  <li>Ability to run quick reports to the screen (basically daily email dumped to the screen</li>
  <li>Ability to send a Drive update email</li>
