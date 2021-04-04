@@ -346,24 +346,24 @@ And if you choose, once a day you can get a daily update email:
 NAS Server: chianas01
 Daily Update Email - Generate at 11:23:53
 Current Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive13
-Current Plotting Drive (by device).........................../dev/sdo1
-Drive Size...............................................................10.9T
+Current Plotting Drive (by device)......................./dev/sdo1
+Drive Size...............................................10.9T
 
 Environmental & Health
-Drive Serial Number..........................................00000000
+Drive Serial Number......................................00000000
 Current Drive Temperature................................29°C
-Last Smart Test Health Assessment..................PASS
+Last Smart Test Health Assessment........................PASS
 
 Other Information
-Total Plots on chianas01..................................1455
-Current Total Number of Plot Drives..................24
-Number of k32 Plots until full.............................1161
-Max # of Plots with current # of Drives..............2640
+Total Plots on chianas01.................................1455
+Current Total Number of Plot Drives......................24
+Number of k32 Plots until full...........................1161
+Max # of Plots with current # of Drives..................2640
 
 Plotting Speed
-Total Plots Last 24 Hours....................................57
-Average Plots Per Hour.......................................2.375
-Average Plotting Speed Last 24 Hours...............5.757 TiB/Day
+Total Plots Last 24 Hours................................57
+Average Plots Per Hour...................................2.375
+Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
 ```
 
 
