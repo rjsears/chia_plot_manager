@@ -431,6 +431,7 @@ This only works if configured. If this notification is set to off, this will do 
 <b> -ct --check_temps</b><br>
 This options prints the serial number, device name, drive number and temperature of all devices
 desiginated as plot drives.
+
 ```
 #################################################################
 ################# chianas01 Temperature Report ##################
@@ -463,10 +464,12 @@ desiginated as plot drives.
 #   00000000     #   /dev/sdy1    #    drive23    #     23°C     #
 ##################################################################
 ```
+
 <br>
 <b> -pr --plot_report</b><br>
 This options prints out a quick version of the daily plot report to the screen
 and exits.
+
 ```
 ############################################################
 ################### chianas01 Plot Report ##################
@@ -483,6 +486,7 @@ Temperature of Current Plot Drive:                      30°C
 Latest Smart Drive Assessment of Plot Drive:            PASS
 ############################################################
 ```
+
 <br>
 
 
