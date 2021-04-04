@@ -34,6 +34,10 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Installation & Configuration
     </a>
    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager#cli">
+      Command Line Options
+    </a>
+   <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
     </a>
@@ -366,6 +370,7 @@ Average Plots Per Hour...................................2.375
 Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
 ```
 
+### <a name="cli"></a>Command Line Options
 
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
