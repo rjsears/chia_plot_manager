@@ -81,9 +81,17 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Once that drive is full, selects the next available plot drive and updates the receive script </li>
   <li>Complete, selectable notifications via EMail, SMS and Pushbullet about the drive change, includes some SMART drive information</li>
   <li>Sends a daily email report including # of drives, # of plots currently and # of plots total based on current drive storage</li>
+  <li>Daily email also includes plot speed, total plots in last 24 hours and TiB plotting in last 24 hours</li>
   <li>Since notifications are already built in, will extend it to alert on drive temps and smartctl warnings</li>
   <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
+<br>
+<b>Commnad Line Options</b>
+<ul>
+ <li>Ability to run quick reports to the screen (basically daily email dumped to the screen</li>
+ <li>Ability to send a Drive update email</li>
+ <li>Ability to monitor drive temperatures by device and serial number</li>
+ </ul>
 </p>
 
 <hr>
