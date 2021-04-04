@@ -372,7 +372,7 @@ Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
 
 ### <a name="cli"></a>Command Line Options
 
-Staring with V0.3 (April 4th, 2021) I have stated to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
+Staring with V0.3 (April 4th, 2021) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
 
 <ul>
  <li><em>-h</em> or <em>--help</em></li>
@@ -383,7 +383,7 @@ Staring with V0.3 (April 4th, 2021) I have stated to add in command line options
 </ul>
 
 <b> -h --help</b>  and  <b>-v --version</b><br>
-These options print out the help message or version information and exit.
+These options print out the help message or version information and exits.
 
 ```
 ******** ChiaNAS Drive Manager - 0.3 (2021-04-04) ********
