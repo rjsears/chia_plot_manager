@@ -2,7 +2,7 @@
 <body>
 <h3><b>NAS Server: {{nas_server}}</b></h3>
 
-<b>Daily Update Email - Generate at {{current_time}}</b><br>
+<b>Daily Update Email - Generated at {{current_time}}</b><br>
 
 Current Plotting Drive (by mountpoint)...................{{current_plotting_drive_by_mountpoint}}<br>
 Current Plotting Drive (by device)...........................{{current_plotting_drive_by_device}}<br>
@@ -20,5 +20,11 @@ Total Plots on <b>{{nas_server}}</b>..................................{{total_se
 Current Total Number of Plot Drives..................{{total_number_of_drives}}<br>
 Number of k32 Plots until full.............................{{total_k32_plots_until_full}}<br>
 Max # of Plots with current # of Drives..............{{max_number_of_plots}}<br>
+  
+<br>
+<b>Plotting Speed</b><br>
+Total Plots Last 24 Hours....................................{{total_plots_last_day}}<br>
+Average Plots Per Hour.......................................{{average_plots_per_hour}}<br>
+Average Plotting Speed Last 24 Hours...............{{average_plotting_speed}} <b>TiB/Day</b>
 </body>
 </html>
