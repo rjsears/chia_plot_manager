@@ -372,17 +372,14 @@ Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
 
 ### <a name="cli"></a>Command Line Options
 
-Staring with V0.3 (April 4th, 2021) I have stated to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line optns that are availare are:
+Staring with V0.3 (April 4th, 2021) I have stated to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
 
 <ul>
  <li><em>-h</em> or <em>--help</em></li>
-  <li>Determines if the plot is complete based on the size and name of the plot (currently k32 only)</li>
-  <li>Checks to see if we are already sending a plot to the NAS, if so, stops</li>
-  <li>When it is clear to send, picks which plot to send and netcats it to the NAS</li>
-  <li>Utilizing an ssh subprocess, starts a receiving netcat on the NAS</li>
-  <li>After the transfer is complete, checks the exact file size of the plot on both systems as a basic verification</li>
-  <li>Once files sizes are verified, deletes the sent plot</li>
-  <li>Kills any lingering netcat connections on the NAS</li>
+  <li><em>-v</em> or <em>--version</em></li>
+  <li><em>-ct</em> or <em>--check_temps</em></li>
+  <li><em>-pr</em> or <em>--plot_report</em></li>
+  <li><em>-ud</em> or <em>--update_daily</em></li>
 </ul>
 
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
