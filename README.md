@@ -422,7 +422,70 @@ optional arguments:
   -pr, --plot_report   Return the total # of plots on the system and total you can add and exit
   -ud, --update_daily  Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
   ```
-  
+<br>
+<b> -dr --drive_report</b><br>
+This option outputs the HTML versionof the Daily Drive Report email to the screen and also emails.
+This only works if configured. If this notification is set to off, this will do nothing.
+
+<br>
+<b> -ct --check_temps</b><br>
+This options prints the serial number, device name, drive number and temperature of all devices
+desiginated as plot drives.
+```
+#################################################################
+################# chianas01 Temperature Report ##################
+#################################################################
+#    Serial#     #     Device     #     Drive     #    Temp     #
+#################################################################
+#   00000000     #   /dev/sdb1    #    drive0    #     29°C     #
+#   00000000     #   /dev/sdc1    #    drive1    #     30°C     #
+#   00000000     #   /dev/sdd1    #    drive2    #     29°C     #
+#   00000000     #   /dev/sde1    #    drive3    #     29°C     #
+#   00000000     #   /dev/sdf1    #    drive4    #     28°C     #
+#   00000000     #   /dev/sdg1    #    drive5    #     25°C     #
+#   00000000     #   /dev/sdh1    #    drive6    #     29°C     #
+#   00000000     #   /dev/sdi1    #    drive7    #     31°C     #
+#   00000000     #   /dev/sdj1    #    drive8    #     30°C     #
+#   00000000     #   /dev/sdk1    #    drive9    #     29°C     #
+#   00000000     #   /dev/sdl1    #    drive10    #     28°C     #
+#   00000000     #   /dev/sdm1    #    drive11    #     25°C     #
+#   00000000     #   /dev/sdn1    #    drive12    #     29°C     #
+#   00000000     #   /dev/sdo1    #    drive13    #     30°C     #
+#   00000000     #   /dev/sdp1    #    drive14    #     28°C     #
+#   00000000     #   /dev/sdq1    #    drive15    #     27°C     #
+#   00000000     #   /dev/sdr1    #    drive16    #     25°C     #
+#   00000000     #   /dev/sds1    #    drive17    #     23°C     #
+#   00000000     #   /dev/sdt1    #    drive18    #     26°C     #
+#   00000000     #   /dev/sdu1    #    drive19    #     27°C     #
+#   00000000     #   /dev/sdv1    #    drive20    #     27°C     #
+#   00000000     #   /dev/sdw1    #    drive21    #     26°C     #
+#   00000000     #   /dev/sdx1    #    drive22    #     25°C     #
+#   00000000     #   /dev/sdy1    #    drive23    #     23°C     #
+##################################################################
+```
+<br>
+<b> -pr --plot_report</b><br>
+This options prints out a quick version of the daily plot report to the screen
+and exits.
+```
+############################################################
+################### chianas01 Plot Report ##################
+############################################################
+Total Plots on chianas01:                               1456
+Total Number of Systemwide Plots Drives:                  24
+Total Number of k32 Plots until full:                   1160
+Maximum # of plots when full:                           2640
+Plots completed in the last 24 Hours:                     57
+Average Plots per Hours:                               2.375
+Average Plotting Speed Last 24 Hours (TiB/Day):        5.757 
+Current Plot Storage Drive:                        /dev/sdo1
+Temperature of Current Plot Drive:                      30°C
+Latest Smart Drive Assessment of Plot Drive:            PASS
+############################################################
+```
+<br>
+
+
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
 </p>
