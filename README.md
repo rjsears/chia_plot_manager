@@ -382,6 +382,9 @@ Staring with V0.3 (April 4th, 2021) I have stated to add in command line options
   <li><em>-ud</em> or <em>--update_daily</em></li>
 </ul>
 
+<b> -h --help -v --version</b><br>
+These options print out the help message or version information and exit.
+
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
 </p>
