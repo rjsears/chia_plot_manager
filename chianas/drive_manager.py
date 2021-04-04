@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.2 (2021-03-23)"
+VERSION = "0.3 (2021-04-04)"
 
 ### Simple python script that helps to move my chia plots from my plotter to
 ### my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -11,7 +11,17 @@ VERSION = "0.2 (2021-03-23)"
 ### move process. It will get better with time as I add in error checking and
 ### other things like notifications and stuff.
 
+
 # Updates
+#   V0.3 2021-04-04
+# - Added multiple command line utilities to drive_manager.py including:
+#        * -dr or --drive_report    Immediately runs the Daily Report and sends email (if configured)
+#        * -ct or --check_temps     Checks the temperatures of all configured plot drives
+#        * -pr or --plot_report     Quick plot report like email report but to the screen
+#        * -ud or --update_daily    Designed to be called from cron, updates daily plot stats (speed, etc)
+#                                   Be careful if using it from the command line, it resets your stats. This
+#                                   should be run once per day from a cronjob.
+#
 #   V0.2 2021-30-23
 # - Moved system logging types to plot_manager_config and update
 #   necessary functions.
@@ -20,13 +30,15 @@ VERSION = "0.2 (2021-03-23)"
 # - Updated necessary functions for read_config_data() change
 
 
+
 import os
 import sys
+
 sys.path.append('/root/plot_manager')
 import subprocess
 import shutil
 import psutil
-from pySMART import Device #CAUTION - DO NOT use PyPI version, use https://github.com/truenas/py-SMART
+from pySMART import Device  # CAUTION - DO NOT use PyPI version, use https://github.com/truenas/py-SMART
 from psutil._common import bytes2human
 import logging
 from system_logging import setup_logging
@@ -41,10 +53,21 @@ from datetime import datetime
 from datetime import timedelta
 import time
 config = configparser.ConfigParser()
+import argparse
+import textwrap
+
+# Define some colors for our help message
+red='\033[0;31m'
+yellow='\033[0;33m'
+green='\033[0;32m'
+white='\033[0;37m'
+blue='\033[0;34m'
+nc='\033[0m'
 
 import sentry_sdk
+
 sentry_sdk.init(
-   "https://xxxxxxxxxxxxxxxxx8@o3xxxxxx.ingest.sentry.io/5xxxxxxxxx",
+    "https://ksjdfhkjsdhfkjhkfshkjdhfkjsfhkhfk.ingest.sentry.io/ffffdsdfsd",
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
@@ -53,9 +76,8 @@ sentry_sdk.init(
 )
 from sentry_sdk import capture_exception
 
-
 # Let's do some housekeeping
-nas_server = 'chiaplot01'
+nas_server = 'chianas01'
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
 receive_script = '/root/plot_manager/receive_plot.sh'
@@ -70,6 +92,56 @@ level = logging._checkLevel(level)
 log = logging.getLogger(__name__)
 log.setLevel(level)
 
+
+# Define our help message
+class RawFormatter(argparse.HelpFormatter):
+    def _fill_text(self, text, width, indent):
+        return "\n".join(
+            [textwrap.fill(line, width) for line in textwrap.indent(textwrap.dedent(text), indent).splitlines()])
+
+program_descripton = f'''
+                {red}******** {green}ChiaNAS Drive Manager{nc} - {blue}{VERSION}{red} ********{nc}
+    Running drive_manager.py with no arguments causes drive_manager to run in '{yellow}normal{nc}' mode.
+    In this mode {green}drive_manager{nc} will check the drive utilization and update which drive your
+    Chia plots will be sent to when they arrive from your plotter. This is generally called
+    from a cronjob on a regular basis. Please read the full information about how it works
+    on my github page.
+
+    
+    There are several commandline switches you can use to get immediate reports and feedback:
+    
+
+    {green}-dr {nc}or{green} --drive_report{nc}       {blue}Runs the Daily ChiaNAS Report (if configured), and emails
+                                it to you. This can be called from a crontab job as well.{nc}
+    
+    {green}-ct {nc}or{green} --check_temps{blue}        This will query all of your hard drives using {yellow}smartctl{blue} and
+                                return a list of drive temperatures to you.
+                                
+    {green}-pr {nc}or{green} --plot_report{blue}        This queries the NAS and returns a report letting you know 
+                                how many plots are currently on the system and how many more
+                                you can add based on the current drive configuration. It also
+                                includes plotting speed information for the last 24 hours.{nc}
+    
+    {green}-ud {nc}or{green} --update_daily{blue}       This updates the total number of plots the system has created
+                                over the past 24 hours. Use with {nc}CAUTION!{blue}. This {nc}should{blue} be ran
+                                from crontab once every 24 hours only! It updates the total
+                                from the last time is was run until now, hence why you should
+                                only run this once per 24 hours.
+
+    USAGE:
+    '''
+
+# Grab command line arguments if there are any
+def init_argparser():
+    parser = argparse.ArgumentParser(description=program_descripton, formatter_class=RawFormatter)
+    parser.add_argument('-v', '--version', action='version', version=f'{parser.prog} {VERSION}')
+    parser.add_argument('-dr', '--daily_report', action='store_true', help='Run the ChiaPlot Daily Email Report and exit')
+    parser.add_argument('-ct', '--check_temps', action='store_true', help='Return a list of drives and their temperatures and exit')
+    parser.add_argument('-pr', '--plot_report', action='store_true', help='Return the total # of plots on the system and total you can add and exit')
+    parser.add_argument('-ud', '--update_daily', action='store_true', help=f'Updates 24 hour plot count. {red}USE WITH CAUTION, USE WITH CRONTAB{nc}')
+    return parser
+
+
 # Setup to read and write to our config file.
 # If we are expecting a boolean back pass True/1 for bool,
 # otherwise False/0
@@ -81,6 +153,7 @@ def read_config_data(file, section, item, bool):
     else:
         return config.get(section, item)
 
+
 def update_config_data(file, section, item, value):
     pathname = '/root/plot_manager/' + file
     config.read(pathname)
@@ -88,6 +161,7 @@ def update_config_data(file, section, item, value):
     config.set(section, item, value)
     config.write(cfgfile)
     cfgfile.close()
+
 
 def get_drive_info(action, drive):
     """
@@ -117,19 +191,20 @@ def get_drive_info(action, drive):
     if action == 'serial':
         return Device(get_device_info_by_drive_number(drive)[0][1]).serial
     if action == 'space_total':
-        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[0],'g'))
+        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[0], 'g'))
     if action == 'space_used':
-        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[1],'g'))
+        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[1], 'g'))
     if action == 'space_free':
-        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[2],'g'))
+        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[2], 'g'))
     if action == 'space_free_plots':
-        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[2],'g') / plot_size_g)
+        return int(bytesto(shutil.disk_usage(get_device_info_by_drive_number(drive)[0][0])[2], 'g') / plot_size_g)
     if action == 'space_free_plots_by_mountpoint':
-        return int(bytesto(shutil.disk_usage(drive)[2],'g') / plot_size_g)
+        return int(bytesto(shutil.disk_usage(drive)[2], 'g') / plot_size_g)
     if action == 'total_current_plots':
         return int(bytesto(shutil.disk_usage(get_mountpoint_by_drive_number(drive)[0])[1], 'g') / plot_size_g)
     if action == 'total_current_plots_by_mountpoint':
         return int(bytesto(shutil.disk_usage(drive)[1], 'g') / plot_size_g)
+
 
 def get_mountpoint_by_drive_number(drive):
     """
@@ -141,6 +216,7 @@ def get_mountpoint_by_drive_number(drive):
         if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/enclosure') and p.mountpoint.endswith(drive):
             return [(p.mountpoint)]
 
+
 def get_device_info_by_drive_number(drive):
     """
     This accepts a drive number (drive0) and returns the device assignment: /dev/sda1 and mountpoint
@@ -150,6 +226,7 @@ def get_device_info_by_drive_number(drive):
         if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/enclosure') and p.mountpoint.endswith(drive):
             return [(p.mountpoint, p.device)]
 
+
 def get_device_by_mountpoint(mountpoint):
     """
         This accepts a mountpoint and returns the device assignment: /dev/sda1 and mountpoint
@@ -157,6 +234,15 @@ def get_device_by_mountpoint(mountpoint):
     partitions = psutil.disk_partitions(all=False)
     for p in partitions:
         if p.device.startswith('/dev/sd') and p.mountpoint.startswith(mountpoint):
+            return [(p.mountpoint, p.device)]
+
+def get_mountpoint_by_device(device):
+    """
+        This accepts a mountpoint and returns the device assignment: /dev/sda1 and mountpoint
+        """
+    partitions = psutil.disk_partitions(all=False)
+    for p in partitions:
+        if p.device.startswith(device):
             return [(p.mountpoint, p.device)]
 
 def get_list_of_plot_drives():
@@ -175,7 +261,7 @@ def get_list_of_plot_drives():
 
 # Thank you: https://gist.github.com/shawnbutts/3906915
 def bytesto(bytes, to, bsize=1024):
-    a = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
+    a = {'k': 1, 'm': 2, 'g': 3, 't': 4, 'p': 5, 'e': 6}
     r = float(bytes)
     return bytes / (bsize ** a[to])
 
@@ -209,9 +295,11 @@ def get_plot_drive_with_available_space():
     """
     available_drives = []
     for part in psutil.disk_partitions(all=False):
-        if part.device.startswith('/dev/sd') and part.mountpoint.startswith('/mnt/enclosure') and get_drive_info('space_free_plots_by_mountpoint', part.mountpoint)  >= 1:
+        if part.device.startswith('/dev/sd') and part.mountpoint.startswith('/mnt/enclosure') and get_drive_info(
+                'space_free_plots_by_mountpoint', part.mountpoint) >= 1:
             available_drives.append((part.mountpoint, part.device))
     return (sorted(available_drives, key=lambda x: x[1]))
+
 
 def get_plot_drive_to_use():
     """
@@ -225,9 +313,22 @@ def get_plot_drive_to_use():
     """
     available_drives = []
     for part in psutil.disk_partitions(all=False):
-        if part.device.startswith('/dev/sd') and part.mountpoint.startswith('/mnt/enclosure') and get_drive_info('space_free_plots_by_mountpoint', part.mountpoint)  >= 1:
+        if part.device.startswith('/dev/sd') and part.mountpoint.startswith('/mnt/enclosure') and get_drive_info(
+                'space_free_plots_by_mountpoint', part.mountpoint) >= 1:
             available_drives.append((part.mountpoint, part.device))
     return (sorted(available_drives, key=lambda x: x[1]))[0][0]
+
+
+def get_sorted_drive_list():
+    """
+    Returns sorted list of drives
+    """
+    available_drives = []
+    for part in psutil.disk_partitions(all=False):
+        if part.device.startswith('/dev/sd') and part.mountpoint.startswith('/mnt/enclosure'):
+            available_drives.append((part.mountpoint, part.device))
+    return (sorted(available_drives, key=lambda x: x[1]))
+
 
 def get_current_plot_drive_info():
     """
@@ -253,6 +354,7 @@ def log_drive_report():
         Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
         Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
         get_device_by_mountpoint(get_plot_drive_to_use())[0][0]))
+
 
 def update_receive_plot():
     """
@@ -304,8 +406,7 @@ def send_new_plot_disk_email():
                                 current_time=current_military_time,
                                 nas_server=nas_server,
                                 previous_plotting_drive=current_plotting_drive,
-                                plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint',
-                                                                                current_plotting_drive),
+                                plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint',current_plotting_drive),
                                 current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
                                 current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
                                 drive_size=bytes2human(usage.total),
@@ -338,9 +439,56 @@ def send_daily_update_email():
                                 total_serverwide_plots=get_all_available_system_space('used')[1],
                                 total_number_of_drives=get_all_available_system_space('total')[0],
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
-                                max_number_of_plots=get_all_available_system_space('total')[1])
+                                max_number_of_plots=get_all_available_system_space('total')[1],
+                                total_plots_last_day=read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False),
+                                average_plots_per_hour=((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24),
+                                average_plotting_speed=(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g)/1000))
     else:
         pass
+
+def space_report():
+    current_plotting_drive_device = (get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])
+    print('')
+    print(f'{blue}############################################################{nc}')
+    print(f'{blue}################### {green}{nas_server} Plot Report{blue} ##################{nc}' )
+    print(f'{blue}############################################################{nc}')
+    print (f'Total Plots on {green}{nas_server}{nc}:                               {yellow}{get_all_available_system_space("used")[1]}{nc}')
+    print (f'Total Number of Systemwide Plots Drives:                  {yellow}{get_all_available_system_space("total")[0]}{nc}')
+    print (f'Total Number of k32 Plots until full:                   {yellow}{get_all_available_system_space("free")[1]}{nc}')
+    print (f'Maximum # of plots when full:                           {yellow}{get_all_available_system_space("total")[1]}{nc}')
+    print (f"Plots completed in the last 24 Hours:                     {yellow}{int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))}{nc}")
+    print (f"Average Plots per Hours:                               {yellow}{(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24}{nc}")
+    print (f"Average Plotting Speed Last 24 Hours (TiB/Day):        {yellow}{(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g)/1000)}{nc} ")
+    print (f"Current Plot Storage Drive:                        {yellow}{(get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])}{nc}")
+    print (f"Temperature of Current Plot Drive:                      {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).temperature}°C{nc}")
+    print (f"Latest Smart Drive Assessment of Plot Drive:            {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).assessment}{nc}")
+    print(f'{blue}############################################################{nc}')
+    print('')
+    print('')
+
+def temperature_report():
+    print('')
+    print(f'{blue}#################################################################{nc}')
+    print(f'{blue}################# {green}{nas_server} Temperature Report {blue}##################{nc}')
+    print(f'{blue}#################################################################{nc}')
+    print(f'{blue}#    {nc}Serial#{blue}     #{nc}     Device{blue}     #{nc}     Drive{blue}     #{nc}    Temp{blue}     #{nc}')
+    print(f'{blue}#################################################################{nc}')
+    for drive in get_sorted_drive_list():
+        print(f'{blue}#{nc}   {Device(drive[1]).serial}'f'{blue}     #{nc}'f'   {drive[1]}{blue}    #{nc}' f'    {((get_mountpoint_by_device(drive))[0][0][30:])}{blue}    #{nc}' f'     {Device(drive[1]).temperature}°C'f'{blue}     #{nc}')
+    print(f'{blue}##################################################################{nc}')
+    print('')
+    print('')
+
+# You should run this once per day to sse total daily plots
+# in your reports. If you run it more often, the numbers will
+# not be correct. I use midnight here for my purposes, but
+# this is just a var name.
+def update_daily_plot_counts():
+    current_total_plots_midnight = int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_midnight', False))
+    total_serverwide_plots = get_all_available_system_space('used')[1]
+    update_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_midnight', str(total_serverwide_plots))
+    total_plots_daily = (total_serverwide_plots - current_total_plots_midnight)
+    update_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', str(total_plots_daily))
 
 
 def send_email(recipient, subject, body):
@@ -394,6 +542,7 @@ def send_sms_notification(body, phone_number):
 
 def notify(title, message):
     """ Notify system for email, pushbullet and sms (via Twilio)"""
+    log.debug(f'notify() called with Title: {title} and Message: {message}')
     if (read_config_data('plot_manager_config', 'notifications', 'alerting', True)):
         if (read_config_data('plot_manager_config', 'notifications', 'pb', True)):
             send_push_notification(title, message)
@@ -406,18 +555,20 @@ def notify(title, message):
     else:
         pass
 
+
 # Thank You - https://frankcorso.dev/email-html-templates-jinja-python.html
 def send_template_email(template, recipient, subject, **kwargs):
     """Sends an email using a jinja template."""
     env = Environment(
-        loader=PackageLoader('drive_manager','templates'),
+        loader=PackageLoader('drive_manager', 'templates'),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(template)
     send_email(recipient, subject, template.render(**kwargs))
 
-# This function called from crontab:
-# 01 01 * * * cd /root/plot_manager/ && /usr/bin/python3 -c 'from drive_manager import *; send_daily_email()' >/dev/null 2>&1
+# This function called from crontab. First run the daily update (-ud) then (-dr):
+# 01 00 * * * /usr/bin/python3 /root/plot_manager/drive_manager.py -ud >/dev/null 2>&1
+# 02 00 * * * /usr/bin/python3 /root/plot_manager/drive_manager.py -dr >/dev/null 2>&1
 def send_daily_email():
     log.debug('send_daily_email() Started')
     send_daily_update_email()
@@ -426,16 +577,27 @@ def send_daily_email():
 
 def send_new_plot_notification():
     log.debug('send_new_plot_notification() Started')
-    if os.path.isfile('/root/plot_manager/new_plot_received'):
+    if os.path.isfile('new_plot_received'):
         log.debug('New Plot Received')
         if read_config_data('plot_manager_config', 'notifications', 'per_plot', True):
             notify('New Plot Received', 'New Plot Received')
-        os.remove('/root/plot_manager/new_plot_received')
+        os.remove('new_plot_received')
 
 
 def main():
-    send_new_plot_notification()
-    update_receive_plot()
+    parser = init_argparser()
+    args = parser.parse_args()
+    if args.daily_report:
+        send_daily_email()
+    elif args.plot_report:
+        space_report()
+    elif args.update_daily:
+        update_daily_plot_counts()
+    elif args.check_temps:
+        temperature_report()
+    else:
+        send_new_plot_notification()
+        update_receive_plot()
 
 
 if __name__ == '__main__':
