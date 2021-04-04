@@ -5,7 +5,7 @@
   <p align="center">
    Multi Server Chia Plot and Drive Management Solution
   </p>
-<h4 align="center">Be sure to :star: my repo so you can keep up to date on any updates and progress!</h4>
+<h4 align="center">Be sure to  :star:  my repo so you can keep up to date on any updates and progress!</h4>
 <br>
 <div align="center">
     <a href="https://github.com/rjsears/chia_plot_manager/commits/master"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/rjsears/chia_plot_manager?style=plastic"></a>
