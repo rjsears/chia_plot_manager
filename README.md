@@ -382,9 +382,47 @@ Staring with V0.3 (April 4th, 2021) I have stated to add in command line options
   <li><em>-ud</em> or <em>--update_daily</em></li>
 </ul>
 
-<b> -h --help -v --version</b><br>
+<b> -h --help</b>  and  <b>-v --version</b><br>
 These options print out the help message or version information and exit.
 
+```
+******** ChiaNAS Drive Manager - 0.3 (2021-04-04) ********
+Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
+In this mode drive_manager will check the drive utilization and update which drive your
+Chia plots will be sent to when they arrive from your plotter. This is generally called
+from a cronjob on a regular basis. Please read the full information about how it works
+on my github page.
+
+There are several commandline switches you can use to get immediate reports and feedback:
+
+-dr or --drive_report       Runs the Daily ChiaNAS Report (if configured), and emails
+                            it to you. This can be called from a crontab job as well.
+
+-ct or --check_temps        This will query all of your hard drives using smartctl and
+                            return a list of drive temperatures to you.
+
+-pr or --plot_report        This queries the NAS and returns a report letting you know
+                            how many plots are currently on the system and how many more
+                            you can add based on the current drive configuration. It also
+                            includes plotting speed information for the last 24 hours.
+
+-ud or --update_daily       This updates the total number of plots the system has created
+                            over the past 24 hours. Use with CAUTION!. This should be ran
+                            from crontab once every 24 hours only! It updates the total
+                            from the last time is was run until now, hence why you should
+                            only run this once per 24 hours.
+
+USAGE:
+
+optional arguments:
+  -h, --help           show this help message and exit
+  -v, --version        show program's version number and exit
+  -dr, --daily_report  Run the ChiaPlot Daily Email Report and exit
+  -ct, --check_temps   Return a list of drives and their temperatures and exit
+  -pr, --plot_report   Return the total # of plots on the system and total you can add and exit
+  -ud, --update_daily  Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
+  ```
+  
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
 </p>
