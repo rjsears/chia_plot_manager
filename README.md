@@ -487,8 +487,18 @@ Latest Smart Drive Assessment of Plot Drive:            PASS
 ############################################################
 ```
 
-<br>
+<br><br>
+<b>-ud --update_daily</b><br>
+This option is really designed to be called from your crontab riught before you run your daily email:
 
+```
+01 00 * * * /usr/bin/python3 /root/plot_manager/drive_manager.py -ud >/dev/null 2>&1
+02 00 * * * /usr/bin/python3 /root/plot_manager/drive_manager.py -dr >/dev/null 2>&1
+```
+
+It is designed to calculate the information necessary for the daily plot report. You can run it anytime
+you want but it will reset this information to the point in time you called it as oppoed to giving you
+a 24 hour view of your system.
 
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
