@@ -343,24 +343,27 @@ and a text or pushbullet message:
 And if you choose, once a day you can get a daily update email:
 
 ```
-NAS Server: chiaplot01
-Daily Update Email - Generated at 01:01:01
-Current Plotting Drive (by mountpoint)................../mnt/enclosure0/front/column3/drive18
-Current Plotting Drive (by device)....................../dev/sgx1
-Drive Size..............................................10.9T
+NAS Server: chianas01
+Daily Update Email - Generate at 11:23:53
+Current Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive13
+Current Plotting Drive (by device).........................../dev/sdo1
+Drive Size...............................................................10.9T
 
 Environmental & Health
-Drive Serial Number.....................................00000000
-Current Drive Temperature...............................22°C
-Last Smart Test Health Assessment.......................PASS
+Drive Serial Number..........................................00000000
+Current Drive Temperature................................29°C
+Last Smart Test Health Assessment..................PASS
 
 Other Information
-Total Plots on chiaplot01...............................1853
-Current Total Number of Plot Drives.....................24
-Number of k32 Plots until full..........................780
+Total Plots on chianas01..................................1455
+Current Total Number of Plot Drives..................24
+Number of k32 Plots until full.............................1161
+Max # of Plots with current # of Drives..............2640
 
-
-Max # of Plots with current # of Drives.................2640
+Plotting Speed
+Total Plots Last 24 Hours....................................57
+Average Plots Per Hour.......................................2.375
+Average Plotting Speed Last 24 Hours...............5.757 TiB/Day
 ```
 
 
