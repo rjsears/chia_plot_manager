@@ -344,7 +344,7 @@ And if you choose, once a day you can get a daily update email:
 
 ```
 NAS Server: chianas01
-Daily Update Email - Generate at 11:23:53
+Daily Update Email - Generated at 11:23:53
 Current Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive13
 Current Plotting Drive (by device)......................./dev/sdo1
 Drive Size...............................................10.9T
