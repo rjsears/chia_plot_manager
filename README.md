@@ -258,7 +258,7 @@ Once you have that figured out, there are just a couple of other little things t
 At the top of the script you want to set these to meet your needs:
 
 ```
-nas_server = 'chiaplot01'
+nas_server = 'chianas01'
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
 receive_script = '/root/plot_manager/receive_plot.sh'
