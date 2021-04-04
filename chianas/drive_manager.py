@@ -22,9 +22,13 @@ VERSION = "0.3 (2021-04-04)"
 #                                   Be careful if using it from the command line, it resets your stats. This
 #                                   should be run once per day from a cronjob.
 #
+# - Added plot time information to the daily email report including:
+#        * Total Plots last 24 hours
+#        * Average Plots per Hour (last 24 hours)
+#        * Average Plotting Speed (last 24 hours)
+#
 #   V0.2 2021-30-23
-# - Moved system logging types to plot_manager_config and update
-#   necessary functions.
+# - Moved system logging types to plot_manager_config and updated necessary functions.
 # - Added per_plot system notification function (send_new_plot_notification())
 # - Updated read_config_data() to support ConfigParser boolean returns
 # - Updated necessary functions for read_config_data() change
