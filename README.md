@@ -422,13 +422,13 @@ optional arguments:
   -pr, --plot_report   Return the total # of plots on the system and total you can add and exit
   -ud, --update_daily  Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
   ```
-<br>
-<b> -dr --drive_report</b><br>
+<br><br>
+<b> -dr    --drive_report</b><br>
 This option outputs the HTML versionof the Daily Drive Report email to the screen and also emails.
-This only works if configured. If this notification is set to off, this will do nothing.
+This only works if configured. If this notification is set to off, this will do nothing.<br>
 
 <br>
-<b> -ct --check_temps</b><br>
+<b> -ct    --check_temps</b><br>
 This options prints the serial number, device name, drive number and temperature of all devices
 desiginated as plot drives.
 
@@ -465,8 +465,8 @@ desiginated as plot drives.
 ##################################################################
 ```
 
-<br>
-<b> -pr --plot_report</b><br>
+<br><br>
+<b> -pr    --plot_report</b><br>
 This options prints out a quick version of the daily plot report to the screen
 and exits.
 
