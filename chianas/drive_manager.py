@@ -451,7 +451,6 @@ def send_daily_update_email():
         pass
 
 def space_report():
-    current_plotting_drive_device = (get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])
     print('')
     print(f'{blue}############################################################{nc}')
     print(f'{blue}################### {green}{nas_server} Plot Report{blue} ##################{nc}' )
@@ -461,7 +460,7 @@ def space_report():
     print (f'Total Number of k32 Plots until full:                   {yellow}{get_all_available_system_space("free")[1]}{nc}')
     print (f'Maximum # of plots when full:                           {yellow}{get_all_available_system_space("total")[1]}{nc}')
     print (f"Plots completed in the last 24 Hours:                     {yellow}{int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))}{nc}")
-    print (f"Average Plots per Hours:                               {yellow}{(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24}{nc}")
+    print (f"Average Plots per Hours:                                 {yellow}{round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24,1)}{nc}")
     print (f"Average Plotting Speed Last 24 Hours (TiB/Day):        {yellow}{(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g)/1000)}{nc} ")
     print (f"Current Plot Storage Drive:                        {yellow}{(get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])}{nc}")
     print (f"Temperature of Current Plot Drive:                      {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).temperature}°C{nc}")
