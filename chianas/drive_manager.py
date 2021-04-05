@@ -445,7 +445,7 @@ def send_daily_update_email():
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
                                 max_number_of_plots=get_all_available_system_space('total')[1],
                                 total_plots_last_day=read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False),
-                                average_plots_per_hour=((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24),
+                                average_plots_per_hour=round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24,1),
                                 average_plotting_speed=(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g)/1000))
     else:
         pass
