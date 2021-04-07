@@ -1,0 +1,17 @@
+[system_settings]
+debug = True
+
+[system_logging]
+logging = True
+log_level = DEBUG
+
+[notifications]
+alerting = True
+pb = False
+email = True
+sms = True
+per_coin = True
+daily_update = True
+
+[current_coins]
+coins = 10
