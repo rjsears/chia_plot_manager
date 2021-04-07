@@ -38,8 +38,12 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Command Line Options
     </a>
    <span> | </span>
-    <a href="https://github.com/rjsears/chia_plot_manager#coins">
-      Coin Monitor
+    <a href="https://github.com/rjsears/chia_plot_manager#cli">
+      Command Line Options
+    </a>
+   <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager#hardware">
+      Hardware
     </a>
    <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
@@ -529,7 +533,11 @@ you can receive a notification via SMS, Email and PushBullet. If you have `per_c
 This is stand alone and can be used in combination with or without my plot_manager scripts. 
 
 
+### <a name="hardware"></a>Hardware I use in my setup
+I have had a couple of people ask about the hardware that I use in my setup so I thought I would include it here. 
+Almost everything I purchased was used off eBay. There were minor exceptions but 95% was eBay.
 
+*** Plotting Server ***
 
 
 
