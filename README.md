@@ -523,7 +523,8 @@ it writes that coin information to the logfile (`new_coins.log`) and depending o
 you can receive a notification via SMS, Email and PushBullet. If you have `per_coin_email` set to True/1 in 
 `coin_monitoring_config` you will also receive a nicely formatted email on top of your other notifications.
 
-
+<img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_new_coin_email.png" alt="You Have Chia" height="600" width="800"></a>
+<br><br>
 
 This is stand alone and can be used in combination with or without my plot_manager scripts. 
 
