@@ -89,7 +89,8 @@ def check_for_chia_coins():
                         if read_chia_log_started:
                             update_config_data('coin_monitor_config', 'current_coins', 'coins', str(
                                 int(read_config_data('coin_monitor_config', 'current_coins', 'coins', False)) + 2))
-                            notify('You Have More Chia Coins', 'You Have More Chia Coins')
+                            notify(f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
+           f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
                             send_new_coin_email()
                             read_chia_log_started = False
                         else:
