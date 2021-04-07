@@ -73,7 +73,6 @@ def check_for_chia_coins():
     log.debug('check_for_chia_coins() Started')
     coin_pattern = re.compile(r'\bAdding coin')
     read_chia_log_started = True
-   # winning_total = 0
     with open (chia_log, 'rt') as my_chia_logfile:
         for line in my_chia_logfile:
             if coin_pattern.search(line) != None:
@@ -90,7 +89,7 @@ def check_for_chia_coins():
                             update_config_data('coin_monitor_config', 'current_coins', 'coins', str(
                                 int(read_config_data('coin_monitor_config', 'current_coins', 'coins', False)) + 2))
                             notify(f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
-           f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
+                                f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
                             send_new_coin_email()
                             read_chia_log_started = False
                         else:
