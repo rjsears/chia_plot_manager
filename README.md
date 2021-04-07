@@ -38,6 +38,10 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Command Line Options
     </a>
    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager#coins">
+      Coin Monitor
+    </a>
+   <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
     </a>
@@ -508,6 +512,21 @@ It is designed to calculate the information necessary for the daily plot report.
 you want but it will reset this information to the point in time you called it as oppoed to giving you
 a 24 hour view of your system.
 <br>
+
+### <a name="cli"></a>Coin Monitor
+
+I wanted a simple way to keep track of when I won coins and how many I had so I added `coin_monitor.py` to the mix.
+As I said, in my configuration I have three servers, my `plotter`, my `nas` and my `farmer`. Coin Monitor sits on my
+farmer and watches the log files for new coins. When it sees that there is a new coin, it checks the coin logfile 
+(`/root/coin_monitor/logs/new_coins.log`) to make sure we have not already counted those coins. If it is a new coin
+it writes that coinc information the logfile (`new_coins.log`) and depending on what notifications you have setup
+you will receive a notification via SMS, Email and PushBullet. 
+
+
+
+
+
+
 <h2>In Closing....</h2>
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did her, but it works for me, and hopefully may work for someone else as well. 
 
