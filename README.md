@@ -533,11 +533,47 @@ you can receive a notification via SMS, Email and PushBullet. If you have `per_c
 This is stand alone and can be used in combination with or without my plot_manager scripts. 
 
 
-### <a name="hardware"></a>Hardware I use in my setup
-I have had a couple of people ask about the hardware that I use in my setup so I thought I would include it here. 
+### <a name="hardware"></a>Hardware I used in my setup
+
+I have had a couple of people ask about the hardware that I used in my setup so I thought I would include it here. 
 Almost everything I purchased was used off eBay. There were minor exceptions but 95% was eBay.
 
-*** Plotting Server ***
+<h2> Plotting Server </h2>
+Dell R820
+4 x E5-4657L V2 CPUs (48 Cores, 96 Threads)
+512GB DDR3 1600Mhz RAM
+Dell 4 x NVMe Drive Cage and Controller
+LSI 9431-8i 12Gbs SAS Controller
+8 x HGST 1.6TB SAS3 12Gbs SSDs (5.8 PBW) (HUSMR1616ASS205)
+(2 in RAID1 for OS, 6 x RAID0 as -d drive)
+2 x 10Gbe & 2x 1Gbe NICs
+iDrac Enterprise
+Dual Power Supplies
+
+<h2>NAS for Plot Storage</h2>
+Supermicro 4U 36 Bay SAS3 Chassis w/X10DRi-T4+ Motherboard
+2 x E5-2690 v4 CPU
+128GB ECC
+1 x AOC-S3008L-8LE 12GB/s SAS3 Controller (IT Mode)
+2 x LSI9300-16e 12GB/s External (IT Mode)
+36 x 12TB Seagate Exos Drives
+10Gbe NICs (on motherboard)
+Dual Power Supplies
+
+<h2>NAS Expansion Chassis</h2>
+2 x SuperMicro 847 45-Drive Chassis
+Dual Power supplies
+
+<h2>Chia Famer Node</h2>
+Ubuntu 20.04 LTS VM running on Proxmox
+
+
+My extra drive chassis are empty right now, but as you can see from my drive layout and mounting
+strategy above, it is super easy to add more drives.
+
+
+
+
 
 
 
