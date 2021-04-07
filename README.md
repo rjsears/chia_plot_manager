@@ -539,6 +539,7 @@ I have had a couple of people ask about the hardware that I used in my setup so 
 Almost everything I purchased was used off eBay. There were minor exceptions but 95% was eBay.
 
 <h2> Plotting Server </h2>
+
 ```
 Dell R820
 4 x E5-4657L V2 CPUs (48 Cores, 96 Threads)
@@ -551,8 +552,10 @@ LSI 9431-8i 12Gbs SAS Controller
 iDrac Enterprise
 Dual Power Supplies
 ```
+
 <br>
 <h2>NAS for Plot Storage</h2>
+
 ```
 Supermicro 4U 36 Bay SAS3 Chassis w/X10DRi-T4+ Motherboard
 2 x E5-2690 v4 CPU
@@ -563,12 +566,17 @@ Supermicro 4U 36 Bay SAS3 Chassis w/X10DRi-T4+ Motherboard
 10Gbe NICs (on motherboard)
 Dual Power Supplies
 ```
+
 <br>
 <h2>NAS Expansion Chassis</h2>
+
+```
 2 x SuperMicro 847 45-Drive Chassis
 Dual Power supplies
+```
 
 <h2>Chia Famer Node</h2>
+
 ```
 Ubuntu 20.04 LTS VM running on Proxmox
 ```
