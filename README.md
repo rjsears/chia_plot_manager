@@ -513,14 +513,19 @@ you want but it will reset this information to the point in time you called it a
 a 24 hour view of your system.
 <br>
 
-### <a name="cli"></a>Coin Monitor
+### <a name="coins"></a>Coin Monitor
 
 I wanted a simple way to keep track of when I won coins and how many I had so I added `coin_monitor.py` to the mix.
 As I said, in my configuration I have three servers, my `plotter`, my `nas` and my `farmer`. Coin Monitor sits on my
 farmer and watches the log files for new coins. When it sees that there is a new coin, it checks the coin logfile 
 (`/root/coin_monitor/logs/new_coins.log`) to make sure we have not already counted those coins. If it is a new coin
-it writes that coinc information the logfile (`new_coins.log`) and depending on what notifications you have setup
-you will receive a notification via SMS, Email and PushBullet. 
+it writes that coin information to the logfile (`new_coins.log`) and depending on what notifications you have setup
+you can receive a notification via SMS, Email and PushBullet. If you have `per_coin_email` set to True/1 in 
+`coin_monitoring_config` you will also receive a nicely formatted email on top of your other notifications.
+
+
+
+This is stand alone and can be used in combination with or without my plot_manager scripts. 
 
 
 
