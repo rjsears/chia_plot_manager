@@ -490,14 +490,15 @@ and exits.
 ############################################################
 ################### chianas01 Plot Report ##################
 ############################################################
-Total Plots on chianas01:                               1456
+Total Number of Plots on chianas01:                     1690
 Total Number of Systemwide Plots Drives:                  24
-Total Number of k32 Plots until full:                   1160
+Total Number of k32 Plots until full:                    926
 Maximum # of plots when full:                           2640
 Plots completed in the last 24 Hours:                     57
-Average Plots per Hours:                               2.375
-Average Plotting Speed Last 24 Hours (TiB/Day):        5.757 
-Current Plot Storage Drive:                        /dev/sdo1
+Average Plots per Hours:                                 2.4
+Average Plotting Speed Last 24 Hours (TiB/Day):         5.76 
+Appx Number of Days to fill all current plot drives:      16  
+Current Plot Storage Drive:                        /dev/sdq1
 Temperature of Current Plot Drive:                      30°C
 Latest Smart Drive Assessment of Plot Drive:            PASS
 ############################################################
