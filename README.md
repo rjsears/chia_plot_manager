@@ -1,6 +1,6 @@
  <h2 align="center">
  <br>
-  Chia Plot, Drive Manager & Coin Monitor (V0.3 - April 6th, 2021)
+  Chia Plot, Drive Manager & Coin Monitor (V0.3 - April 8th, 2021)
   </h2>
   <p align="center">
    Multi Server Chia Plot and Drive Management Solution
