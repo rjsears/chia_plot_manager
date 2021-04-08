@@ -382,10 +382,10 @@ Number of k32 Plots until full...........................925
 Max # of Plots with current # of Drives..................2640
 
 Plotting Speed
-Total Plots Last 24 Hours...............................57
-Average Plots Per Hour..................................2.4
-Average Plotting Speed Last 24 Hours....................5.757 TiB/Day
-Approx. # of Days to fill all Plot Drives...............16
+Total Plots Last 24 Hours................................57
+Average Plots Per Hour...................................2.4
+Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
+Approx. # of Days to fill all Plot Drives................16
 ```
 
 ### <a name="cli"></a>Command Line Options
