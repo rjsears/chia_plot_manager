@@ -335,25 +335,26 @@ drive_manager:270 - update_receive_plot: DEBUG Plots left available on configure
 
 When the plot drives does change, you get a nicely formatted email:
 ```
-Server: chiaplot01
-New Plot Drive Selected at 23:34:01
-Previous Plotting Drive.............................../mnt/enclosure0/front/column3/drive17
-# of Plots on Previous Plotting Drive.................109
-New Plotting Drive (by mountpoint)..................../mnt/enclosure0/front/column3/drive18
-New Plotting Drive (by device)......................../dev/sdx1
-Drive Size............................................10.9T
-# of Plots on we can put on this Drive................109
+Server: chianas01
+New Plot Drive Selected at 10:17:17
+Previous Plotting Drive.............................../mnt/enclosure0/front/column2/drive17
+# of Plots on Previous Plotting Drive.................56
+New Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive17
+New Plotting Drive (by device)......................./dev/sdq1
+Drive Size...........................................10.9T
+# of Plots on we can put on this Drive...............53
 
 Environmental & Health
-Drive Serial Number...................................00000000
-Current Drive Temperature.............................23°C
-Last Smart Test Health Assessment.....................PASS
+Drive Serial Number..................................00000000
+Current Drive Temperature............................31°C
+Last Smart Test Health Assessment....................PASS
 
 Other Information
-Total Plots on chiaplot01.............................1853
-Current Total Number of Plot Drives...................24
-Number of k32 Plots until full........................787
-Max # of Plots with current # of Drives...............2640
+Total Plots on chianas01.............................1691
+Current Total Number of Plot Drives..................24
+Number of k32 Plots until full.......................925
+Max # of Plots with current # of Drives..............2640
+Approx. # of Days to fill all Plot Drives............16
 ```
 
 and a text or pushbullet message:
@@ -364,26 +365,27 @@ And if you choose, once a day you can get a daily update email:
 
 ```
 NAS Server: chianas01
-Daily Update Email - Generated at 11:23:53
-Current Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive13
-Current Plotting Drive (by device)......................./dev/sdo1
+Daily Update Email - Generated at 10:20:53
+Current Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive15
+Current Plotting Drive (by device)......................./dev/sdq1
 Drive Size...............................................10.9T
 
 Environmental & Health
 Drive Serial Number......................................00000000
-Current Drive Temperature................................29°C
+Current Drive Temperature................................31°C
 Last Smart Test Health Assessment........................PASS
 
 Other Information
-Total Plots on chianas01.................................1455
+Total Plots on chianas01.................................1692
 Current Total Number of Plot Drives......................24
-Number of k32 Plots until full...........................1161
-Max # of Plots with current # of Drives..................2640
+Number of k32 Plots until full...........................925
+Max # of Plots with current # of Drives.................2640
 
 Plotting Speed
-Total Plots Last 24 Hours................................57
-Average Plots Per Hour...................................2.375
-Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
+Total Plots Last 24 Hours...............................57
+Average Plots Per Hour..................................2.4
+Average Plotting Speed Last 24 Hours....................5.757 TiB/Day
+Approx. # of Days to fill all Plot Drives...............16
 ```
 
 ### <a name="cli"></a>Command Line Options
