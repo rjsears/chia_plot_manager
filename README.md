@@ -337,8 +337,8 @@ When the plot drives does change, you get a nicely formatted email:
 ```
 Server: chianas01
 New Plot Drive Selected at 10:17:17
-Previous Plotting Drive.............................../mnt/enclosure0/front/column2/drive17
-# of Plots on Previous Plotting Drive.................56
+Previous Plotting Drive............................../mnt/enclosure0/front/column2/drive17
+# of Plots on Previous Plotting Drive................56
 New Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive17
 New Plotting Drive (by device)......................./dev/sdq1
 Drive Size...........................................10.9T
