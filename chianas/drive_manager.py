@@ -421,7 +421,8 @@ def send_new_plot_disk_email():
                                 total_serverwide_plots=get_all_available_system_space('used')[1],
                                 total_number_of_drives=get_all_available_system_space('total')[0],
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
-                                max_number_of_plots=get_all_available_system_space('total')[1])
+                                max_number_of_plots=get_all_available_system_space('total')[1],
+                                days_to_fill_drives=(int(get_all_available_system_space('free')[1] / int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))))
     else:
         pass
 
