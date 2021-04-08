@@ -379,7 +379,7 @@ Other Information
 Total Plots on chianas01.................................1692
 Current Total Number of Plot Drives......................24
 Number of k32 Plots until full...........................925
-Max # of Plots with current # of Drives.................2640
+Max # of Plots with current # of Drives..................2640
 
 Plotting Speed
 Total Plots Last 24 Hours...............................57
