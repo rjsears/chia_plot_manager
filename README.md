@@ -592,7 +592,7 @@ strategy above, it is super easy to add more drives.
 
 ### <a name="changelog"></a>Changelog
 
-V0.4 2021-04-13
+<b>V0.4 2021-04-13</b>
  - Added ability to "offline" a particular drive for maintenance. When you offline
    a drive it prevenst drive_manager.py from using that drive to store plots
    until you "online" it again.
@@ -608,7 +608,7 @@ V0.4 2021-04-13
  - `-on` or `--online_hdd` Online a drive that has been offlined making it immediately
    available for plots. Only drives that have been offline will be listed.
 <br><br>
-V0.3 2021-04-04
+<b>V0.3 2021-04-04</b>
  Added multiple command line utilities to `drive_manager.py` including:
  - `-dr` or `--drive_report`  Immediately runs the Daily Report and sends email (if configured).
  - `-ct` or `--check_temps`   Checks the temperatures of all drives and returns a report to stdout.
@@ -622,7 +622,7 @@ V0.3 2021-04-04
  - Average plotting speed (last 24 hours)
 <br><br>
 
- V0.2 2021-30-23
+ <b>V0.2 2021-30-23</b>
  - Moved system logging types to plot_manager_config and updated necessary functions.
  - Added per_plot system notification function (send_new_plot_notification()).
  - Updated read_config_data() to support ConfigParser boolean returns.
