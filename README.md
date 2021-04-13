@@ -99,7 +99,7 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
 <br>
-<b>On the Farmer (Everry 1 minute):</b>
+<b>On the Farmer (Every 1 minute):</b>
 <ul>
   <li>Checks the chia logs (~chia/.chia/mainnet/log/debug.log) for activity</li>
   <li>Looks specifically for `Adding coin`</li>
