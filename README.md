@@ -409,7 +409,7 @@ Staring with V0.3 (April 4th, 2021) I have started to add in command line option
 These options print out the help message or version information and exits.
 
 ```
-******** ChiaNAS Drive Manager - 0.3 (2021-04-04) ********
+******** ChiaNAS Drive Manager - 0.4 (2021-04-13) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
@@ -435,15 +435,28 @@ There are several commandline switches you can use to get immediate reports and 
                             from the last time is was run until now, hence why you should
                             only run this once per 24 hours.
 
+-off or --offline_hdd       This takes a drive as it's input (for example  drive6) and
+                            "offlines" it so that no more plots will get written to it.
+                            You must --on or --online_hdd the drive for it to be used
+                            again. Useful if the drive is failing and needs to be replaced.
+                            You cannot "offline a drive that is not mounted.
+
+-on or --online_hdd         This takes a drive as it's input (for example  drive6) and
+                            "onlines" it so that plots will get written to it. This option
+                            will be UNAVAILABLE if there are no drives that have been
+                            offlined!
+
 USAGE:
 
 optional arguments:
-  -h, --help           show this help message and exit
-  -v, --version        show program's version number and exit
-  -dr, --daily_report  Run the ChiaPlot Daily Email Report and exit
-  -ct, --check_temps   Return a list of drives and their temperatures and exit
-  -pr, --plot_report   Return the total # of plots on the system and total you can add and exit
-  -ud, --update_daily  Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -dr, --daily_report   Run the ChiaPlot Daily Email Report and exit
+  -ct, --check_temps    Return a list of drives and their temperatures and exit
+  -pr, --plot_report    Return the total # of plots on the system and total you can add and exit
+  -ud, --update_daily   Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
+  -off OFFLINE_HDD, --offline_hdd OFFLINE_HDD.  Offline a specific drive. Use drive number: drive6
+                        
   ```
 <br><br>
 <b> -dr    --drive_report</b><br>
