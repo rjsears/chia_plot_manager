@@ -46,6 +46,10 @@ Hopefully, this might provide some inspiration for others in regard to their aut
       Hardware
     </a>
    <span> | </span>
+    <a href="https://github.com/rjsears/chia_plot_manager#changelog">
+      Changelog
+    </a>
+   <span> | </span>
     <a href="https://github.com/rjsears/chia_plot_manager/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
       Todo List
     </a>
@@ -629,7 +633,7 @@ strategy above, it is super easy to add more drives.
  - Updated read_config_data() to support ConfigParser boolean returns.
  - Updated necessary functions for read_config_data() change
 
-<br><hr>
+<br><br><hr>
 
 
 <h2>In Closing....</h2>
