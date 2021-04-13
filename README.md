@@ -590,7 +590,19 @@ strategy above, it is super easy to add more drives.
 
 
 
+### <a name="changelog"></a>Changelog
 
+V0.4 2021-04-13
+ - Added ability to "offline" a particular drive for maintenance. When you offline
+   a drive it prevenst drive_manager.py from using that drive to store plots
+   until you "online" it again.
+ - Only drives that are currently mounted and available on the system and listed 
+   as plot drives can be offlined. 
+ - Only drives that have been offlined can be onlined. If you run `./drive_manager.py -h`
+   you will get a list of drives that have been offlined. If no drives have been 
+   offlined you will not see the `-on` or `--online_hdd` options.
+ - Modified the sorting option for all plots drives using `natsort`. This sorts now
+   completely on drive number naturally.
 
 
 
