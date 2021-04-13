@@ -622,7 +622,7 @@ strategy above, it is super easy to add more drives.
  - Average plotting speed (last 24 hours)
 <br><br>
 
- <b>V0.2 2021-30-23</b>
+<b>V0.2 2021-30-23</b>
  - Moved system logging types to plot_manager_config and updated necessary functions.
  - Added per_plot system notification function (send_new_plot_notification()).
  - Updated read_config_data() to support ConfigParser boolean returns.
