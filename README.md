@@ -486,31 +486,40 @@ desiginated as plot drives.
 #################################################################
 #    Serial#     #     Device     #     Drive     #    Temp     #
 #################################################################
-#   00000000     #   /dev/sdb1    #    drive0    #     29°C     #
-#   00000000     #   /dev/sdc1    #    drive1    #     30°C     #
-#   00000000     #   /dev/sdd1    #    drive2    #     29°C     #
-#   00000000     #   /dev/sde1    #    drive3    #     29°C     #
-#   00000000     #   /dev/sdf1    #    drive4    #     28°C     #
-#   00000000     #   /dev/sdg1    #    drive5    #     25°C     #
-#   00000000     #   /dev/sdh1    #    drive6    #     29°C     #
-#   00000000     #   /dev/sdi1    #    drive7    #     31°C     #
-#   00000000     #   /dev/sdj1    #    drive8    #     30°C     #
-#   00000000     #   /dev/sdk1    #    drive9    #     29°C     #
-#   00000000     #   /dev/sdl1    #    drive10    #     28°C     #
-#   00000000     #   /dev/sdm1    #    drive11    #     25°C     #
+#   00000000     #   /dev/sdb1    #    drive0    #     28°C     #
+#   00000000     #   /dev/sdc1    #    drive1    #     29°C     #
+#   00000000     #   /dev/sdd1    #    drive2    #     28°C     #
+#   00000000     #   /dev/sde1    #    drive3    #     28°C     #
+#   00000000     #   /dev/sdf1    #    drive4    #     27°C     #
+#   00000000     #   /dev/sdg1    #    drive5    #     24°C     #
+#   00000000     #   /dev/sdh1    #    drive6    #     30°C     #
+#   00000000     #   /dev/sdi1    #    drive7    #     30°C     #
+#   00000000     #   /dev/sdj1    #    drive8    #     29°C     #
+#   00000000     #   /dev/sdk1    #    drive9    #     28°C     #
+#   00000000     #   /dev/sdl1    #    drive10    #     27°C     #
+#   00000000     #   /dev/sdm1    #    drive11    #     24°C     #
 #   00000000     #   /dev/sdn1    #    drive12    #     29°C     #
 #   00000000     #   /dev/sdo1    #    drive13    #     30°C     #
-#   00000000     #   /dev/sdp1    #    drive14    #     28°C     #
-#   00000000     #   /dev/sdq1    #    drive15    #     27°C     #
-#   00000000     #   /dev/sdr1    #    drive16    #     25°C     #
-#   00000000     #   /dev/sds1    #    drive17    #     23°C     #
-#   00000000     #   /dev/sdt1    #    drive18    #     26°C     #
-#   00000000     #   /dev/sdu1    #    drive19    #     27°C     #
-#   00000000     #   /dev/sdv1    #    drive20    #     27°C     #
-#   00000000     #   /dev/sdw1    #    drive21    #     26°C     #
-#   00000000     #   /dev/sdx1    #    drive22    #     25°C     #
-#   00000000     #   /dev/sdy1    #    drive23    #     23°C     #
-##################################################################
+#   00000000     #   /dev/sdp1    #    drive14    #     30°C     #
+#   00000000     #   /dev/sdq1    #    drive15    #     29°C     #
+#   00000000     #   /dev/sdr1    #    drive16    #     27°C     #
+#   00000000     #   /dev/sds1    #    drive17    #     25°C     #
+#   00000000     #   /dev/sdt1    #    drive18    #     28°C     #
+#   00000000     #   /dev/sdu1    #    drive19    #     30°C     #
+#   00000000     #   /dev/sdv1    #    drive20    #     29°C     #
+#   00000000     #   /dev/sdw1    #    drive21    #     29°C     #
+#   00000000     #   /dev/sdx1    #    drive22    #     28°C     #
+#   00000000     #   /dev/sdy1    #    drive23    #     25°C     #
+#   00000000     #   /dev/sdz1    #    drive24    #     32°C     #
+#   00000000     #   /dev/sdaa1    #    drive25    #     33°C     #
+#   00000000     #   /dev/sdab1    #    drive26    #     32°C     #
+#   00000000     #   /dev/sdac1    #    drive27    #     34°C     #
+#   00000000     #   /dev/sdad1    #    drive28    #     35°C     #
+#   00000000     #   /dev/sdae1    #    drive29    #     33°C     #
+#   00000000     #   /dev/sdaf1    #    drive30    #     29°C     #
+#   00000000     #   /dev/sdag1    #    drive31    #     30°C     #
+#   00000000     #   /dev/sdah1    #    drive32    #     30°C     #
+###################################################################
 ```
 
 <br><br>
