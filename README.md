@@ -614,7 +614,7 @@ strategy above, it is super easy to add more drives.
 
 <b>V0.4 2021-04-13</b>
  - Added ability to "offline" a particular drive for maintenance. When you offline
-   a drive it prevenst drive_manager.py from using that drive to store plots
+   a drive it prevents drive_manager.py from using that drive to store plots
    until you "online" it again.
  - Only drives that are currently mounted and available on the system and listed 
    as plot drives can be offlined. 
