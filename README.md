@@ -4,7 +4,7 @@
   Chia Plot, Drive Manager & Coin Monitor (V0.4 - April 13th, 2021)
   </h2>
   <p align="center">
-   <br><br>Multi Server Chia Plot and Drive Management Solution
+Multi Server Chia Plot and Drive Management Solution
   </p>
 <h4 align="center">Be sure to  :star:  my repo so you can keep up to date on any updates and progress!</h4>
 <br>
