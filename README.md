@@ -99,6 +99,15 @@ Welcome to my project! I ended up with basically a client/server arrangement. Th
   <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
 <br>
+<b>On the Farmer (Everry 1 minute):</b>
+<ul>
+  <li>Checks the chia logs (~chia/.chia/mainnet/log/debug.log) for activity</li>
+  <li>Looks specifically for `Adding coin`</li>
+  <li>Once found updates a local file showing how many Chia you have</li>
+  <li>Emails, texts, etc when you get a new coin with the current amount you have</li>
+  <li>Does NOT use the block explorer so verify!</li>
+</ul>
+<br>
 <b>Command Line Options on the NAS</b>
 <ul>
  <li>Ability to run quick reports to the screen (basically daily email dumped to the screen</li>
