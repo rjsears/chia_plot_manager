@@ -1,5 +1,5 @@
  <h2 align="center">
-  <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager.png" alt="Chia Plot Manager"
+  <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager.png" alt="Chia Plot Manager"<br>
  <br>
   Chia Plot, Drive Manager & Coin Monitor (V0.4 - April 13th, 2021)
   </h2>
