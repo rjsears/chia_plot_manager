@@ -608,6 +608,7 @@ strategy above, it is super easy to add more drives.
  - `-on` or `--online_hdd` Online a drive that has been offlined making it immediately
    available for plots. Only drives that have been offline will be listed.
 <br><br>
+
 <b>V0.3 2021-04-04</b>
  Added multiple command line utilities to `drive_manager.py` including:
  - `-dr` or `--drive_report`  Immediately runs the Daily Report and sends email (if configured).
