@@ -395,7 +395,7 @@ Approx. # of Days to fill all Plot Drives................16
 
 ### <a name="cli"></a>Command Line Options
 
-Staring with V0.3 (April 4th, 2021) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
+Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
 
 <ul>
  <li><em>-h</em> or <em>--help</em></li>
@@ -403,6 +403,8 @@ Staring with V0.3 (April 4th, 2021) I have started to add in command line option
   <li><em>-ct</em> or <em>--check_temps</em></li>
   <li><em>-pr</em> or <em>--plot_report</em></li>
   <li><em>-ud</em> or <em>--update_daily</em></li>
+ <li><em>-off</em> or <em>--offline_hdd</em></li>
+ <li><em>-on</em> or <em>--online_hdd</em></li>
 </ul>
 
 <b> -h --help</b>  and  <b>-v --version</b><br>
