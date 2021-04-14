@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.2 (2021-03-23)"
+VERSION = "0.4 (2021-04-13)"
 
 # Simple python script that helps to move my chia plots from my plotter to
 # my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -15,6 +15,13 @@ VERSION = "0.2 (2021-03-23)"
 # they are ready to send.
 
 #   Updates
+#
+#   V0.4 2021-04013 (bumped version to match drive_manager.py
+# - Due to issue with plot size detection happening after plot selection
+#   caused an issue where plots did not get moved at all if the first selected
+#   plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
+#   for proper filesize before passing along the plot name.
+#
 #   V0.2 2021-03-23
 # - Added per_plot system notification function (send_new_plot_notification()
 #   in chianas drive_manager.py and updated process_plot() and verify_plot_move()
@@ -31,6 +38,7 @@ from system_logging import setup_logging
 from system_logging import read_logging_config
 sys.path.append('/home/chia/plot_manager')
 import glob
+import pathlib
 
 # Let's do some housekeeping
 nas_server = 'chianas01-internal' # Internal 10Gbe link, entry in /etc/hosts
@@ -41,13 +49,13 @@ testing = False
 if testing:
     plot_dir = '/home/chia/plot_manager/test_plots/'
     plot_size = 10000000
+    status_file = '/home/chia/plot_manager/transfer_job_running_testing'
 else:
     plot_dir = "/mnt/ssdraid/array0/"
     plot_size = 108644374730  # Based on K32 plot size
+    status_file = '/home/chia/plot_manager/transfer_job_running'
 
-status_file = '/home/chia/plot_manager/transfer_job_running'
 remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
-
 
 
 # Setup Module logging. Main logging is configured in system_logging.py
@@ -57,39 +65,17 @@ level = logging._checkLevel(level)
 log = logging.getLogger(__name__)
 log.setLevel(level)
 
-# Not needed for now....
-'''
-# Setup to read and write to our config file:
-def read_config_data(file, section, item):
-    pathname = '/home/chia/plot_manager/' + file
-    config.read(pathname)
-    return config.get(section, item)
-
-def update_config_data(file, section, item, value):
-    pathname = '/home/chia/plot_manager/' + file
-    config.read(pathname)
-    cfgfile = open(pathname, 'w')
-    config.set(section, item, value)
-    config.write(cfgfile)
-    cfgfile.close()
-'''
-
-
 # Look in our plot directory and get a list of plots. Do a basic
 # size check for sanity's sake.
 def get_list_of_plots():
     log.debug('get_list_of_plots() Started')
     try:
-        plot_to_process = glob.glob(f'{plot_dir}/*.plot')[0].split('/')[4]
-        log.debug(f'{plot_to_process}')
+        plot_to_process = [plot for plot in pathlib.Path(plot_dir).glob("*.plot") if plot.stat().st_size > plot_size]
+        print (plot_to_process[0].name)
+        log.debug(f'{plot_to_process[0].name}')
+        return (plot_to_process[0].name)
     except IndexError:
         log.debug(f'{plot_dir} is Empty: No Plots to Process. Will check again soon!')
-        return False
-    if os.path.getsize(plot_dir + plot_to_process) >= plot_size:
-        log.info(f'We will process this plot next: {plot_to_process}')
-        return (plot_to_process)
-    else:
-        log.debug('No Plots to Process')
         return False
 
 # If we have plots and we are NOT currently transferring another plot and
