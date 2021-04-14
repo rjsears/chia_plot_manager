@@ -71,7 +71,6 @@ def get_list_of_plots():
     log.debug('get_list_of_plots() Started')
     try:
         plot_to_process = [plot for plot in pathlib.Path(plot_dir).glob("*.plot") if plot.stat().st_size > plot_size]
-        print (plot_to_process[0].name)
         log.debug(f'{plot_to_process[0].name}')
         return (plot_to_process[0].name)
     except IndexError:
