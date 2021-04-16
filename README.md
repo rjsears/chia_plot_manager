@@ -598,6 +598,8 @@ logging: &id001
  you should see this in the coin_monitor debug log:<br>
  `Found coins that were already accounted for in the log!: ['13:52:59.147', '250000000000']`
 <br>
+<br>
+<br>
 
 ### <a name="hardware"></a>Hardware I used in my setup
 
