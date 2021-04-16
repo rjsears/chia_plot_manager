@@ -574,6 +574,29 @@ you can receive a notification via SMS, Email and PushBullet. If you have `per_c
 
 This is stand alone and can be used in combination with or without my plot_manager scripts. 
 
+Installation is pretty straight forward. Copy it into your preferred directory and then edit `coinf_monitor.py` and make
+sure that this line is pointing to your correct log file location:
+`chia_log = '/home/chia/.chia/mainnet/log/debug.log'`<br>
+Also make sure the following line is also correct for your system:
+`new_coin_log = '/root/coin_monitor/logs/new_coins.log'`
+Lastly, you need to make sure chia is logging in INFO mode and not WARNING otherwise it will not log new coins.
+Look here to verify:
+`/home/chia/.chia/mainnet/config/config.yaml`
+You should see something like this:
+```
+logging: &id001
+    log_filename: log/debug.log
+    log_level: INFO
+    log_stdout: false
+ ```
+ Just make sure the `log_level` is set to INFO and you should be good. 
+ If you would like to test the script, simply create a test "log" file and put this line in it:
+ `06:33:02.632 wallet src.wallet.wallet_state_manager: INFO     Adding coin: {'amount': '250000000000',`
+ save the file and edit the coin_monitor.py script to look at that file and run the script. If everything
+ is configured correctly you should get an email (or whatever notification you set up). If you run it again
+ you should see this in the coin_monitor debug log:
+ `Found coins that were already accounted for in the log!: ['13:52:59.147', '250000000000']`
+
 
 ### <a name="hardware"></a>Hardware I used in my setup
 
