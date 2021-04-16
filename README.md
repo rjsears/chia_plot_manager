@@ -575,13 +575,13 @@ you can receive a notification via SMS, Email and PushBullet. If you have `per_c
 This is stand alone and can be used in combination with or without my plot_manager scripts. 
 
 Installation is pretty straight forward. Copy it into your preferred directory and then edit `coinf_monitor.py` and make
-sure that this line is pointing to your correct log file location:<br>
+sure that this line is pointing to your correct log file location:<br><br>
 `chia_log = '/home/chia/.chia/mainnet/log/debug.log'`<br><br>
-Also make sure the following line is also correct for your system:<br>
-`new_coin_log = '/root/coin_monitor/logs/new_coins.log'`<br>
+Also make sure the following line is also correct for your system:<br><br>
+`new_coin_log = '/root/coin_monitor/logs/new_coins.log'`<br><br>
 Lastly, you need to make sure chia is logging in INFO mode and not WARNING otherwise it will not log new coins.
 Look here to verify:<br>
-`/home/chia/.chia/mainnet/config/config.yaml`<br>
+`/home/chia/.chia/mainnet/config/config.yaml`<br><br>
 You should see something like this:
 ```
 logging: &id001
@@ -589,7 +589,7 @@ logging: &id001
     log_level: INFO
     log_stdout: false
  ```
- <br>
+ <br><br>
  Just make sure the `log_level` is set to INFO and you should be good. <br><br>
  If you would like to test the script, simply create a test "log" file and put this line in it:<br>
  `06:33:02.632 wallet src.wallet.wallet_state_manager: INFO     Adding coin: {'amount': '250000000000',`<br><br>
