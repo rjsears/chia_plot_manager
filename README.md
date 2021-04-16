@@ -596,8 +596,9 @@ logging: &id001
  Save the file and edit the coin_monitor.py script to look at that file and run the script. If everything
  is configured correctly you should get an email (or whatever notification you set up). If you run it again
  you should see this in the coin_monitor debug log:<br>
- `Found coins that were already accounted for in the log!: ['13:52:59.147', '250000000000']`
+ `Found coins that were already accounted for in the log!: ['13:52:59.147', '250000000000']`<br>
 <br>
+Just make sure to point the script back to the correct logfile after testing!
 <br>
 <br>
 
