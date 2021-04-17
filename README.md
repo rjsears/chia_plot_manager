@@ -206,9 +206,10 @@ You need to alter the directory and name of the script to suite you needs. This 
 ssh root@chianas01-internal "nohup /root/plot_manager/receive_plot.sh $2 > foo.out 2> foo.err < /dev/null &"
 sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
 ```
+Here are a few more paths you need to check. I would put line numbers but those could change, just search the code and replace as necessary.<br><br>
 
 Before starting the script, make sure you have the following paths correctly identified in the script:<br><br>
-Located in the `process_plot()` function:<br><br>
+Located in the `process_plot()` function:<br>
 `['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`<br><br>
 This is the location on the NAS side where the script looks for the current drive being utilized. For example if you have `drive_manager.py`
 installed in your home directory `/home/your_name/plot_manager` then this line would look like this:<br>
