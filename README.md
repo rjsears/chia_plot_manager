@@ -191,11 +191,11 @@ remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
 
 You will see this in the logs:<br>
 ```2021-03-19 18:50:01,830 - plot_manager:155 - process_control: DEBUG Checkfile Exists, We are currently Running a Transfer, Exiting```
-<br>
+<br><br>
 As I grow, I plan on adding in a second dedicated 10Gbe link for moving plots and I can expand this out to include the ability to track sessions across each link.
 <br><br>
 ```remote_checkfile``` is used on the NAS system to prevent our NAS drive_manager.py script from altering the destination drive in the middle of a plot move. On the NAS, I run everything as the ```root``` user hence the directory path. Alter to meet your needs.
-
+<br>
 That is pretty much everything on the plotter side. The final part of the puzzle is the ```send_plot.sh``` shell script. On line 99 of the ```plot_manager.py``` script you will find this line:<br>
 ```subprocess.call(['/home/chia/plot_manager/send_plot.sh', plot_path, plot_to_process])```
 You need to alter the directory and name of the script to suite you needs. This is the script that is called that actually send the plot to the nas. This is the contents:
@@ -207,25 +207,28 @@ ssh root@chianas01-internal "nohup /root/plot_manager/receive_plot.sh $2 > foo.o
 sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
 ```
 
-Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.<br>
-
 Before starting the script, make sure you have the following paths correctly identified in the script:<br><br>
-Located in the `process_plot()` function:<br>
-`['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`<br>
+Located in the `process_plot()` function:<br><br>
+`['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`<br><br>
 This is the location on the NAS side where the script looks for the current drive being utilized. For example if you have `drive_manager.py`
 installed in your home directory `/home/your_name/plot_manager` then this line would look like this:<br>
 `['ssh', nas_server, 'grep enclosure /home/your_name/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`
-<br>
+<br><br>
 Enter the location the script lives here:<br>
 `sys.path.append('/home/chia/plot_manager')`<br>
 <br>
 And also on this line:
 `['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])`
-<br>
+<br><br>
 And here is where the script lives on the NAS server:<br>
 `subprocess.check_output(['ssh', nas_server, 'touch %s' % '/root/plot_manager/new_plot_received'])`<br>
-<br>
-Finally, take a look in the `system_logging.py` script and make sure all of the paths there are correct and do the same in the `loggin.yaml` file for your log file locations. <br>
+<br><br>
+Finally, take a look in the `system_logging.py` script and make sure all of the paths there are correct and do the same in the `loggin.yaml` file for your log file locations. <br><br>
+
+
+Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.<br>
+
+
 
 <hr>
 
