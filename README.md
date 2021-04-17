@@ -70,6 +70,8 @@ I spent a <em>lot</em> of time playing around with all of the network settings, 
 
 After reading up on the pros and cons of netcat vs rsync (which most recommended) I decided to give it a test. I tested cp, mv, rsync, scp and HPSSH across NFS, SMB (miserable) and SSH. With the exception of SMB they all pretty much worked the same. I was getting better performance than I had been using the stock Ubuntu ssh after replacing it with the High Perfomance SSH and nuking encryption, but still nothing to write home about. Then I tested Netcat. I was blown away. I went from much less than 1Gbe to peaks of 5Gbe with netcat. 100G files that had been taking 18 minutes to transfer were now transferring in 3 to 4 minutes. <br>
 
+It is also very interesting to note that TrueNAS utilizes netcat for replication when you tell it you want to disable encryption for replication. In researching this further and talking with some on the forums, they noted that they found it always outperformed all other transfer methods. That was enough for me to validate my decision!<br>
+
 As far as plots go, most folks recommend not using some type of RAID array to protect your plots from loss. the thought process is that if you lose a single plotting drive, no big deal, toss it in the trash and put a replacement drive in and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine drive RAIDZ2 vdevs in place and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a jbod as suggested by many others. The question was how to manage getting the plots onto the drives and what to do when the drives filled up.<br>
 
 Welcome to my project! I ended up with basically a client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to the NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work. 
@@ -137,7 +139,7 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 
 ### <a name="install"></a>Installation & Configuration
 
-The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. The plotter is pretty easy. 
+The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. The plotter is pretty easy.
 
 #### Plotter Configuration
 
@@ -205,7 +207,26 @@ ssh root@chianas01-internal "nohup /root/plot_manager/receive_plot.sh $2 > foo.o
 sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
 ```
 
-Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.
+Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.<br>
+
+Before starting the script, make sure you have the following paths correctly identified in the script:<br><br>
+Located in the `process_plot()` function:<br>
+`['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`<br>
+This is the location on the NAS side where the script looks for the current drive being utilized. For example if you have `drive_manager.py`
+installed in your home directory `/home/your_name/plot_manager` then this line would look like this:<br>
+`['ssh', nas_server, 'grep enclosure /home/your_name/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`
+<br>
+Enter the location the script lives here:<br>
+`sys.path.append('/home/chia/plot_manager')`<br>
+<br>
+And also on this line:
+`['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])`
+<br>
+And here is where the script lives on the NAS server:<br>
+`subprocess.check_output(['ssh', nas_server, 'touch %s' % '/root/plot_manager/new_plot_received'])`<br>
+<br>
+Finally, take a look in the `system_logging.py` script and make sure all of the paths there are correct and do the same in the `loggin.yaml` file for your log file locations. <br>
+
 <hr>
 
 #### NAS Configuration
