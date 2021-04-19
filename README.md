@@ -173,19 +173,17 @@ testing = False
 if testing:
     plot_dir = '/home/chia/plot_manager/test_plots/'
     plot_size = 10000000
+    status_file = '/home/chia/plot_manager/transfer_job_running_testing'
 else:
     plot_dir = "/mnt/ssdraid/array0/"
     plot_size = 108644374730  # Based on K32 plot size
+    status_file = '/home/chia/plot_manager/transfer_job_running'
+
+remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
 ```
 
 Change the ```plot_dir``` and ```plot_size``` for both testing and not testing to suit your system and needs. 
 
-Next you will need to update these status and checkfile locations to meet your needs:
-
-```
-status_file = '/home/chia/plot_manager/transfer_job_running'
-remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
-```
 
 ```status_file``` is a local file that is created when we start a plot move and deleted once we have completed that move. We check for that when we first run to make sure we are not attempting to move several plots at the same time. 
 
