@@ -155,7 +155,7 @@ Here is the directry structure I use on my plotter for my main plotting and -d d
 └── ssdraid
     └── array0
 ```
-The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These are Intel DC P4510 NVMe drives capable of running 10 plots each (based on k32 plot size). The ```/mnt/ssdraid/array0``` is my ```-d``` drive. This is a RAID0 array of HGST 1.6TB Enterprise SSD drives. This is where the completed plots are stored before they are moved by the plot_manager.py script.
+The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These are Intel DC P4510 NVMe drives capable of running 12 to 14 plots each (based on k32 plot size). The ```/mnt/ssdraid/array0``` is my ```-d``` drive. This is a RAID0 array of HGST 1.6TB Enterprise SSD drives. This is where the completed plots are stored before they are moved by the plot_manager.py script.
 
 All of my plotting is done as the ```chia``` user and so all of my plot_manager files are stored in the ```/home/chia``` directory. I do have a little bit of testing built into the script and that is what the test_plots directory is used for. I simple ```dd``` 10G of zeros into a test plot file and turn on testing in the script to test everything before going live.
 
