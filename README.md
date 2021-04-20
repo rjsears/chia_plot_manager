@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager & Coin Monitor (V0.4 - April 15th, 2021)
+  Chia Plot, Drive Manager & Coin Monitor (V0.5 - April 20th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
