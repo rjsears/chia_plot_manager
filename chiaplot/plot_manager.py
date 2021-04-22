@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.4 (2021-04-13)"
+VERSION = "0.5 (2021-04-22)"
 
 # Simple python script that helps to move my chia plots from my plotter to
 # my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -16,33 +16,48 @@ VERSION = "0.4 (2021-04-13)"
 
 #   Updates
 #
-#   V0.4 2021-04013 (bumped version to match drive_manager.py
-# - Due to issue with plot size detection happening after plot selection
-#   caused an issue where plots did not get moved at all if the first selected
-#   plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
-#   for proper filesize before passing along the plot name.
+#   V0.5 2021-04-13
+#   - Altered process_plot() and process_control() to integrate network
+#     activity monitoring so we do not simply rely on the checkfile. This
+#     now requites that Glances be installed and in API mode. We call the
+#     Glances API and verify if we have network traffic on the link to the
+#     NAS. If we have traffic and the checkfile exists then we know that a 
+#     transfer is in progress. If we do not have any network transfer activity
+#     we assume there is no transfer and we attempt a reset by removing the
+#     checkfile and calling main(). As part of this update we also added 
+#     a couple of functions to try and determine if Glances is running and if
+#     is not, throw an error and exit. 
+#
+#   V0.4 2021-04-13 (bumped version to match drive_manager.py
+#   - Due to issue with plot size detection happening after plot selection
+#     caused an issue where plots did not get moved at all if the first selected
+#     plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
+#     for proper filesize before passing along the plot name.
 #
 #   V0.2 2021-03-23
-# - Added per_plot system notification function (send_new_plot_notification()
-#   in chianas drive_manager.py and updated process_plot() and verify_plot_move()
-#   to support the new function
-# - Moved remote_mount lookup to happen before starting the plot move
+#   - Added per_plot system notification function (send_new_plot_notification()
+#     in chianas drive_manager.py and updated process_plot() and verify_plot_move()
+#     to support the new function
+#   - Moved remote_mount lookup to happen before starting the plot move
 
 import os
 import sys
+sys.path.append('/home/chia/plot_manager')
 import subprocess
-import socket
-import rpyc
 import logging
 from system_logging import setup_logging
 from system_logging import read_logging_config
-sys.path.append('/home/chia/plot_manager')
 import glob
 import pathlib
+import json
+import urllib.request
+import psutil
+
 
 # Let's do some housekeeping
 nas_server = 'chianas01-internal' # Internal 10Gbe link, entry in /etc/hosts
 plot_server = 'chiaplot01'
+network_interface = 'VLAN95_AR03_1-1' # Network interface (ifconfig) that plots are sent over
 
 # Are we testing?
 testing = False
@@ -51,12 +66,11 @@ if testing:
     plot_size = 10000000
     status_file = '/home/chia/plot_manager/transfer_job_running_testing'
 else:
-    plot_dir = "/mnt/ssdraid/array0/"
+    plot_dir = '/mnt/ssdraid/array0/'
     plot_size = 108644374730  # Based on K32 plot size
     status_file = '/home/chia/plot_manager/transfer_job_running'
 
 remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
-
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
@@ -90,16 +104,14 @@ def process_plot():
             log.info(f'Processing Plot: {plot_path}')
             try:
                 remote_mount = str(subprocess.check_output(
-                    ['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(
-                    ('utf-8'))).strip("\n")
+                    ['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")
             except subprocess.CalledProcessError as e:
                 log.warning(e.output)  # TODO Do something here...cannot go on...
                 quit()
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
             subprocess.call(['/home/chia/plot_manager/send_plot.sh', plot_path, plot_to_process])
             try:
-                subprocess.call(
-                    ['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])  # make sure all of the nc processes are dead on the receiving end
+                subprocess.call(['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])  # make sure all of the nc processes are dead on the receiving end
                 log.debug('Remote nc kill called!')
             except subprocess.CalledProcessError as e:
                 log.warning(e.output)
@@ -108,7 +120,7 @@ def process_plot():
             else:
                 log.debug('FAILURE - Plot sizes DO NOT Match - Exiting') # ToDo Do some notification here and then...?
                 process_control('set_status', 'stop') #Set to stop so it will attempt to run again in the event we want to retry....
-                quit()
+                main() # Try Again
             process_control('set_status', 'stop')
             os.remove(plot_path)
             log.info(f'Removing: {plot_path}')
@@ -151,14 +163,28 @@ def process_control(command, action):
                 log.debug(f'Status File: [{status_file}] does not exist!')
                 return
     elif command == 'check_status':
-        if os.path.isfile(status_file):
-            log.debug(f'Checkfile Exists, We are currently Running a Transfer, Exiting')
+        if os.path.isfile(status_file) and check_transfer():
+            log.debug(f'Checkfile and Network Traffic Exists, We are currently Running a Transfer, Exiting')
             return True
+        elif os.path.isfile(status_file) and not check_transfer():
+            log.debug('WARNING! - Checkfile exists but there is no network traffic! Forcing Reset')
+            os.remove(status_file)
+            try:
+                subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
+            except subprocess.CalledProcessError as e:
+                log.warning(e.output)
+            try:
+                subprocess.call(['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])  # make sure all of the nc processes are dead on the receiving end
+                log.debug('Remote nc kill called!')
+            except subprocess.CalledProcessError as e:
+                log.warning(e.output)
+            main()
         else:
-            log.debug(f'Checkfile Does Not Exist')
+            log.debug(f'Checkfile Does Not Exist and there is no network traffic!')
             return False
     else:
         return
+
 
 def verify_plot_move(remote_mount, plot_path, plot_to_process):
     log.debug('verify_plot_move() Started')
@@ -175,46 +201,57 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
         try:
             subprocess.check_output(['ssh', nas_server, 'touch %s' % '/root/plot_manager/new_plot_received'])
         except subprocess.CalledProcessError as e:
-            log.warning(e.output)  # Nothing to add here yet as we are not using this function remotely (yet)
+            log.warning(e.output)
         return True
     else:
         log.debug(f'Plot Size Mismatch!')
         return False
 
-def get_remote_mount():
-    plot = "/plot.test"
-    remote_mount = str(subprocess.check_output(
-        ['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")
-    print ((remote_mount) +  (plot))
+def check_transfer():
+    try:
+        with urllib.request.urlopen(f"http://localhost:61208/api/3/network/interface_name/{network_interface}") as url:
+            data = json.loads(url.read().decode())
+            current_transfer_speed =  (data[network_interface][0]['tx']/1000000)
+            if current_transfer_speed < 5:
+                return False
+            else:
+                return True
+    except urllib.error.URLError as e:
+        print (e.reason)
+        exit()
 
-# Not used yet
-def netcat(host, port, content):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, int(port)))
-    s.sendall(content.encode())
-    s.shutdown(socket.SHUT_WR)
-    while True:
-        data = s.recv(4096)
-        if not data:
-            break
-        print(repr(data))
-    s.close()
+def checkIfProcessRunning(processName):
+    '''
+    Check if there is any running process that contains the given name processName.
+    '''
+    #Iterate over the all the running process
+    for proc in psutil.process_iter():
+        try:
+            # Check if process name contains the given name string.
+            if processName.lower() in proc.name().lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
 
-# Testing remote RPC (Must run server.py on nas server for this to work). Just Testing!
-def get_remote_drive_info():
-    chianas = rpyc.connect(nas_server, 18861, config={'allow_public_attrs': True})
-    drive_manager = chianas.root.drive_manager
-    log.debug(f"Number of plots space left: {drive_manager('space_free_plots', 'drive4')}")
-    log.debug(f"Number of plots on drive:   {drive_manager('total_current_plots', 'drive4')}")
-    log.debug(f"Drive space available (GB): {drive_manager('space_free', 'drive4')}")
-    log.debug(f"The Drive Device is: {drive_manager('device', 'drive4')}")
-    log.debug(f"The Drive Temperature is: {drive_manager('temperature', 'drive4')}")
-    log.debug(f"The Drive Health Assessment has: {drive_manager('health', 'drive4')}ED")
 
+def verify_glances_is_running():
+    log.debug('verify_glances_is_running() Started')
+    if not checkIfProcessRunning('glances'):
+        log.debug('WARNING - This script requires the Glances API to operate properly.')
+        log.debug('We were unable to determine if Glances is running. Please verify and try again!')
+        exit()
+    else:
+        return True
 
 
 def main():
-    process_plot()
+    if verify_glances_is_running():
+        process_plot()
+    else:
+        print('Glances is Required for this script!')
+        print('Please install and restart this script.')
+        exit()
 
 if __name__ == '__main__':
     main()

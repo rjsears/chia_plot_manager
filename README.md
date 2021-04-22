@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager & Coin Monitor (V0.5 - April 20th, 2021)
+  Chia Plot, Drive Manager & Coin Monitor (V0.5 - April 22th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -681,21 +681,28 @@ strategy above, it is super easy to add more drives.
 
 ### <a name="changelog"></a>Changelog
 
+<b>V0.5 2021-04-22</b>
+   - Added ability to manage locally plotted plots in addition to remote plots.
+     This allow you to plot on your NAS/Harvester and have those plots managed
+     much like the plots from a remote system. This is set up as a separate
+     script called `move_local_plots.py`. Please see the notes in that script
+     for more information. 
+
 <b>V0.4 2021-04-13</b>
- - Added ability to "offline" a particular drive for maintenance. When you offline
-   a drive it prevents drive_manager.py from using that drive to store plots
-   until you "online" it again.
- - Only drives that are currently mounted and available on the system and listed 
-   as plot drives can be offlined. 
- - Only drives that have been offlined can be onlined. If you run `./drive_manager.py -h`
-   you will get a list of drives that have been offlined. If no drives have been 
-   offlined you will not see the `-on` or `--online_hdd` options.
- - Modified the sorting option for all plots drives using `natsort`. This sorts now
-   completely on drive number naturally.
- - `-off` or `--offline_hdd` Offlines a particular drive for maintenance, Error to stdout
-   if drive is not mounted or not aplot drive.
- - `-on` or `--online_hdd` Online a drive that has been offlined making it immediately
-   available for plots. Only drives that have been offline will be listed.
+   - Added ability to "offline" a particular drive for maintenance. When you offline
+     a drive it prevents drive_manager.py from using that drive to store plots
+     until you "online" it again.
+   - Only drives that are currently mounted and available on the system and listed 
+     as plot drives can be offlined. 
+   - Only drives that have been offlined can be onlined. If you run `./drive_manager.py -h`
+     you will get a list of drives that have been offlined. If no drives have been 
+     offlined you will not see the `-on` or `--online_hdd` options.
+   - Modified the sorting option for all plots drives using `natsort`. This sorts now
+     completely on drive number naturally.
+   - `-off` or `--offline_hdd` Offlines a particular drive for maintenance, Error to stdout
+     if drive is not mounted or not aplot drive.
+   - `-on` or `--online_hdd` Online a drive that has been offlined making it immediately
+     available for plots. Only drives that have been offline will be listed.
 <br><br>
 
 <b>V0.3 2021-04-04</b>
