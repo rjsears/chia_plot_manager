@@ -444,7 +444,7 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
 These options print out the help message or version information and exits.
 
 ```
-******** ChiaNAS Drive Manager - 0.4 (2021-04-13) ********
+******** ChiaNAS Drive Manager - 0.5 (2021-04-22) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
