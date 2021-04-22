@@ -1,5 +1,5 @@
-# logging.yaml file for use with drive_manager.py v.1
-# 2021-03-15
+# logging.yaml file for use with drive_manager.py
+# 2021-04-22
 
 version: 1
 disable_existing_loggers: False
@@ -16,6 +16,11 @@ formatters:
 
 handlers:
     console:
+        class: logging.StreamHandler
+        formatter: console
+        stream: ext://sys.stdout
+
+    expanded_console:
         class: logging.StreamHandler
         formatter: console_expanded
         stream: ext://sys.stdout
@@ -73,6 +78,14 @@ handlers:
       backupCount: 2
       encoding: utf8
 
+    move_local_plots_handler:
+        class: logging.handlers.RotatingFileHandler
+        formatter: standard
+        filename: /root/plot_manager/logs/move_local_plots.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 2
+        encoding: utf8
+
 root:
     level: NOTSET
     handlers:
@@ -82,3 +95,7 @@ loggers:
     __main__:
         handlers: [console, info_file_handler, error_file_handler, critical_file_handler, debug_file_handler, warning_file_handler, drive_manager_handler]
         propogate: no
+
+    move_local_plots:
+        handlers: [console, info_file_handler, error_file_handler, critical_file_handler, debug_file_handler, warning_file_handler, move_local_plots_handler]
+        propogate: yes
