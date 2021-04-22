@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.4 (2021-04-22)"
+VERSION = "0.5 (2021-04-22)"
 
 # Simple python script that helps to move my chia plots from my plotter to
 # my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -16,17 +16,29 @@ VERSION = "0.4 (2021-04-22)"
 
 #   Updates
 #
-#   V0.4 2021-04013 (bumped version to match drive_manager.py
-# - Due to issue with plot size detection happening after plot selection
-#   caused an issue where plots did not get moved at all if the first selected
-#   plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
-#   for proper filesize before passing along the plot name.
+#   V0.5 2021-04-13
+#   - Altered process_plot() and process_control() to integrate network
+#     activity monitoring so we do not simply rely on the checkfile. This
+#     now requites that Glances be installed and in API mode. We call the
+#     Glances API and verify if we have network traffic on the link to the
+#     NAS. If we have traffic and the checkfile exists then we know that a 
+#     transfer is in progress. If we do not have any network transfer activity
+#     we assume there is no transfer and we attempt a reset by removing the
+#     checkfile and calling main(). As part of this update we also added 
+#     a couple of functions to try and determine if Glances is running and if
+#     is not, throw an error and exit. 
+#
+#   V0.4 2021-04-13 (bumped version to match drive_manager.py
+#   - Due to issue with plot size detection happening after plot selection
+#     caused an issue where plots did not get moved at all if the first selected
+#     plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
+#     for proper filesize before passing along the plot name.
 #
 #   V0.2 2021-03-23
-# - Added per_plot system notification function (send_new_plot_notification()
-#   in chianas drive_manager.py and updated process_plot() and verify_plot_move()
-#   to support the new function
-# - Moved remote_mount lookup to happen before starting the plot move
+#   - Added per_plot system notification function (send_new_plot_notification()
+#     in chianas drive_manager.py and updated process_plot() and verify_plot_move()
+#     to support the new function
+#   - Moved remote_mount lookup to happen before starting the plot move
 
 import os
 import sys
