@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.4 (2021-04-13)"
+VERSION = "0.5 (2021-04-22)"
 
 ### Simple python script that helps to move my chia plots from my plotter to
 ### my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -13,19 +13,23 @@ VERSION = "0.4 (2021-04-13)"
 
 
 # Updates
+#
+#   V0.5 2021-04-22
+#   - Updated to support local plot management via `move_local_plots.py`
+#
 #   V0.4 2021-04-13
-# - Added ability to "offline" a drive for maintenance. Before, the script would
-#   select the very first available drive (based on drive number: drive0, drive1)
-#   for plot storage. I ran into a problem when one of my drives kicked out a
-#   smartctl error and I needed to move the plots off of it before it failed. As
-#   soon as I started to move them, drive_manager.py started to fill the drive
-#   back up. So now you can offline and drive_manager will not use it until
-#   you online it again. You still need to go into your chia harvester config
-#   and remove the drive from there.
+#   - Added ability to "offline" a drive for maintenance. Before, the script would
+#     select the very first available drive (based on drive number: drive0, drive1)
+#     for plot storage. I ran into a problem when one of my drives kicked out a
+#     smartctl error and I needed to move the plots off of it before it failed. As
+#     soon as I started to move them, drive_manager.py started to fill the drive
+#     back up. So now you can offline and drive_manager will not use it until
+#     you online it again. You still need to go into your chia harvester config
+#     and remove the drive from there.
 #
 #
 #   V0.3 2021-04-04
-# - Added multiple command line utilities to drive_manager.py including:
+#   - Added multiple command line utilities to drive_manager.py including:
 #        * -dr or --drive_report    Immediately runs the Daily Report and sends email (if configured)
 #        * -ct or --check_temps     Checks the temperatures of all configured plot drives
 #        * -pr or --plot_report     Quick plot report like email report but to the screen
@@ -33,16 +37,16 @@ VERSION = "0.4 (2021-04-13)"
 #                                   Be careful if using it from the command line, it resets your stats. This
 #                                   should be run once per day from a cronjob.
 #
-# - Added plot time information to the daily email report including:
+#   - Added plot time information to the daily email report including:
 #        * Total Plots last 24 hours
 #        * Average Plots per Hour (last 24 hours)
 #        * Average Plotting Speed (last 24 hours)
 #
 #   V0.2 2021-30-23
-# - Moved system logging types to plot_manager_config and updated necessary functions.
-# - Added per_plot system notification function (send_new_plot_notification())
-# - Updated read_config_data() to support ConfigParser boolean returns
-# - Updated necessary functions for read_config_data() change
+#   - Moved system logging types to plot_manager_config and updated necessary functions.
+#   - Added per_plot system notification function (send_new_plot_notification())
+#   - Updated read_config_data() to support ConfigParser boolean returns
+#   - Updated necessary functions for read_config_data() change
 
 
 
