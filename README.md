@@ -405,27 +405,29 @@ And if you choose, once a day you can get a daily update email:
 
 ```
 NAS Server: chianas01
-Daily Update Email - Generated at 10:20:53
-Current Plotting Drive (by mountpoint).................../mnt/enclosure0/front/column2/drive15
-Current Plotting Drive (by device)......................./dev/sdq1
-Drive Size...............................................10.9T
+Daily Update Email - Generated at 22:15:46
+Current Plotting Drive (by mountpoint)..................../mnt/enclosure0/front/column3/drive22
+Current Plotting Drive (by device)......................../dev/sdw1
+Drive Size................................................10.9T
 
 Environmental & Health
-Drive Serial Number......................................00000000
-Current Drive Temperature................................31°C
-Last Smart Test Health Assessment........................PASS
+Drive Serial Number.......................................00000000
+Current Drive Temperature.................................25°C
+Last Smart Test Health Assessment.........................PASS
 
 Other Information
-Total Plots on chianas01.................................1692
-Current Total Number of Plot Drives......................24
-Number of k32 Plots until full...........................925
-Max # of Plots with current # of Drives..................2640
+Total Plots on chianas01..................................2944
+Current Total Number of Plot Drives.......................44
+Number of k32 Plots until full............................1852
+Max # of Plots with current # of Drives...................4840
+Plots Being Farmed as reported by Chia....................2939
+Total Plot Space in use as reported by Chia...............291 TiB
 
 Plotting Speed
-Total Plots Last 24 Hours................................57
-Average Plots Per Hour...................................2.4
-Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
-Approx. # of Days to fill all Plot Drives................16
+Total Plots Last 24 Hours.................................79
+Average Plots Per Hour....................................3.3
+Average Plotting Speed Last 24 Hours......................7.979 TiB/Day
+Approx. # of Days to fill all Plot Drives.................23
 ```
 
 <h3>If you are using your NAS as a local plotter as well, read this.....</h3>
@@ -454,7 +456,7 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
 These options print out the help message or version information and exits.
 
 ```
-******** ChiaNAS Drive Manager - 0.5 (2021-04-22) ********
+******** ChiaNAS Drive Manager - 0.6 (2021-04-22) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
@@ -505,7 +507,7 @@ optional arguments:
   ```
 <br><br>
 <b> -dr    --drive_report</b><br>
-This option outputs the HTML versionof the Daily Drive Report email to the screen and also emails.
+This option outputs the HTML version of the Daily Drive Report email to the screen and also emails.
 This only works if configured. If this notification is set to off, this will do nothing.<br>
 
 <br>
@@ -564,16 +566,18 @@ and exits.
 ############################################################
 ################### chianas01 Plot Report ##################
 ############################################################
-Total Number of Plots on chianas01:                     1690
-Total Number of Systemwide Plots Drives:                  24
-Total Number of k32 Plots until full:                    926
-Maximum # of plots when full:                           2640
-Plots completed in the last 24 Hours:                     57
-Average Plots per Hours:                                 2.4
-Average Plotting Speed Last 24 Hours (TiB/Day):         5.76 
-Appx Number of Days to fill all current plot drives:      16  
-Current Plot Storage Drive:                        /dev/sdq1
-Temperature of Current Plot Drive:                      30°C
+Total Number of Plots on chianas01:                     2943
+Total Number of Plots Chia is Farming:                  2943
+Total Amount of Drive Space (TiB) Chia is Farming:       291
+Total Number of Systemwide Plots Drives:                  44
+Total Number of k32 Plots until full:                   1853
+Maximum # of plots when full:                           4840
+Plots completed in the last 24 Hours:                     79
+Average Plots per Hours:                                 3.3
+Average Plotting Speed Last 24 Hours (TiB/Day):         7.98 
+Appx Number of Days to fill all current plot drives:      23  
+Current Plot Storage Drive:                        /dev/sdw1
+Temperature of Current Plot Drive:                      26°C
 Latest Smart Drive Assessment of Plot Drive:            PASS
 ############################################################
 ```
@@ -690,6 +694,19 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+
+<b>V0.6 2021-04-22>/b>
+   - Minor updates to `move_local_plots.py` to utilize Disk I/O to verify that
+     we have not stalled a plot move. Attempts to auto correct and restart the
+     copy/move process if we detect a failure.
+   - Added plot checking via Chia logs to match against how many plots are 
+     currently reported as being on the system. Also included total drive space
+     in use by Chia.
+   - Updated the plot report as well as the Daily Report with above plot
+     information. It is not uncommon for there to be a little difference in the
+     numbers as a result of moves/copies in progress, etc. But if the number is
+     more than say 5 or 6 plots, you might want to check your logs for other
+     issues.
 
 <b>V0.5 2021-04-22</b>
    - Added ability to manage locally plotted plots in addition to remote plots.
