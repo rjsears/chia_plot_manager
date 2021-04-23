@@ -428,7 +428,7 @@ Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
 Approx. # of Days to fill all Plot Drives................16
 ```
 
-<h2>If you are using your NAS as a local plotter as well, read this.....</h2>
+<h3>If you are using your NAS as a local plotter as well, read this.....</h3>
 I also use my NAS/Harvester as a local plotter as well, and I need to be able to manage the plots that are created just as I do the remote plots. I use `Plotman` to manage the creation of my plots but it is not really designed with a setup like mine. You can point it to a single rsync location but you have to manage that plot on your own once it gets there. The `-d` drive you point `Plotman` at does not get monitored by `Plotman` (or chia for that matter) and so I learned the hard way that those drives can fill up and cause all of your plotting to fail. So I created `move_local_plots.py`.<br><br>
 This script is very simple, it looks in the location you tell it you are storing completed local plots and moves them to the currently selected plotting drive that is configured by `drive_manager.py`. It then verifies the plot sizes and deletes the plot from the monitored drive. It an attempt to verify that the copy is taking place and not failed, I utilize `Dstat` and a simple shell script that looks at the I/O on the drive you are moving the plot off of. If there is no I/O on the drive, it is assumed that there is no copy process. If the script detects that it thinks there is a copy going on yet there is no drive I/O, it attempts to reset itself and restart the copy, hopefully completing correctly this time around.<br><br>
 Make sure you install `Dstat` before trying to use this script otherwise it will fail. See the beginning of the script for settings.<br><br>
