@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.5 (2021-04-22)"
+VERSION = "0.6 (2021-04-22)"
 
 ### Simple python script that helps to move my chia plots from my plotter to
 ### my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -13,6 +13,14 @@ VERSION = "0.5 (2021-04-22)"
 
 
 # Updates
+#
+#   V0.6 2021-04-22
+#   - Check Chia logs and report actual plots being farmed (per Chia) and
+#     total amount of drive space in use (also per Chia). It is not
+#     uncommon for the total number of plots on your system to be slightly
+#     different that what `drive_manager.py` reports due to plot moves, etc
+#     but if there is a large difference, you should check your logs for
+#     signs of other issues.
 #
 #   V0.5 2021-04-22
 #   - Updated to support local plot management via `move_local_plots.py`
@@ -49,7 +57,6 @@ VERSION = "0.5 (2021-04-22)"
 #   - Updated necessary functions for read_config_data() change
 
 
-
 import os
 import sys
 
@@ -75,6 +82,7 @@ config = configparser.ConfigParser()
 import argparse
 import textwrap
 from natsort import natsorted
+import mmap
 
 # Define some colors for our help message
 red='\033[0;31m'
@@ -84,12 +92,10 @@ white='\033[0;37m'
 blue='\033[0;34m'
 nc='\033[0m'
 
-# Remove if not using Sentry.io
-# also remove capture(e) in functions below.
 import sentry_sdk
 
 sentry_sdk.init(
-    "https://kjhsflkjshdflkjhdslkfjhaslkdjfhlakjsd.ingest.sentry.io/98793879",
+    "https://xxxxxxxxxxxxxxxxxxxxxxx.ingest.sentry.io/xxxxxxxxx",
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
@@ -103,10 +109,13 @@ nas_server = 'chianas01'
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
 receive_script = '/root/plot_manager/receive_plot.sh'
+chia_log_file = '/root/.chia/mainnet/log/debug.log'
 
+# Date and Time Stuff
 today = datetime.today().strftime('%A').lower()
 current_military_time = datetime.now().strftime('%H:%M:%S')
 current_timestamp = int(time.time())
+
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
@@ -534,6 +543,8 @@ def send_new_plot_disk_email():
                                 current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
                                 smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
                                 total_serverwide_plots=get_all_available_system_space('used')[1],
+                                total_serverwide_plots_chia=check_plots()[0],
+                                total_serverwide_space_per_chia=check_plots()[1],
                                 total_number_of_drives=get_all_available_system_space('total')[0],
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
                                 max_number_of_plots=get_all_available_system_space('total')[1],
@@ -560,6 +571,8 @@ def send_daily_update_email():
                                 total_number_of_drives=get_all_available_system_space('total')[0],
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
                                 max_number_of_plots=get_all_available_system_space('total')[1],
+                                total_serverwide_plots_chia=check_plots()[0],
+                                total_serverwide_space_per_chia=check_plots()[1],
                                 total_plots_last_day=read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False),
                                 days_to_fill_drives=(int(get_all_available_system_space('free')[1] / int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))),
                                 average_plots_per_hour=round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24,1),
@@ -573,6 +586,8 @@ def space_report():
     print(f'{blue}################### {green}{nas_server} Plot Report{blue} ##################{nc}' )
     print(f'{blue}############################################################{nc}')
     print (f'Total Number of Plots on {green}{nas_server}{nc}:                     {yellow}{get_all_available_system_space("used")[1]}{nc}')
+    print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{check_plots()[0]}{nc}')
+    print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{check_plots()[1]}{nc}')
     print (f'Total Number of Systemwide Plots Drives:                  {yellow}{get_all_available_system_space("total")[0]}{nc}')
     print (f'Total Number of k32 Plots until full:                   {yellow}{get_all_available_system_space("free")[1]}{nc}')
     print (f'Maximum # of plots when full:                           {yellow}{get_all_available_system_space("total")[1]}{nc}')
@@ -580,7 +595,7 @@ def space_report():
     print (f"Average Plots per Hours:                                 {yellow}{round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))/24,1)}{nc}")
     print (f"Average Plotting Speed Last 24 Hours (TiB/Day):         {yellow}{round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g)/1000),2)}{nc} ")
     print(f"Appx Number of Days to fill all current plot drives:     {yellow} {int(get_all_available_system_space('free')[1] / int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))} {nc} ")
-    print (f"Current Plot Storage Drive:                       {yellow}{(get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])}{nc}")
+    print (f"Current Plot Storage Drive:                        {yellow}{(get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])}{nc}")
     print (f"Temperature of Current Plot Drive:                      {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).temperature}°C{nc}")
     print (f"Latest Smart Drive Assessment of Plot Drive:            {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).assessment}{nc}")
     print(f'{blue}############################################################{nc}')
@@ -702,6 +717,19 @@ def send_new_plot_notification():
         if read_config_data('plot_manager_config', 'notifications', 'per_plot', True):
             notify('New Plot Received', 'New Plot Received')
         os.remove('new_plot_received')
+
+
+def check_plots():
+    with open(chia_log_file, 'rb', 0) as f:
+        m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        i = m.rfind(b'Loaded')
+        m.seek(i)
+        line = m.readline()
+        newline = line.decode("utf-8")
+        x = newline.split()
+        plots = x[4]
+        TiB = float(x[8])
+        return plots, f'{TiB:.0f}'
 
 def main():
     parser = init_argparser()
