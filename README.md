@@ -134,6 +134,8 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
   <li><a href="https://pypi.org/project/configparser/">ConfigParser (5.0.2)</a> - Used for reading and updating config files</li>
   <li><a href="https://github.com/truenas/py-SMART">py-SMART (0.3)</a> - Used for reading drive information</li>
   <li><a href="https://pypi.org/project/natsort/">Natsort (7.1.1)</a> - Used for natural sorting of drive numbers</li>
+ <li><a href="http://dag.wieers.com/home-made/dstat/">DStat (0.8.0)</a> - Used to monitor Disk I/O Stats</li>
+ 
  </ul>
  <hr>
 
@@ -426,6 +428,14 @@ Average Plotting Speed Last 24 Hours.....................5.757 TiB/Day
 Approx. # of Days to fill all Plot Drives................16
 ```
 
+<h3>If you are using your NAS as a local plotter as well, read this.....</h3>
+I also use my NAS/Harvester as a local plotter as well, and I need to be able to manage the plots that are created just as I do the remote plots. I use `Plotman` to manage the creation of my plots but it is not really designed with a setup like mine. You can point it to a single rsync location but you have to manage that plot on your own once it gets there. The `-d` drive you point `Plotman` at does not get monitored by `Plotman` (or chia for that matter) and so I learned the hard way that those drives can fill up and cause all of your plotting to fail. So I created `move_local_plots.py`.<br><br>
+This script is very simple, it looks in the location you tell it you are storing completed local plots and moves them to the currently selected plotting drive that is configured by `drive_manager.py`. It then verifies the plot sizes and deletes the plot from the monitored drive. It an attempt to verify that the copy is taking place and not failed, I utilize `Dstat` and a simple shell script that looks at the I/O on the drive you are moving the plot off of. If there is no I/O on the drive, it is assumed that there is no copy process. If the script detects that it thinks there is a copy going on yet there is no drive I/O, it attempts to reset itself and restart the copy, hopefully completing correctly this time around.<br><br>
+Make sure you install `Dstat` before trying to use this script otherwise it will fail. See the beginning of the script for settings.<br><br>
+One word of advice - if you are using one of your drives that `drive_manager.py` would normally use to place plots on as a temp local `-d` drive, you should offline the drive using the `./drive_manager.py --off drivexx` command, otherwise `drive_manager.py` could start placing plots on that drive causing issues.<br><br>
+
+
+
 ### <a name="cli"></a>Command Line Options
 
 Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
@@ -570,11 +580,11 @@ Latest Smart Drive Assessment of Plot Drive:            PASS
 
 <br><br>
 <b>-ud --update_daily</b><br>
-This option is really designed to be called from your crontab riught before you run your daily email:
+This option is really designed to be called from your crontab right before you run your daily email:
 
 ```
-01 00 * * * /usr/bin/python3 /root/plot_manager/drive_manager.py -ud >/dev/null 2>&1
-02 00 * * * /usr/bin/python3 /root/plot_manager/drive_manager.py -dr >/dev/null 2>&1
+01 00 * * * cd /root/plot_manager && /usr/bin/python3 /root/plot_manager/drive_manager.py -ud >/dev/null 2>&1
+02 00 * * * cd /root/plot_manager && /usr/bin/python3 /root/plot_manager/drive_manager.py -dr >/dev/null 2>&1
 ```
 
 It is designed to calculate the information necessary for the daily plot report. You can run it anytime

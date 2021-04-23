@@ -20,12 +20,20 @@ import os
 import sys
 sys.path.append('/root/plot_manager')
 import logging
+import psutil
 import configparser
 from system_logging import setup_logging
 from system_logging import read_logging_config
 import pathlib
 import shutil
 from timeit import default_timer as timer
+from drive_manager import get_device_by_mountpoint
+import subprocess
+
+
+# Set the below file paths as necessary. The `drive_activity_log` needs to match
+# the file you have set in the `check_drive_activity.sh` shell script in order to
+# work. Make sure you have Dstat installed otherwise this script will not work.
 
 
 # Are we testing?
@@ -34,10 +42,16 @@ if testing:
     plot_dir = '/root/plot_manager/test_plots/'
     plot_size = 10000000
     status_file = '/root/plot_manager/local_transfer_job_running_testing'
+    drive_activity_test = '/root/plot_manager/check_drive_activity.sh'
+    drive_activity_log = '/root/plot_manager/drive_monitor.iostat'
 else:
-    plot_dir = '/mnt/enclosure1/front/column1/drive43/'
+    plot_dir = '/mnt/enclosure1/front/column1/drive43'
     plot_size = 108644374730  # Based on K32 plot size
     status_file = '/root/plot_manager/local_transfer_job_running'
+    drive_activity_test = '/root/plot_manager/check_drive_activity.sh'
+    drive_activity_log = '/root/plot_manager/drive_monitor.iostat'
+
+
 
 
 # Setup Module logging. Main logging is configured in system_logging.py
@@ -83,20 +97,24 @@ def process_plot():
         plot_to_process = get_list_of_plots()
         if plot_to_process and not testing:
             process_control('set_status', 'start')
-            plot_path = plot_dir + plot_to_process
+            plot_path = plot_dir + '/' + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
             current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
             log.debug(f'Current Plotting Drive is: {current_plotting_drive}')
             log.debug(f'Starting Copy of {plot_path}')
             start_time = timer()
-            shutil.copy2(plot_path, current_plotting_drive)
+            try:
+                shutil.copy2(plot_path, current_plotting_drive)
+            except:
+                log.debug(f'ERROR: There was a problem copying: {plot_dir}!')
+                exit()
             end_time = timer()
             if verify_plot_move(current_plotting_drive, plot_path, plot_to_process):
                 log.info('Plot Sizes Match, we have a good plot move!')
                 log.info(f'Total Elapsed Time: {end_time - start_time:.2f} seconds or {(end_time - start_time)/60:.2f} Minutes')
             else:
-                log.debug('FAILURE - Plot sizes DO NOT Match - Exiting') # ToDo Do some notification here and then...?
-                process_control('set_status', 'stop') #Set to stop so it will attempt to run again in the event we want to retry....
+                log.debug('FAILURE - Plot sizes DO NOT Match')
+                process_control('set_status', 'stop')  #Set to stop so it will attempt to run again in the event we want to retry....
                 main() # Try Again
             process_control('set_status', 'stop')
             os.remove(plot_path)
@@ -139,14 +157,33 @@ def process_control(command, action):
                 log.debug(f'Status File: [{status_file}] does not exist!')
                 return
     elif command == 'check_status':
-        if os.path.isfile(status_file):
-            log.debug(f'Checkfile Exists, We are currently Copying a Plot, Exiting')
+        if os.path.isfile(status_file) and check_drive_activity():
+            log.debug(f'Checkfile Exists and Disk I/O is present, We are currently Copying a Plot, Exiting')
             return True
+        elif os.path.isfile(status_file) and not check_drive_activity():
+            log.debug('WARNING! - Checkfile exists but there is no Disk I/O! Forcing Reset')
+            os.remove(status_file)
+            return False
         else:
             log.debug(f'Checkfile Does Not Exist!')
             return False
     else:
         return
+
+def check_drive_activity():
+    try:
+        subprocess.call([drive_activity_test, get_device_by_mountpoint(plot_dir)[0][1].split('/')[2]])
+    except subprocess.CalledProcessError as e:
+        log.warning(e.output)
+    with open(drive_activity_log, 'rb') as f:
+        f.seek(-2, os.SEEK_END)
+        while f.read(1) != b'\n':
+            f.seek(-2, os.SEEK_CUR)
+        last_line = f.readline().decode()
+    if float((str.split(last_line)[0])) > 10:
+        return True
+    else:
+        return False
 
 
 def main():
