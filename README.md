@@ -13,6 +13,7 @@ Multi Server Chia Plot and Drive Management Solution
     <a href="https://github.com/rjsears/chia_plot_manager/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/rjsears/chia_plot_manager?style=plastic"></a>
     <a href="https://github.com/rjsears/chia_plot_manager/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/github/license/rjsears/chia_plot_manager?style=plastic"></a>
  <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/rjsears/chia_plot_manager?style=plastic">
+<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/rjsears/chia_plot_manager?style=plastic">
 </h4>
 </div>
 <br>
