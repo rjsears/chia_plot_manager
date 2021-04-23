@@ -697,7 +697,7 @@ strategy above, it is super easy to add more drives.
 
 ### <a name="changelog"></a>Changelog
 
-<b>V0.6 2021-04-22>/b>
+<b>V0.6 2021-04-22></b>
    - Minor updates to `move_local_plots.py` to utilize Disk I/O to verify that
      we have not stalled a plot move. Attempts to auto correct and restart the
      copy/move process if we detect a failure.
