@@ -598,7 +598,7 @@ you want but it will reset this information to the point in time you called it a
 a 24 hour view of your system.
 <br>
 
-### <a name="coins"></a>Coin Monitor
+### <a name="coins"></a>Coin Monitor (Only Chia Version 1.1.1 or Higher)
 
 I wanted a simple way to keep track of when I won coins and how many I had so I added `coin_monitor.py` to the mix.
 As I said, in my configuration I have three servers, my `plotter`, my `nas` and my `farmer`. Coin Monitor sits on my
@@ -631,7 +631,7 @@ logging: &id001
  <br><br>
  Just make sure the `log_level` is set to INFO and you should be good. <br><br>
  If you would like to test the script, simply create a test "log" file and put this line in it:<br>
- `06:33:02.632 wallet src.wallet.wallet_state_manager: INFO     Adding coin: {'amount': '250000000000',`<br><br>
+ `2021-04-23T11:43:30.162 wallet chia.wallet.wallet         : INFO     coin from coins {'amount': 1750000000000,`<br><br>
  Save the file and edit the coin_monitor.py script to look at that file and run the script. If everything
  is configured correctly you should get an email (or whatever notification you set up). If you run it again
  you should see this in the coin_monitor debug log:<br>
