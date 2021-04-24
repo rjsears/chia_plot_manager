@@ -3,11 +3,13 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.3 (2021-04-06)"
+VERSION = "0.6 (2021-04-23)"
 
 # Simple script to check to see if we have any new Chia coins.
 # This is NOT 100% foolproof as it just reads the log files,
 # always check your wallet for actual coin information.
+
+# 2021-04-23 - Fixed log file regex for new coing after Chia 1.1.1 upgrade
 
 
 
@@ -71,13 +73,13 @@ def update_config_data(file, section, item, value):
 
 def check_for_chia_coins():
     log.debug('check_for_chia_coins() Started')
-    coin_pattern = re.compile(r'\bAdding coin')
+    coin_pattern = re.compile(r'\bcoin from coins')
     read_chia_log_started = True
     with open (chia_log, 'rt') as my_chia_logfile:
         for line in my_chia_logfile:
             if coin_pattern.search(line) != None:
                 new_coin = []
-                new_coin.append(re.match((r'[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,3})'), line).group(0))
+                new_coin.append(re.match((r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?'), line).group(0))
                 new_coin.append(re.search((r"[0-9]{8,13}"), line).group(0))
                 with open (new_coin_log, 'rb', 0) as file, mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as coin:
                     if coin.find(bytearray(str(new_coin[0]), encoding='utf8')) != -1:
