@@ -631,11 +631,11 @@ logging: &id001
  <br><br>
  Just make sure the `log_level` is set to INFO and you should be good. <br><br>
  If you would like to test the script, simply create a test "log" file and put this line in it:<br>
- `2021-04-23T11:43:30.162 wallet chia.wallet.wallet         : INFO     coin from coins {'amount': 1750000000000,`<br><br>
+ `2021-04-24T14:16:11.298 wallet chia.wallet.wallet_state_manager: INFO     Confirmed balance amount is 9200000000000`<br><br>
  Save the file and edit the coin_monitor.py script to look at that file and run the script. If everything
  is configured correctly you should get an email (or whatever notification you set up). If you run it again
  you should see this in the coin_monitor debug log:<br>
- `Found coins that were already accounted for in the log!: ['13:52:59.147', '250000000000']`<br>
+ `coin_monitor:82 - check_for_chia_coins: DEBUG:    Found coins that were already accounted for in the log!: ['2021-04-24T14:16:11.298', '9200000000000']`<br>
 <br>
 Just make sure to point the script back to the correct logfile after testing!
 <br>
