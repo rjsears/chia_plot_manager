@@ -3,19 +3,15 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.6 (2021-04-23)"
+VERSION = "0.6 (2021-04-24)"
 
 # Simple script to check to see if we have any new Chia coins.
 # This is NOT 100% foolproof as it just reads the log files,
 # always check your wallet for actual coin information.
 
-# 2021-04-23 - Fixed log file regex for new coing after Chia 1.1.1 upgrade
-
-
-
 import sys
 import re
-
+import os
 sys.path.append('/root/coin_monitor')
 import subprocess
 import logging
@@ -39,8 +35,10 @@ today = datetime.today().strftime('%A').lower()
 current_military_time = datetime.now().strftime('%H:%M:%S')
 current_timestamp = int(time.time())
 
-# Where is Chia our logfile located?
+# Where is our Chia logfile located?
 chia_log = '/home/chia/.chia/mainnet/log/debug.log'
+
+# Where do we log our new coins so we don't duplicate them?
 new_coin_log = '/root/coin_monitor/logs/new_coins.log'
 
 # Setup Module logging. Main logging is configured in system_logging.py
@@ -70,36 +68,41 @@ def update_config_data(file, section, item, value):
     config.write(cfgfile)
     cfgfile.close()
 
-
 def check_for_chia_coins():
     log.debug('check_for_chia_coins() Started')
-    coin_pattern = re.compile(r'\bcoin from coins')
-    read_chia_log_started = True
+    coin_pattern = re.compile(r'\bConfirmed balance amount is')
     with open (chia_log, 'rt') as my_chia_logfile:
         for line in my_chia_logfile:
             if coin_pattern.search(line) != None:
                 new_coin = []
                 new_coin.append(re.match((r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?'), line).group(0))
                 new_coin.append(re.search((r"[0-9]{8,13}"), line).group(0))
-                with open (new_coin_log, 'rb', 0) as file, mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as coin:
+                with open(new_coin_log, 'rb', 0) as file, mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as coin:
                     if coin.find(bytearray(str(new_coin[0]), encoding='utf8')) != -1:
                         log.debug(f'Found coins that were already accounted for in the log!: {new_coin}')
                     else:
                         log.critical(new_coin)
-                        log.info(f'New Coins Found!{new_coin}')
-                        if read_chia_log_started:
-                            update_config_data('coin_monitor_config', 'current_coins', 'coins', str(
-                                int(read_config_data('coin_monitor_config', 'current_coins', 'coins', False)) + 2))
-                            notify(f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
-                                f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
-                            send_new_coin_email()
-                            read_chia_log_started = False
-                        else:
-                            pass
+        if get_current_coins() == int(read_config_data('coin_monitor_config', 'current_coins', 'coins', False)):
+            log.debug('No new coins found!')
+        else:
+            log.info(f'New Coins Found!{new_coin}')
+            update_config_data('coin_monitor_config', 'current_coins', 'coins', str(get_current_coins()))
+            notify(f"TEST - You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
+                f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
+            send_new_coin_email()
+
+def get_current_coins():
+    with open(new_coin_log, 'rb') as f:
+        f.seek(-2, os.SEEK_END)
+        while f.read(1) != b'\n':
+            f.seek(-2, os.SEEK_CUR)
+        last_line = f.readline().decode()
+        current_coins =  (int((re.search((r"[0-9]{8,13}"), last_line).group(0)).strip('0')))
+        return (current_coins)
 
 def send_new_coin_email():
-    if read_config_data('coin_monitor_config', 'notifications', 'per_coin', True):
-        for email_address in system_info.alert_email:
+    if read_config_data('coin_monitor_config', 'notifications', 'per_coin_email', True):
+        for email_address in system_info.new_coin_email:
             send_template_email(template='new_coin.html',
                                 recipient=email_address,
                                 subject='New Chia Coin Received!\nContent-Type: text/html',
@@ -181,6 +184,7 @@ def send_template_email(template, recipient, subject, **kwargs):
 
 def main():
     check_for_chia_coins()
+
 
 if __name__ == '__main__':
     main()
