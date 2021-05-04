@@ -10,7 +10,7 @@ alerting = True
 pb = False
 email = True
 sms = True
-per_coin = True
+per_coin_email = True
 daily_update = True
 
 [current_coins]
