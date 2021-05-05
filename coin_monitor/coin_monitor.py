@@ -101,6 +101,7 @@ def get_current_coins():
         return (current_coins)
 
 def send_new_coin_email():
+    log.debug('Started send_new_coin_email()')
     if read_config_data('coin_monitor_config', 'notifications', 'per_coin_email', True):
         for email_address in system_info.new_coin_email:
             send_template_email(template='new_coin.html',
@@ -121,6 +122,7 @@ def send_email(recipient, subject, body):
     https://nedbatchelder.com/text/unipain.html
     https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-20-04
     """
+    log.debug(f'send_email() called with Recipient: {recipient} and Subject: {subject}')
     try:
         subprocess.run(['mail', '-s', subject, recipient], input=body, encoding='utf-8')
         log.debug(f"Email Notification Sent: Subject: {subject}, Recipient: {recipient}, Message: {body}")
@@ -174,6 +176,7 @@ def notify(title, message):
 # Thank You - https://frankcorso.dev/email-html-templates-jinja-python.html
 def send_template_email(template, recipient, subject, **kwargs):
     """Sends an email using a jinja template."""
+    log.debug(f'send_template_email() called with Template: {template}, Recipient: {recipient} and Subject: {subject}')
     env = Environment(
         loader=PackageLoader('coin_monitor', 'templates'),
         autoescape=select_autoescape(['html', 'xml'])
