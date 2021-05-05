@@ -110,6 +110,7 @@ def send_new_coin_email():
                                 current_time=current_military_time,
                                 current_chia_coins=read_config_data('coin_monitor_config', 'current_coins', 'coins', False))
     else:
+        log.debug('per_coin_email set to False, no email sent')
         pass
 
 
