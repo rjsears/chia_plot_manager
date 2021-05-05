@@ -87,7 +87,7 @@ def check_for_chia_coins():
         else:
             log.info(f'New Coins Found!{new_coin}')
             update_config_data('coin_monitor_config', 'current_coins', 'coins', str(get_current_coins()))
-            notify(f"TEST - You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
+            notify(f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
                 f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
             send_new_coin_email()
 
