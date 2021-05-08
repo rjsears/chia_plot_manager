@@ -8,10 +8,9 @@ log_level = DEBUG
 [notifications]
 alerting = True
 pb = False
-email = True
-sms = True
+email = False
+sms = False
 per_coin_email = True
-daily_update = True
 
 [current_coins]
 coins = 10
