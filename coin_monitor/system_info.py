@@ -9,6 +9,7 @@ VERSION = "V0.2 (2021-03-23)"
 
 ## Set Notification Accounts#
 alert_email = ['email_one@gmail.com', 'email_two@gmail.com']
+new_coin_email = ['email_one@gmail.com', 'email_two@gmail.com']
 twilio_from = '+10000000'
 twilio_account = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 twilio_token = 'kjshdkjhfkjshlfkjhkajhfkjahsfdkj'
