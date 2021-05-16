@@ -12,4 +12,4 @@ As the title implies, I designed this script to help with the adding of new hard
   
   
 <h2 align="center">
-  <a name="chia_auto_drive_screen" href="https://github.com/rjsears/chia_plot_manager/tree/main/auto_drive"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_auto_drive.png" alt="Chia Auto Drive"></a><br>
+  <a name="chia_auto_drive_screen" href="https://github.com/rjsears/chia_plot_manager/tree/main/auto_drive"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_auto_drive_output.png" alt="Chia Auto Drive"></a><br>
