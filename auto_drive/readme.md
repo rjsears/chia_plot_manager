@@ -15,7 +15,7 @@ As the title implies, I designed this script to help with the adding of new hard
   <a name="chia_auto_drive_screen" href="https://github.com/rjsears/chia_plot_manager/tree/main/auto_drive"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_auto_drive_output.png" alt="Chia Auto Drive"></a><br>
   <br><hr><br>
 </h2>  
-  Installation and usage Instructions:
+  <h3>Installation and usage Instructions:</h3>
   
   1) Download a copy of this script and the `get_drive_uuid.sh` shell script and place it in your working directory
   
