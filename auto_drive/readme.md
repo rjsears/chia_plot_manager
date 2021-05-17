@@ -19,17 +19,17 @@ As the title implies, I designed this script to help with the adding of new hard
   
   1) Download a copy of this script and the `get_drive_uuid.sh` shell script and place it in your working directory
   
-  2) Edit the auto_drive.py script and alter the line pointing to your chia configuration file:
+  2) Edit the auto_drive.py script and alter the line pointing to your chia configuration file:<br>
      `chia_config_file = '/root/.chia/mainnet/config/config.yaml'`
   
   3) Alter the path_glob line to match your mount point directory structure. This script is specifically set up and tested
      with the directory structure that I have laid out in the main readme file for chia_plot_manager. It is possible that 
      it will work with other structures but it is way beyond my capability to test for every possible directory structure
      combination. I would recommend reading and understanding what the `get_next_mountpoint()` function does and then 
-     see if it will work with your directory structure.
+     see if it will work with your directory structure.<br>
      `path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
 
-  4) Alter the following line to point to where you have installed the `get_drive_uuid.sh` shell script.
+  4) Alter the following line to point to where you have installed the `get_drive_uuid.sh` shell script.<br>
      `uuid_results = subprocess.check_output(['/root/plot_manager/plot_manager/get_drive_uuid.sh', drive]).decode('ascii').rstrip()` 
   
   5) `chmod +x` both the auto_drive.py script and the `get_drive_uuid.sh` script.
