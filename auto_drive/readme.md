@@ -13,7 +13,7 @@ As the title implies, I designed this script to help with the adding of new hard
   
 <h2 align="center">
   <a name="chia_auto_drive_screen" href="https://github.com/rjsears/chia_plot_manager/tree/main/auto_drive"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_auto_drive_output.png" alt="Chia Auto Drive"></a><br>
-  <br><hr><br>
+  <br><br>
 </h2>  
   <h3>Installation and usage Instructions:</h3>
   
@@ -48,8 +48,7 @@ As the title implies, I designed this script to help with the adding of new hard
   <li><a href="https://pypi.org/project/PyYAML/">PyYAMLK</a> - (Optional, you could use any YAML Python Library)</li>
  </ul>
   
-  
-  
+  <hr>
   
   <h3>Notes......</h3><br>
   
@@ -71,9 +70,6 @@ As the title implies, I designed this script to help with the adding of new hard
   6) Answer `y` to this question and issue the `w` command, exiting `fdisk`.
   7) Once again, rerun `fdisk` and delete this new partition and issue the `w` command. 
   8) You should now be ready to use `auto_drive.py` with that drive. 
-  
-  
-  
   
   
   Enjoy!
