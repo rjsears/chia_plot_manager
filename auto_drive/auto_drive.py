@@ -235,7 +235,7 @@ def add_uuid_to_fstab(drive):
     drive = drive + '1'
     try:
         print(f'Please wait while we add {blue}{drive}{nc} to /etc/fstab.......')
-        uuid_results = subprocess.check_output(['/root/plot_manager/plot_manager/get_drive_uuid.sh', drive]).decode('ascii').rstrip()
+        uuid_results = subprocess.check_output(['/root/plot_manager/get_drive_uuid.sh', drive]).decode('ascii').rstrip()
         print(f'Your drive UUID is: {green}{uuid_results}{nc}')
         print(f'Verifying that {green}{uuid_results}{nc} does not exist in /etc/fstab')
         with open('/etc/fstab') as fstab:
