@@ -77,7 +77,7 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   you if you want it to do this. This is just an added step in the process to make sure you are aware of what the script is 
   doing before it does it. If you choose not to have `auto_drive.py` add the mountpoint to your chia config, be sure to do it
   on your own otherwise your harvester will not see any plots on that mountpoint.
-  <br><hr><br>
+  <br><hr>
   
   <h3>Troubleshooting Auto_Drive......</h3><br>
   
@@ -102,4 +102,4 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   5) Make sure the user running the script has write access to your chia configuration file.
   
   <br>
-  <em>Enjoy!</em>
+  <h3>Enjoy!</h3>
