@@ -38,6 +38,29 @@ As the title implies, I designed this script to help with the adding of new hard
      then prompt you to accept the drive and mountpoint it plans to use. Once the drive has been readied for the system and mounted
      it will ask you if you want it added to your chia configuration file.
   
+  <br>
+  
+  <h3>Notes......</h3>
+  There is a couple of things to remember with `auto_drive.py`. First, in order to protect any possible data on drives, we will only 
+  look for drives that <em>do not</em> include a partition already on the drive. If you are reusing drives, and they have a partition
+  already on the drive, `auto_drive.py` <em>will not</em> select any of those drive to work on. The best way to `reuse` a drive is to
+  manually `fdisk` the drive in question, delete any existing partitions, and then `auto_drive.py` will then be able to use those
+  drives. <br>
+  <br>
+  Second, I have determined that drives that have previously had VMFS partitions on them require special handling. `SGDisk` does not
+  appear to have the ability to overwrite that partition information. In fact, `fdisk` seems to have an issue as well. After multiple
+  attempts to figure this litte problem out, I found that this is the best solution:
+  
+  1) Using `fdisk`, access the device in question.
+  2) Delete any existing partition and issue the `w` command.
+  3) Rerun the `fdisk` command on the disk, utilize the `g` command to create a new GPT signature.
+  4) Create a new partition by using the `n` command.
+  5) When you go to save the partition with the `w` command, you should get a notice that there is an existing VMFS partition.
+  6) Answer `y` to this question and issue the `w` command, exiting `fdisk`.
+  7) Once again, rerun `fdisk` and delete this new partition and issue the `w` command. 
+  8) You should now be ready to use `auto_drive.py` with that drive. 
+  
+  
   
   
   
