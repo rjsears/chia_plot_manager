@@ -63,6 +63,9 @@ nc='\033[0m'
 # Where can we find your Chia Config File?
 chia_config_file = '/root/.chia/mainnet/config/config.yaml'
 
+#Where did we put the get_drive_uuid.sh script (include script name):
+get_drive_uuid = '/root/plot_manager/get_drive_uuid.sh'
+
 
 def get_next_mountpoint():
     """
@@ -235,7 +238,7 @@ def add_uuid_to_fstab(drive):
     drive = drive + '1'
     try:
         print(f'Please wait while we add {blue}{drive}{nc} to /etc/fstab.......')
-        uuid_results = subprocess.check_output(['/root/plot_manager/get_drive_uuid.sh', drive]).decode('ascii').rstrip()
+        uuid_results = subprocess.check_output([get_drive_uuid, drive]).decode('ascii').rstrip()
         print(f'Your drive UUID is: {green}{uuid_results}{nc}')
         print(f'Verifying that {green}{uuid_results}{nc} does not exist in /etc/fstab')
         with open('/etc/fstab') as fstab:
