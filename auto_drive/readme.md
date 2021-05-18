@@ -87,7 +87,7 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   correctly due to a `VMFS` partition, the `UUID` will be incorrect causing `auto_drive.py` to report an error mounting
   the drive due to an incorrect `uuid`. In this case, you would need to:
   
-  1) Correct the partitioning problem and verify that the partition ahs been removed with `lsblk`
+  1) Correct the partitioning problem and verify that the partition has been removed with `lsblk`
   2) Remove the incorrect entry from `/etc/fstab`. Any entries added by `auto_drive.py` will be noted as such.
   3) Rerun `auto_drive.py` again allowing it to reselect the drive in question.
 
