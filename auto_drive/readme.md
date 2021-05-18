@@ -40,7 +40,7 @@ As the title implies, I designed this script to help with the adding of new hard
   
   <br>
   
-  <h3>Notes......</h3>
+  <h3>Notes......</h3><br>
   There is a couple of things to remember with `auto_drive.py`. First, in order to protect any possible data on drives, we will only 
   look for drives that <em>do not</em> include a partition already on the drive. If you are reusing drives, and they have a partition
   already on the drive, `auto_drive.py` <em>will not</em> select any of those drive to work on. The best way to `reuse` a drive is to
