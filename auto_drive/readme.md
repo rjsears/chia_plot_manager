@@ -73,5 +73,33 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   7) Once again, rerun `fdisk` and delete this new partition and issue the `w` command. 
   8) You should now be ready to use `auto_drive.py` with that drive. 
   
+  Finally, `auto_drive.py` will not <em>automatically</em> add your new mountpoint to your chia config file. It will first ask
+  you if you want it to do this. This is just an added step in the process to make sure you are aware of what the script is 
+  doing before it does it. If you choose not to have `auto_drive.py` add the mountpoint to your chia config, be sure to do it
+  on your own otherwise your harvester will not see any plots on that mountpoint.
+  
+  
+  <h3>Troubleshooting Auto_Drive......</h3><br>
+  
+  As I noted above, the main issues I have run into running `auto_drive.py` on my and my friend's systems revolve around the
+  way a `used` drive may have been partitioned. In the event we cannot correctly manage a drive, `auto_drive.py` may leave 
+  your system in a state in which you want to correct to retry the operation. For example, if the drive is not partitioned
+  correctly due to a `VMFS` partition, the `UUID` will be incorrect causing `auto_drive.py` to report an error mounting
+  the drive due to an incorrect `uuid`. In this case, you would need to:
+  
+  1) Correct the partitioning problem and verify that the partition ahs been removed with `lsblk`
+  2) Remove the incorrect entry from `/etc/fstab`. Any entries added by `auto_drive.py` will be noted as such.
+  3) Rerun `auto_drive.py` again allowing it to reselect the drive in question.
+
+
+  Beyond that, other issues could be related to the person running the script. Make sure you have sufficient user privileges
+  to run the following commands:
+
+  1) mkfs.xfs
+  2) get_drive_uuid.sh
+  3) sgdisk
+  4) mount (although we do use the `user`option on our mount point so this should <em>never</em> be an issue
+  5) Make sure the user running the script has write access to your chia configuration file.
+  
   
   Enjoy!
