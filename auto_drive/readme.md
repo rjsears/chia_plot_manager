@@ -38,7 +38,7 @@ As the title implies, I designed this script to help with the adding of new hard
      then prompt you to accept the drive and mountpoint it plans to use. Once the drive has been readied for the system and mounted
      it will ask you if you want it added to your chia configuration file.
   
-  <br><br><hr>
+  <br><hr>
   <h3>Requirements........</h3>
   
   The only requirements beyond standard linux tools are the following:
