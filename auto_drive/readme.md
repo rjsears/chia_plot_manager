@@ -31,8 +31,8 @@ script as somone who has the ability to execute those commands. `sudo` should wo
      see if it will work with your directory structure.<br>
      `path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*`
 
-  4) Alter the following line to point to where you have installed the `get_drive_uuid.sh` shell script.<br>
-     `uuid_results = subprocess.check_output(['/root/plot_manager/get_drive_uuid.sh', drive]).decode('ascii').rstrip()` 
+  4) Alter the following line to point to where you have installed the `get_drive_uuid.sh` shell script. Leave script name as well.<br>
+     `get_drive_uuid = '/root/plot_manager/plot_manager/get_drive_uuid.sh'` 
   
   5) `chmod +x` both the auto_drive.py script and the `get_drive_uuid.sh` script.
   
