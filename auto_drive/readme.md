@@ -27,7 +27,7 @@ As the title implies, I designed this script to help with the adding of new hard
      it will work with other structures but it is way beyond my capability to test for every possible directory structure
      combination. I would recommend reading and understanding what the `get_next_mountpoint()` function does and then 
      see if it will work with your directory structure.<br>
-     `path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
+     `path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*`
 
   4) Alter the following line to point to where you have installed the `get_drive_uuid.sh` shell script.<br>
      `uuid_results = subprocess.check_output(['/root/plot_manager/plot_manager/get_drive_uuid.sh', drive]).decode('ascii').rstrip()` 
