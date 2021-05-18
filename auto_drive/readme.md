@@ -98,7 +98,7 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   1) mkfs.xfs
   2) get_drive_uuid.sh
   3) sgdisk
-  4) mount (although we do use the `user`option on our mount point so this should <em>never</em> be an issue
+  4) mount (although we do use the `user`option on our mount point so this should <em>never</em> be an issue).
   5) Make sure the user running the script has write access to your chia configuration file.
   
   <br>
