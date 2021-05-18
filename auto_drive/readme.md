@@ -6,7 +6,8 @@ Auto Drive - Automatice Drive Formatting, Mounting & Chia Config Updating!
   </h2>
   </p>
   <p align="left"><font size="3">
-As the title implies, I designed this script to help with the adding of new hard drives to your Chia Harvester/NAS. This is a command line drive interactive python script. Please see the top fo the script for more information. 
+As the title implies, I designed this script to help with the adding of new hard drives to your Chia Harvester/NAS. This is a command line drive interactive python script. Please see the top fo the script for more information. Also remember that running `auto_drive.py` invokes `fdisk` and `mkfs`. Make sure the user that you are running the
+script as somone who has the ability to execute those commands. `sudo` should work in this situation.
   
   Hopefully, this will be useful for someone!
   
@@ -17,7 +18,7 @@ As the title implies, I designed this script to help with the adding of new hard
 </h2>  
   <h3>Installation and usage Instructions:</h3>
   
-  1) Download a copy of this script and the `get_drive_uuid.sh` shell script and place it in your working directory
+  1) Download a copy of this script and the `get_drive_uuid.sh` shell script and place it in your working directory.
   
   2) Edit the auto_drive.py script and alter the line pointing to your chia configuration file:<br>
      `chia_config_file = '/root/.chia/mainnet/config/config.yaml'`
