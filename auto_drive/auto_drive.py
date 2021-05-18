@@ -67,6 +67,8 @@ chia_config_file = '/root/.chia/mainnet/config/config.yaml'
 get_drive_uuid = '/root/plot_manager/get_drive_uuid.sh'
 
 
+# Let's get started......
+
 def get_next_mountpoint():
     """
     This function looks at the entire directory structure listed
