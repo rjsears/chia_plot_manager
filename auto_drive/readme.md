@@ -49,7 +49,7 @@ As the title implies, I designed this script to help with the adding of new hard
   <br>
   Second, I have determined that drives that have previously had VMFS partitions on them require special handling. `SGDisk` does not
   appear to have the ability to overwrite that partition information. In fact, `fdisk` seems to have an issue as well. After multiple
-  attempts to figure this litte problem out, I found that this is the best solution:
+  attempts to figure this litte problem out, I found that this is the best solution:<br>
   
   1) Using `fdisk`, access the device in question.
   2) Delete any existing partition and issue the `w` command.
