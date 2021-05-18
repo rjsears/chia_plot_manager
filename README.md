@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.6 - April 24th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.7 - May 17th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -696,6 +696,10 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+
+<b>V0.7 2021-05-17</b>
+   - Minor bug fixes and spelling error corrections.
+   - Additional of `auto_drive.py` script.
 
 <b>V0.6 2021-04-22</b>
    - Minor updates to `move_local_plots.py` to utilize Disk I/O to verify that
