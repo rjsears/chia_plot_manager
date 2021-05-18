@@ -49,6 +49,7 @@ from os.path import ismount, abspath, exists
 import string
 import subprocess
 import yaml
+from natsort import natsorted
 
 # Do some housekeeping
 # Define some colors for our help message
@@ -82,7 +83,7 @@ def get_next_mountpoint():
     """
     path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
     d = {abspath(d): ismount(d) for d in glob(path_glob)}
-    return sorted([p for p in d if not d[p]])[0]
+    return natsorted([p for p in d if not d[p]])[0]
 
 
 def get_new_drives():
