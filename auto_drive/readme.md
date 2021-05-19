@@ -84,12 +84,16 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   As I noted above, the main issues I have run into running `auto_drive.py` on my and my friend's systems revolve around the
   way a `used` drive may have been partitioned. In the event we cannot correctly manage a drive, `auto_drive.py` may leave 
   your system in a state in which you want to correct to retry the operation. For example, if the drive is not partitioned
-  correctly due to a `VMFS` partition, the `UUID` will be incorrect causing `auto_drive.py` to report an error mounting
+  correctly due to a `VMFS`, `ZFS`, or other type of partition, the `UUID` will be incorrect causing `auto_drive.py` to report an error mounting
   the drive due to an incorrect `uuid`. In this case, you would need to:
   
   1) Correct the partitioning problem and verify that the partition has been removed with `lsblk`
   2) Remove the incorrect entry from `/etc/fstab`. Any entries added by `auto_drive.py` will be noted as such.
-  3) Rerun `auto_drive.py` again allowing it to reselect the drive in question.
+  3) Run `fdisk /dev/xxx` against the drive in question. Remove `all` partitions and `w`.
+  4) Run `fdisk /dev/xxx` (yes again), create a new partition and `w`, answer `yes` when it warns you about existing signature.
+  5) Rerun `auto_drive.py` again allowing it to reselect the drive in question.
+  
+  I am currently working on a solution to this issues, but I am having difficulty finding a suitable tool to wack the drive wholesale.
 
 
   Beyond that, other issues could be related to the person running the script. Make sure you have sufficient user privileges
