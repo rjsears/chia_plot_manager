@@ -1,4 +1,4 @@
-# To recreate this directory structure on yuor NAS (assuming Supermicro 847 36 Bay
+# To recreate this directory structure on your NAS (assuming Supermicro 847 36 Bay
 # and second Supermicro 847 45 Bay JBOB) run the following command against this file:
 # `xargs mkdir -p < drive_structure.txt`
 
