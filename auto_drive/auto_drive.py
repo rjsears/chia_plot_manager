@@ -85,10 +85,19 @@ def get_next_mountpoint():
 
     (d) looks like this:
     {'/mnt/enclosure0/front/column0/drive0': True}
+    
+    Make sure your path already exists and that the 'path_glob'
+    ends with a `/*`.
     """
-    path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
-    d = {abspath(d): ismount(d) for d in glob(path_glob)}
-    return natsorted([p for p in d if not d[p]])[0]
+    try:
+        path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
+        d = {abspath(d): ismount(d) for d in glob(path_glob)}
+        return natsorted([p for p in d if not d[p]])[0]
+    except IndexError:
+        print(f'\nNo usable {green}Directories{nc} found, Please check your {yellow}path_glob{nc}, ')
+        print(f'and verify that your directory structure exists. Also, please make sure your')
+        print(f'{yellow}path_glob{nc} ends with a trailing backslash and an *:')
+        print(f'Example:  /mnt/enclosure[0-9]/*/column[0-9]{green}/*{nc}\n')
 
 
 def get_new_drives():
