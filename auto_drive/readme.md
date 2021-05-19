@@ -99,11 +99,21 @@ script as somone who has the ability to execute those commands. `sudo` should wo
   Beyond that, other issues could be related to the person running the script. Make sure you have sufficient user privileges
   to run the following commands:
 
-  1) mkfs.xfs
+  1) mkfs.xfs or mkfs.ext4
   2) get_drive_uuid.sh
   3) sgdisk
   4) mount (although we do use the `user`option on our mount point so this should <em>never</em> be an issue).
   5) Make sure the user running the script has write access to your chia configuration file.
+ 
+  One last thing, if you get an error adding the mountpoint to your chia configuration file and this is the `first`
+  drive you have added, please verify that your plot_directories entry in your chia configuration file looks like
+  the following. If it does not have the trailing `[]` it will not work:
+  
+  `plot_directories: []`
+  
+  
+ 
+ 
   
   <br>
   <h3>Enjoy!</h3>
