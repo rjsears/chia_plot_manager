@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.6 (2021-05-15)"
+VERSION = "0.7 (2021-05-19)"
 
 """
 This script is part of the chia_plot_manager set of scripts.
@@ -63,11 +63,14 @@ nc='\033[0m'
 # Where can we find your Chia Config File?
 chia_config_file = '/root/.chia/mainnet/config/config.yaml'
 
-#Where did we put the get_drive_uuid.sh script (include script name):
-get_drive_uuid = '/root/plot_manager/get_drive_uuid.sh'
+#Where did we put the get_drive_uuid.sh script:
+get_drive_uuid = '/root/plot_manager/plot_manager/get_drive_uuid.sh'
+
+# What filesystem are you using: ext4 or xfs?
+file_system = 'xfs'
 
 
-# Let's get started......
+# Let's get started.......
 
 def get_next_mountpoint():
     """
@@ -85,9 +88,30 @@ def get_next_mountpoint():
 
     (d) looks like this:
     {'/mnt/enclosure0/front/column0/drive0': True}
-    
+
     Make sure your path already exists and that the 'path_glob'
     ends with a `/*`.
+
+    Notice that the path_glob does NOT include the actual drive0,
+    drive1, etc. Your glob needs to be parsed with the *.
+
+    So for this glob: path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
+    this would be the directory structure:
+
+     /mnt
+     ├── enclosure0
+     │   ├── front
+     │   │   ├── column0
+     │   │   │   ├── drive2
+     │   │   │   ├── drive3
+     │   │   │   ├── drive4
+     │   │   │   └── drive5
+     ├── enclosure1
+     │   ├── rear
+     │   │   ├── column0
+     │   │   │   ├── drive6
+     │   │   │   ├── drive7
+
     """
     try:
         path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
@@ -137,13 +161,14 @@ def add_new_drive():
     functions. I tried to do a lot of error checking, but since we are working with a
     drive that `should` have zero data on it, we should not have too much of an issue.
     """
-    check_chia_config_file()
+    print(f'Welcome to auto_drive.py {blue}Version{nc}:{green}{VERSION}{nc}')
+    can_we_run()
     if not get_new_drives():
-        print (f'No new drives found!  {red}EXITING{nc}')
+        print (f'\nNo new drives found!  {red}EXITING{nc}\n')
     else:
         drive = get_new_drives()
         mountpoint = get_next_mountpoint()
-        print (f'\n\nWe are going to format: {blue}{drive}{nc}, add it to {yellow}/etc/fstab{nc} and mount it at {yellow}{mountpoint}{nc}\n')
+        print (f'\nWe are going to format: {blue}{drive}{nc}, add it to {yellow}/etc/fstab{nc} and mount it at {yellow}{mountpoint}{nc}\n')
         format_continue = sanitise_user_input(f'Would you like to {white}CONTINUE{nc}?:  {green}YES{nc} or {red}NO{nc}   ', range_=('Y', 'y', 'YES', 'yes', 'N', 'n', 'NO', 'no'))
         if format_continue in ('Y', 'YES', 'y', 'yes'):
             print (f'We will {green}CONTINUE{nc}!')
@@ -153,9 +178,9 @@ def add_new_drive():
                 print(f'There was a {red}PROBLEM{nc} partitioning your drive, please handle manually!')
                 exit()
             if make_filesystem(drive):
-                print(f'Drive Formatting has been completed {green}successfully{nc}!')
+                print(f'Drive has been formatted as {file_system} {green}successfully{nc}!')
             else:
-                print(f'There was a {red}PROBLEM{nc} formatting your drive, please handle manually!')
+                print(f'There was a {red}PROBLEM{nc} formatting your drive as {green}{file_system}{nc}, please handle manually!')
                 exit()
             if add_uuid_to_fstab(drive):
                 print(f'Drive added to system {green}successfully{nc}!\n\n')
@@ -185,7 +210,7 @@ def sgdisk(drive):
     """
     try:
       print(f'Please wait while we get {blue}{drive}{nc} ready to partition.......')
-      sgdisk_results =  subprocess.run(['sgdisk', drive], capture_output=True, text=True)
+      sgdisk_results =  subprocess.run(['sgdisk', '-Z', drive], capture_output=True, text=True)
       print (sgdisk_results.stdout)
       print (sgdisk_results.stderr)
     except subprocess.CalledProcessError as e:
@@ -222,17 +247,23 @@ def sgdisk(drive):
 
 def make_filesystem(drive):
     """
-    Formats the new drive to XFS filesystem
+    Formats the new drive to selected filesystem
     """
     drive = drive + '1'
     try:
-      print(f'Please wait while we format {blue}{drive}{nc}.................')
-      mkfs_results =  subprocess.run(['mkfs.xfs', '-q', '-f', drive], capture_output=True, text=True)
-      print (mkfs_results.stdout)
-      print (mkfs_results.stderr)
-      print('')
-      print(f'Process (mkfs.xfs) {green}COMPLETE{nc}!')
-      return True
+        print(f'Please wait while we format {blue}{drive}{nc} as {green}{file_system}{nc}.................')
+        if file_system=='xfs':
+            mkfs_results = subprocess.run([f'mkfs.xfs', '-q', '-f', drive], capture_output=True, text=True)
+        elif file_system=='ext4':
+            mkfs_results = subprocess.run([f'mkfs.ext4', '-F', drive], capture_output=True, text=True)
+        else:
+            print(f'{red}ERROR{nc}: Unsupported Filesystem: {file_system}')
+            return False
+        print (mkfs_results.stdout)
+        print (mkfs_results.stderr)
+        print('')
+        print(f'Process (mkfs.{file_system}) {green}COMPLETE{nc}!')
+        return True
     except subprocess.CalledProcessError as e:
         print(f'mkfs {red}Error{nc}: {e}')
         return False
@@ -251,7 +282,7 @@ def add_uuid_to_fstab(drive):
         print(f'Please wait while we add {blue}{drive}{nc} to /etc/fstab.......')
         uuid_results = subprocess.check_output([get_drive_uuid, drive]).decode('ascii').rstrip()
         if uuid_results == '':
-            print(f'{red}BAD{nc} or {yellow}NO{nc} UUID! Please handle drive manually!')
+            print(f'{red}BAD{nc} or {yellow}NO{nc} UUID returned! Please handle this drive manually!')
             return False
         print(f'Your drive UUID is: {green}{uuid_results}{nc}')
         print(f'Verifying that {green}{uuid_results}{nc} does not exist in /etc/fstab')
@@ -285,15 +316,28 @@ def add_uuid_to_fstab(drive):
         print(f'uuid error: {e}')
         return False
 
-def check_chia_config_file():
+
+def can_we_run():
     """
     Check to see if the chia configuration file noted above exists, exits if it does not.
+    Check to see we are using a supported filesystem.
     """
     if exists(chia_config_file):
-        return
+        pass
     else:
-        print(f'{red}ERROR{nc} opening {yellow}{chia_config_file}{nc}! Please check your {yellow}filepath{nc} and try again!')
+        print(f'\n{red}ERROR{nc} opening {green}{chia_config_file}{nc}\nPlease check your {green}filepath{nc} and try again!')
         exit()
+    if file_system not in {'ext4', 'xfs'}:
+        print (f'\n{red}ERROR{nc}: {green}{file_system}{nc} is not a supported filesystem.\nPlease choose {green}ext4{nc} or {green}xfs{nc} and try again!\n')
+        exit()
+    else:
+        pass
+    if exists (get_drive_uuid):
+        pass
+    else:
+        print(f'\n{red}ERROR{nc} opening {green}{get_drive_uuid}{nc}\nPlease check your {green}filepath{nc} and try again!')
+        exit()
+
 
 def update_chia_config(mountpoint):
     """
