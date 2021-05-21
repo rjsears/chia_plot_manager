@@ -95,17 +95,6 @@ white='\033[0;37m'
 blue='\033[0;34m'
 nc='\033[0m'
 
-import sentry_sdk
-
-sentry_sdk.init(
-    "https://xxxxxxxxxxxxxxxxxxxxxxx.ingest.sentry.io/xxxxxxxxx",
-
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=1.0
-)
-from sentry_sdk import capture_exception
 
 # Let's do some housekeeping
 nas_server = 'chianas01'
@@ -644,10 +633,8 @@ def send_email(recipient, subject, body):
         log.debug(f"Email Notification Sent: Subject: {subject}, Recipient: {recipient}, Message: {body}")
     except subprocess.CalledProcessError as e:
         log.debug(f'send_email error: {e}')
-        capture_exception(e)
     except Exception as e:
         log.debug(f'send_email: Unknown Error! Email not sent.')
-        capture_exception(e)
 
 
 # Setup to send out Pushbullet alerts. Pushbullet config is in system_info.py
@@ -659,11 +646,8 @@ def send_push_notification(title, message):
         log.debug(f"Pushbullet Notification Sent: {title} - {message}")
     except pb_errors.InvalidKeyError as e:
         log.debug(f'Pushbullet Exception: Invalid API Key! Message not sent.')
-        capture_exception(e)
     except Exception as e:
         log.debug(f'Pushbullet Exception: Unknown Pushbullet Error: {e}. Message not sent.')
-        capture_exception(e)
-
 
 def send_sms_notification(body, phone_number):
     """Part of our notification system. This handles sending SMS messages."""
@@ -673,10 +657,8 @@ def send_sms_notification(body, phone_number):
         log.debug(f"SMS Notification Sent: {body}.")
     except TwilioRestException as e:
         log.debug(f'Twilio Exception: {e}. Message not sent.')
-        capture_exception(e)
     except Exception as e:
         log.debug(f'Twilio Exception: {e}. Message not sent.')
-        capture_exception(e)
 
 
 def notify(title, message):
