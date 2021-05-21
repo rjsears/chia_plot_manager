@@ -297,6 +297,9 @@ def get_device_by_mountpoint(mountpoint):
     for p in partitions:
         if p.device.startswith('/dev/sd') and p.mountpoint.startswith(mountpoint):
             return [(p.mountpoint, p.device)]
+        else:
+            if p.device.startswith('/dev/nv') and p.mountpoint.startswith(mountpoint):
+                return [(p.mountpoint, p.device)]
 
 def get_mountpoint_by_device(device):
     """
