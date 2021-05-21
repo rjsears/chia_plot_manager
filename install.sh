@@ -55,7 +55,7 @@ create_example_directory_structure(){
              	then
                      	echo -e "We will duplicate ${blue}$structure_selected${nc}"
                      	xargs mkdir -p < $current_directory/extras/drive_structures/$structure_selected
-                     	tree -d /mnt/
+                     	tree -d /mnt
              	else
               create_example_directory_structure
               fi
