@@ -18,8 +18,8 @@ per_plot = False
 current_plotting_drive = /mnt/enclosure0/front/column0/drive3
 
 [plotting_information]
-current_total_plots_midnight = 0
-current_total_plots_daily = 0
+current_total_plots_midnight = 1
+current_total_plots_daily = 1
 
 [remote_transfer]
 remote_transfer_active = remote_transfer_is_active
