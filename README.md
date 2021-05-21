@@ -653,7 +653,7 @@ Dell R820
 4 x E5-4657L V2 CPUs (48 Cores, 96 Threads)
 512GB DDR3 1600Mhz RAM
 Dell 4 x NVMe Drive Cage and Controller
-4 x Intel P4510 NVMe Drives (temp drives)
+4 x 4TB Intel P4510 NVMe Drives (temp drives)
 LSI 9431-8i 12Gbs SAS Controller
 8 x HGST 1.6TB SAS3 12Gbs SSDs (5.8 PBW) (HUSMR1616ASS205)
 (2 in RAID1 for OS, 6 x RAID0 as -d drive)
