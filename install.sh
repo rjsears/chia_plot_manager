@@ -74,7 +74,7 @@ set_permissions (){
 }
 
 nuke_snap (){
-    if [ $(dpkg-query -W -f='${Status}' snapd 2>/dev/null | grep -c "ok installed") -eq 0 ];
+    if [ $(dpkg-query -W -f='${Status}' snapd 2>/dev/null | grep -c "ok installed") -eq 1 ];
     then
         echo -e -n "\nShould we [${yellow}UNINSTALL${nc}] SNAP? "
         read -n 1 -r
@@ -113,9 +113,10 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 current_directory="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 if [ $current_directory != '/root/plot_manager' ]; then
-    echo -e "\n\n${green}All scripts assume that they have been installed at /root/plot_manager$"
-    echo -e "and are configured as such. If you are changing the install directory, please review"
-    echo -e "all scripts for the proper paths.\n\n"
+    echo -e "\n\n ${red}* * * * *${yellow} IMPORTANT {$red}* * * * *${nc}"
+    echo -e "\n\n${green}All scripts assume that they have been installed at ${yellow}/root/plot_manager${green}"
+    echo -e "and are configured as such. If you are changing the install directory,"
+    echo -e "please review all scripts for the proper paths.\n\n"
 else
   echo
 fi
@@ -182,8 +183,8 @@ done
 
 
 must_run_as_root
-get_current_directory
 welcome_message
+get_current_directory
 nuke_snap
 update_software_and_system
 set_permissions
