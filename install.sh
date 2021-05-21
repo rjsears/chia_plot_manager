@@ -113,7 +113,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 current_directory="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 if [ $current_directory != '/root/plot_manager' ]; then
-    echo -e "\n\n ${red}* * * * *${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}"
+    echo -e "\n ${red}* * * * *${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}"
     echo -e "${green}All scripts assume that they have been installed at ${white}/root/plot_manager${green}"
     echo -e "and are configured as such. If you are changing the install directory,"
     echo -e "please review all scripts for the proper paths or they will fail.\n\n"
@@ -190,4 +190,3 @@ update_software_and_system
 set_permissions
 create_example_directory_structure
 final_goodbye
-
