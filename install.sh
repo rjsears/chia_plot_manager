@@ -102,6 +102,7 @@ update_software_and_system(){
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
   apt install locate vim wget dstat smartmontools tree unzip net-tools tmux glances python3-pip pv postfix mailutils -y
   pip3 install -r $current_directory/chianas/requirements.txt
+  apt
   echo -e "${green}DONE${nc}\n"
 }
 
@@ -123,7 +124,47 @@ else
 fi
 }
 
-final_goodbye(){
+update_crontab(){
+  echo ""
+}
+
+improve_network_performance(){
+    must_run_as_root
+    echo -e "\nNetwork Performance settings that >>> ${blue}I${nc} <<< use on my 10Gbe connected"
+    echo -e "plotters, harvesters, and farmers. Your performance may vary from mine!\n"
+    echo -e -n "\nShould we ${yellow}UPDATE${nc} Network Performance Configuration? "
+        read -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "vm.swappiness=1" >> /etc/sysctl.conf
+            echo "net.core.wmem_max=134217728" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_wmem=2097152 16777216 33554432" >> /etc/sysctl.conf
+            echo "net.core.rmem_max=134217728" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_rmem=2097152 16777216 33554432" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_window_scaling = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_timestamps=1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_no_metrics_save=1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_low_latency=0" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_mtu_probing=1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_sack = 0" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_dsack = 0" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_fack = 0" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_slow_start_after_idle = 0 " >> /etc/sysctl.conf
+            echo "net.ipv4.ipfrag_high_threshold = 8388608" >> /etc/sysctl.conf
+            echo "net.core.netdev_max_backlog = 30000" >> /etc/sysctl.conf
+            sysctl -e -p /etc/sysctl.conf
+            echo -e "${green}DONE${nc}\n"
+        else
+          echo -e "${green}DONE${nc}\n"
+       fi
+
+}
+
+
+
+final_notes(){
+  clear
+  get_current_directory
   echo -e "\n\nThank you for choosing to try ${green}plot_manager${nc}, I hope it works well for you. If you"
   echo -e "Have any trouble or issues, please feel free to reach me on my github page.\n"
   echo -e "Before you go, there are some files and configurations that you should check to make sure they"
@@ -131,65 +172,80 @@ final_goodbye(){
   echo -e "By default, the file paths assume installation at /root/plot_manager\n\n"
   echo -e "Please check the following files to see if they need to be changed:\n"
   echo -e "${green}$current_directory/auto_drive/auto_drive.py${nc}:"
-  echo -e "Verify the following: chia_config_file, get_drive_uuid & file_system"
-  echo -e "Also verify that your path_glob is correct for get_next_mountpoint()\n"
+  echo -e "   - Verify the following: chia_config_file, get_drive_uuid & file_system"
+  echo -e "   - Also verify that your path_glob is correct for get_next_mountpoint()\n"
   echo -e "${green}$current_directory/chia_nas/drive_manager.py${nc}:"
-  echo -e "Verify the following: sys.path.append, receive_script & chia_log_file"
-  echo -e "Also verify the correct path in the read_config_data & update_config_data functions.\n"
+  echo -e "   - Verify the following: sys.path.append, receive_script & chia_log_file"
+  echo -e "   - Also verify the correct path in the read_config_data & update_config_data functions.\n"
   echo -e "${green}$current_directory/chia_nas/logging.yaml${nc}:"
-  echo -e "Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
+  echo -e "   - Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
   echo -e "${green}$current_directory/chia_nas/move_local_plots.py${nc}:"
-  echo -e "Verify sys.path.append, drive_activity_test, drive_activity_log, read_config_data\n"
+  echo -e "   - Verify sys.path.append, drive_activity_test, drive_activity_log, read_config_data\n"
   echo -e "${green}$current_directory/chia_nas/offlined_drives${nc}:"
-  echo -e "Enter any drives you want 'offlined'. Should match drives returned bu path_glob in drive_manager.py\n"
+  echo -e "   - Enter any drives you want 'offlined'. Should match drives returned bu path_glob in drive_manager.py\n"
   echo -e "${green}$current_directory/chia_nas/system_info.py${nc}:"
-  echo -e "Update information as necessary.\n"
+  echo -e "   - Update information as necessary.\n"
   echo -e "${green}$current_directory/chia_nas/system_logging.py${nc}:"
-  echo -e "Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n"
+  echo -e "   - Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n"
   echo -e "${green}$current_directory/chiaplot/logging.yaml${nc}:"
-  echo -e "Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
+  echo -e "   - Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
   echo -e "${green}$current_directory/chiaplot/plot_manager.py${nc}:"
-  echo -e "Verify sys.path.append, nas_server, plot_server(.self), network_interface, plot_dir, & remote_checkfile"
-  echo -e "Also verify paths in process_plot().\n"
+  echo -e "   - Verify sys.path.append, nas_server, plot_server(.self), network_interface, plot_dir, & remote_checkfile"
+  echo -e "   - Also verify paths in process_plot().\n"
   echo -e "${green}$current_directory/chiaplot/send_plot.sh${nc}:"
-  echo -e "Verify correct hostnames and paths. Change ${green}chianas01-internal${nc} to your nas hostname.\n"
+  echo -e "   - Verify correct hostnames and paths. Change ${green}chianas01-internal${nc} to your nas hostname.\n"
   echo -e "${green}$current_directory/chiaplot/system_logging.py${nc}:"
-  echo -e "Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n"
+  echo -e "   - Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n"
   echo -e "${green}$current_directory/coin_monitor/coin_monitor.py${nc}:"
-  echo -e "Verify sys.path.append, chia_log, new_coin_log and read_config_data() for correct paths.\n"
+  echo -e "   - Verify sys.path.append, chia_log, new_coin_log and read_config_data() for correct paths.\n"
   echo -e "${green}$current_directory/coin_monitor/coin_monitor_config${nc}:"
-  echo -e "Verify notification settings and how many current coins you have.\n"
+  echo -e "   - Verify notification settings and how many current coins you have.\n"
   echo -e "${green}$current_directory/coin_monitor/logging.yaml${nc}:"
-  echo -e "Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
+  echo -e "   - Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
   echo -e "${green}$current_directory/coin_monitor/system_info.py${nc}:"
-  echo -e "Update information as necessary.\n"
+  echo -e "   - Update information as necessary.\n"
   echo -e "${green}$current_directory/coin_monitor/system_logging.py${nc}:"
-  echo -e "Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n\n"
-  echo -e "To view this list again at any time run $current_directory/install.sh -h\n"
-  echo -e "Install Process Complete - Thank You and have a ${red}G${yellow}R${white}E${green}A${blue}T${nc} Day!\n\n"
+  echo -e "   - Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n\n"
+  echo -e "To view this list again at any time run ${yellow}$current_directory/install.sh notes${nc}\n"
+}
+
+thank_you(){
+  echo -e "\n\nInstall Process Complete - Thank You and have a ${red}G${yellow}R${white}E${green}A${blue}T${nc} Day!\n\n"
 }
 
 
-while getopts ":h" option; do
-   case $option in
-      h) # display Help
-         must_run_as_root
-         clear
-         get_current_directory
-         final_goodbye
-         exit;;
-     \?) # incorrect option
-         echo -e "${red}ERROR${nc}: Invalid option"
-         exit;;
+help (){
+echo -e "\nWelcome to ${green}Chia Plot Manager${nc} and associated utilities!\n"
+echo -e "Options:"
+echo -e "   ${yellow}install${nc}      Starts the install process."
+echo -e "   ${yellow}network${nc}      Only install network performance updates and exits."
+echo -e "   ${yellow}notes${nc}        Shows after-installation notes."
+echo -e "   ${yellow}help${nc}         Shows this help message.\n"
+echo -e "For additional help, please open an issue on my github page.\n"
+}
+
+
+
+start_install(){
+    must_run_as_root
+    welcome_message
+    get_current_directory
+    nuke_snap
+    update_software_and_system
+    set_permissions
+    create_example_directory_structure
+    improve_network_performance
+    final_notes
+    thank_you
+}
+
+
+case "$1" in
+  install)  start_install ;;
+  help)     help ;;
+  network)  improve_network_performance ;;
+  notes)    final_notes ;;
+  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | notes | help ]\n" >&2
+     exit 1
+     ;;
    esac
-done
-
-
-must_run_as_root
-welcome_message
-get_current_directory
-nuke_snap
-update_software_and_system
-set_permissions
-create_example_directory_structure
-final_goodbye
