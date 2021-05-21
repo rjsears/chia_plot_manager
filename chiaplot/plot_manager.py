@@ -42,7 +42,7 @@ VERSION = "0.5 (2021-04-22)"
 
 import os
 import sys
-sys.path.append('/home/chia/plot_manager')
+sys.path.append('/root/plot_manager')
 import subprocess
 import logging
 from system_logging import setup_logging
@@ -62,13 +62,13 @@ network_interface = 'VLAN95_AR03_1-1' # Network interface (ifconfig) that plots 
 # Are we testing?
 testing = False
 if testing:
-    plot_dir = '/home/chia/plot_manager/test_plots/'
+    plot_dir = '/root/plot_manager/test_plots/'
     plot_size = 10000000
-    status_file = '/home/chia/plot_manager/transfer_job_running_testing'
+    status_file = '/root/plot_manager/transfer_job_running_testing'
 else:
     plot_dir = '/mnt/ssdraid/array0/'
     plot_size = 108644374730  # Based on K32 plot size
-    status_file = '/home/chia/plot_manager/transfer_job_running'
+    status_file = '/root/plot_manager/transfer_job_running'
 
 remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
 
