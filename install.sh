@@ -55,6 +55,7 @@ create_example_directory_structure(){
              	then
                      	echo -e "We will duplicate ${blue}$structure_selected${nc}"
                      	xargs mkdir -p < $current_directory/extras/drive_structures/$structure_selected
+                     	tree -d /mnt/
              	else
               create_example_directory_structure
               fi
@@ -123,7 +124,7 @@ fi
 }
 
 final_goodbye(){
-  echo -e "Thank you for choosing to try ${green}plot_manager${nc}, I hope it works well for you. If you"
+  echo -e "\n\nThank you for choosing to try ${green}plot_manager${nc}, I hope it works well for you. If you"
   echo -e "Have any trouble or issues, please feel free to reach me on my github page.\n"
   echo -e "Before you go, there are some files and configurations that you should check to make sure they"
   echo -e "agree with your configuration, otherwise you will have issues with the script(s)."
@@ -173,6 +174,8 @@ while getopts ":h" option; do
    case $option in
       h) # display Help
          must_run_as_root
+         clear
+         get_current_directory
          final_goodbye
          exit;;
      \?) # incorrect option
