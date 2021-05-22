@@ -64,7 +64,7 @@ nc='\033[0m'
 chia_config_file = '/root/.chia/mainnet/config/config.yaml'
 
 #Where did we put the get_drive_uuid.sh script:
-get_drive_uuid = '/root/plot_manager/plot_manager/get_drive_uuid.sh'
+get_drive_uuid = '/root/plot_manager/get_drive_uuid.sh'
 
 # What filesystem are you using: ext4 or xfs?
 file_system = 'xfs'
