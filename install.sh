@@ -120,6 +120,11 @@ update_software_and_system(){
   echo -e "\n\n${green}Updating System Software and Installing Required Packages.........${nc}\n"
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
   apt install locate vim wget dstat smartmontools tree unzip net-tools tmux glances python3-pip pv nmap postfix mailutils -y
+  if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+      apt install openssh-server -y
+      systemctl enable openssh
+      systemctl start openssh
+  fi
   pip3 install -r $current_directory/chianas/requirements.txt
   apt autoremove -y
   echo -e "${green}DONE${nc}\n"
