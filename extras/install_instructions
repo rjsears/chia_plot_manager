@@ -1,0 +1,7 @@
+These are the step-by-step procedures that I follow for installing my new NAS/Harvester on Ubuntu 20.04LTS
+
+1) Install Ubuntu 20.04 LTS Server
+   - Select Updated Installer
+   - Select openssh-server
+   
+   
