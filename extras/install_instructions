@@ -68,5 +68,13 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
     - rm -rf coin_monitor
     - rm -rf extras
     - rm -rf images
+28) For ease of use I move everything into /root/plot_manager
+    - cd /root/plot_manager
+    - mv auto_drive/* .
+    - mv chianas/* .
+    - rm -rf auto_drive
+    - rm -rf chianas
+29) Now I start path verification is all of my files
+    - ./install.sh notes
    
    
