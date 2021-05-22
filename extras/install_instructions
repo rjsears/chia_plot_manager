@@ -30,6 +30,13 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
     removed those drives from `/mnt/enclosure0/front/column0` so that drive_manager.py
     would not put plots on them.
 14) Reboot to verify all software and changes took
+15) After reboot check the following:
+    - Correct network connectivity
+    - ip a and look for your internal interface: 3: eno2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq state UP group default qlen 10000
+    - Verify MTU and qlen
+16) vi /etc/sysctl.conf and very performance enteries at the bottom
+17) df -h to verify snap removal
+19) 
 
 
 
