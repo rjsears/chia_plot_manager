@@ -26,6 +26,7 @@ must_run_as_root(){
     fi
 }
 
+## Welcome everyone....
 welcome_message() {
         echo -e "\n\n                  * * * * * * * * Welcome to the ${red}P${yellow}l${green}o${white}t ${blue}M${red}a${yellow}n${green}g${white}e${blue}r${nc} Install Script * * * * * * * *\n"
         echo -e "${red}WARNING!${nc} - This script assumes you are installing it on a NAS/Harvester. Some of the items (such as cron entries)"
@@ -46,6 +47,7 @@ welcome_message() {
         fi
 }
 
+## Creates our entire plot directory structure based on predefined layouts
 create_example_directory_structure(){
     echo -e -n "\nShould we ${yellow}CREATE${nc} mount points using example directory structure? "
     read -n 1 -r
@@ -78,6 +80,7 @@ create_example_directory_structure(){
     fi
 }
 
+## Sets execute permission
 set_permissions (){
   echo -e "\n\n${green}Setting File Permissions.........${nc}\n"
   chmod +x $current_directory/auto_drive/auto_drive.py
@@ -90,6 +93,7 @@ set_permissions (){
   echo -e "${green}DONE${nc}\n"
 }
 
+## Let's get rid of SNAP, shall we..... 
 nuke_snap (){
     if [ $(dpkg-query -W -f='${Status}' snapd 2>/dev/null | grep -c "ok installed") -eq 1 ];
     then
@@ -109,7 +113,6 @@ nuke_snap (){
             echo -e -n "\nSNAP ${yellow}PRESERVED${nc}!"
         fi
    fi
-
 }
 
 ## Here is where we do all of the software updating that we need to do to
@@ -122,6 +125,7 @@ update_software_and_system(){
   echo -e "${green}DONE${nc}\n"
 }
 
+## Figure out exactly what directory we are in so we can make decisions...
 get_current_directory(){
   SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -140,6 +144,7 @@ else
 fi
 }
 
+## Update our crontab with the necessary entries
 update_crontab(){
   get_current_directory
   echo -e "This will update your root crontab to add the following entries If you need something"
@@ -164,6 +169,7 @@ update_crontab(){
         fi
 }
 
+## Add entries into sysctl to improve network performance
 improve_network_performance(){
     must_run_as_root
     echo -e "\nNetwork Performance settings that >>> ${blue}I${nc} <<< use on my 10Gbe connected"
@@ -196,7 +202,7 @@ improve_network_performance(){
 }
 
 
-
+## Share some final notes...
 final_notes(){
   clear
   get_current_directory
@@ -248,7 +254,7 @@ thank_you(){
   echo -e "\n\nInstall Process Complete - Thank You and have a ${red}G${yellow}R${white}E${green}A${blue}T${nc} Day!\n\n"
 }
 
-
+## Print out help when needed
 help (){
 echo -e "\nWelcome to ${green}Chia Plot Manager${nc} and associated utilities!\n"
 echo -e "Options:"
@@ -261,7 +267,7 @@ echo -e "For additional help, please open an issue on my github page.\n"
 }
 
 
-
+## Here is where we start our install....
 start_install(){
     must_run_as_root
     welcome_message
@@ -276,7 +282,7 @@ start_install(){
     thank_you
 }
 
-
+## And we're off....
 case "$1" in
   install)  start_install ;;
   help)     help ;;
@@ -287,4 +293,3 @@ case "$1" in
      exit 1
      ;;
    esac
-
