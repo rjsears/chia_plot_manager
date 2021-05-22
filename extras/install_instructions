@@ -3,7 +3,7 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
 1) Install Ubuntu 20.04 LTS Server
    - Select Updated Installer
    - Select openssh-server
-   - Configure 2 x SSD for RAID1 Software RAID
+   - Configure 2 x SSD for RAID1 Software RAID for OS
    - Configure Internal and External Network Interfaces
    - Add 'chia' user with password
    - Allow installation of all security updates
@@ -25,6 +25,12 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
 10) chmod +x install.sh
 11) ./install.sh install
 12) Complete installation script as necessary
+13) If you had directory structure created for you, adjust to eliminate drives as necessary
+    For example, in my case I use drive0 and drive1 bays for the two SSD OS drives so I
+    removed those drives from `/mnt/enclosure0/front/column0` so that drive_manager.py
+    would not put plots on them.
+14) Reboot to verify all software and changes took
+
 
 
    
