@@ -19,6 +19,13 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
    - netplan tyr
    - netplan apply
 6) Add following to crontab: @reboot /sbin/ifconfig eno2 txqueuelen 10000
+7) git clone https://github.com/rjsears/chia_plot_manager.git
+8) mv chia_plot_manager plot_manager
+9) cd plot_manager
+10) chmod +x install.sh
+11) ./install.sh install
+12) Complete installation script as necessary
+
 
    
    
