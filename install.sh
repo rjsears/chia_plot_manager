@@ -278,6 +278,7 @@ echo -e "\nWelcome to ${green}Chia Plot Manager${nc} and associated utilities!\n
 echo -e "Options:"
 echo -e "   ${yellow}install${nc}      Starts the install process."
 echo -e "   ${yellow}network${nc}      Only install network performance updates and exits."
+echo -e "   ${yellow}cpu${nc}          Sets CPU to Performance Mode."
 echo -e "   ${yellow}cron${nc}         Updates root crontab."
 echo -e "   ${yellow}notes${nc}        Shows after-installation notes."
 echo -e "   ${yellow}help${nc}         Shows this help message.\n"
@@ -308,8 +309,8 @@ case "$1" in
   network)  improve_network_performance ;;
   notes)    final_notes ;;
   cron)     update_crontab ;;
-  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | cron | notes | help ]\n" >&2
+  cpu)      set_cpu_performance ;;
+  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | cpu | cron | notes | help ]\n" >&2
      exit 1
      ;;
    esac
-
