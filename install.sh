@@ -93,7 +93,7 @@ set_permissions (){
   echo -e "${green}DONE${nc}\n"
 }
 
-## Let's get rid of SNAP, shall we..... 
+## Let's get rid of SNAP, shall we.....
 nuke_snap (){
     if [ $(dpkg-query -W -f='${Status}' snapd 2>/dev/null | grep -c "ok installed") -eq 1 ];
     then
@@ -201,6 +201,18 @@ improve_network_performance(){
        fi
 }
 
+set_cpu_performance(){
+    echo -e -n "\nShould we set our CPU Scaling Governor to ${yellow}PERFORMANCE${nc}? "
+        read -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+           for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "performance" > $file; done
+           echo -e "${yellow}PERFORMANCE${nc} mode set for all cores!\n"
+        else
+            echo -e "CPU Scaling Governor ${yellow}NOT${nc} adjusted.\n"
+        fi
+}
+
 
 ## Share some final notes...
 final_notes(){
@@ -277,6 +289,7 @@ start_install(){
     set_permissions
     create_example_directory_structure
     improve_network_performance
+    set_cpu_performance
     update_crontab
     final_notes
     thank_you
@@ -293,3 +306,4 @@ case "$1" in
      exit 1
      ;;
    esac
+
