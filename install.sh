@@ -27,7 +27,23 @@ must_run_as_root(){
 }
 
 welcome_message() {
-        echo -e "\n\n* * * * * * * * Welcome to the ${red}P${yellow}l${green}o${white}t ${blue}M${red}a${yellow}n${green}g${white}e${blue}r${nc} Install Script * * * * * * * *\n"
+        echo -e "\n\n                  * * * * * * * * Welcome to the ${red}P${yellow}l${green}o${white}t ${blue}M${red}a${yellow}n${green}g${white}e${blue}r${nc} Install Script * * * * * * * *\n"
+        echo -e "${red}WARNING!${nc} - This script assumes you are installing it on a NAS/Harvester. Some of the items (such as cron entries)"
+        echo -e "${red}WARNING!${nc} - may not be suitable for all installations. If you are ${yellow}UNSURE${nc} what options to choose"
+        echo -e "${red}WARNING!${nc} - during the install (crontab, network performance, creating directories), I suggest that you do not"
+        echo -e "${red}WARNING!${nc} - utilize those options until you understand them completely!."
+        echo
+        echo -e "${red}WARNING!${nc} - ${yellow}I have designed this install script for a Fresh, Clean installation of Ubuntu Linux!${nc}"
+        echo
+        echo -e "${red}WARNING!${nc} - Please ${yellow}CAREFULLY${nc} read the notes at the end (or run ./install.sh notes) at any time."
+        echo -e "${red}WARNING!${nc} - There are a ${yellow}LOT${nc} of configuration changes and path updates that need to be done to"
+        echo -e "${red}WARNING!${nc} - make these scripts your own!\n"
+        echo -e -n "Should we ${green}CONTINUE${nc}? "
+        read -n 1 -r
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo -e "\n${yellow}GOODBYE${nc}"
+            exit 1
+        fi
 }
 
 create_example_directory_structure(){
@@ -100,9 +116,9 @@ nuke_snap (){
 update_software_and_system(){
   echo -e "\n\n${green}Updating System Software and Installing Required Packages.........${nc}\n"
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
-  apt install locate vim wget dstat smartmontools tree unzip net-tools tmux glances python3-pip pv postfix mailutils -y
+  apt install locate vim wget dstat smartmontools tree unzip net-tools tmux glances python3-pip pv nmap postfix mailutils -y
   pip3 install -r $current_directory/chianas/requirements.txt
-  apt
+  apt autoremove -y
   echo -e "${green}DONE${nc}\n"
 }
 
@@ -118,14 +134,34 @@ if [ $current_directory != '/root/plot_manager' ]; then
     echo -e "\n ${red}* * * * *${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}"
     echo -e "${green}All scripts assume that they have been installed at ${white}/root/plot_manager${green}"
     echo -e "and are configured as such. If you are changing the install directory,"
-    echo -e "please review all scripts for the proper paths or they will fail.\n\n"
+    echo -e "please review all scripts for the proper paths or they will fail${nc}.\n\n"
 else
   echo
 fi
 }
 
 update_crontab(){
-  echo ""
+  get_current_directory
+  echo -e "This will update your root crontab to add the following entries If you need something"
+  echo -e "different, remember to make the necessary changes after the installation has completed."
+  echo -e ""
+  echo -e "PATH=$current_directory:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  echo -e "01 00 * * * cd $current_directory && /usr/bin/python3 $current_directory/drive_manager.py -ud >/dev/null 2>&1"
+  echo -e "02 00 * * * cd $current_directory && /usr/bin/python3 $current_directory/drive_manager.py -dr >/dev/null 2>&1"
+  echo -e "*/1 * * * * cd $current_directory && /usr/bin/python3 $current_directory/drive_manager.py >/dev/null 2>&1"
+  echo -e "*/2 * * * * cd $current_directory && /usr/bin/python3 $current_directory/move_local_plots.py >/dev/null 2>&1"
+  echo -e -n "\nShould we ${yellow}UPDATE${nc} Crontab with these entries? "
+        read -n 1 -r
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+          (crontab -l ; echo "PATH=$current_directory:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")| crontab -
+          (crontab -l ; echo "01 00 * * * cd $current_directory && /usr/bin/python3 $current_directory/drive_manager.py -ud >/dev/null 2>&1")| crontab -
+          (crontab -l ; echo "02 00 * * * cd $current_directory && /usr/bin/python3 $current_directory/drive_manager.py -dr >/dev/null 2>&1")| crontab -
+          (crontab -l ; echo "*/1 * * * * cd $current_directory && /usr/bin/python3 $current_directory/drive_manager.py >/dev/null 2>&1")| crontab -
+          (crontab -l ; echo "*/2 * * * * cd $current_directory && /usr/bin/python3 $current_directory/move_local_plots.py -ud >/dev/null 2>&1")| crontab -
+          echo -e "\nCrontab has been ${yellow}UPDATED${nc}!\n"
+        else
+            echo -e "\nCrontab has ${red}NOT${nc} been ${yellow}UPDATED${nc}!\n"
+        fi
 }
 
 improve_network_performance(){
@@ -157,7 +193,6 @@ improve_network_performance(){
         else
           echo -e "${green}DONE${nc}\n"
        fi
-
 }
 
 
@@ -219,6 +254,7 @@ echo -e "\nWelcome to ${green}Chia Plot Manager${nc} and associated utilities!\n
 echo -e "Options:"
 echo -e "   ${yellow}install${nc}      Starts the install process."
 echo -e "   ${yellow}network${nc}      Only install network performance updates and exits."
+echo -e "   ${yellow}cron${nc}         Updates root crontab."
 echo -e "   ${yellow}notes${nc}        Shows after-installation notes."
 echo -e "   ${yellow}help${nc}         Shows this help message.\n"
 echo -e "For additional help, please open an issue on my github page.\n"
@@ -235,6 +271,7 @@ start_install(){
     set_permissions
     create_example_directory_structure
     improve_network_performance
+    update_crontab
     final_notes
     thank_you
 }
@@ -245,7 +282,9 @@ case "$1" in
   help)     help ;;
   network)  improve_network_performance ;;
   notes)    final_notes ;;
-  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | notes | help ]\n" >&2
+  cron)     update_crontab ;;
+  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | cron | notes | help ]\n" >&2
      exit 1
      ;;
    esac
+
