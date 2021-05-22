@@ -201,6 +201,7 @@ improve_network_performance(){
        fi
 }
 
+## Set CPU scaling governor to Performance
 set_cpu_performance(){
     echo -e -n "\nShould we set our CPU Scaling Governor to ${yellow}PERFORMANCE${nc}? "
         read -n 1 -r
