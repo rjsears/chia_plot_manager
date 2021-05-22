@@ -3,5 +3,22 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
 1) Install Ubuntu 20.04 LTS Server
    - Select Updated Installer
    - Select openssh-server
+   - Configure 2 x SSD for RAID1 Software RAID
+   - Configure Internal and External Network Interfaces
+   - Add 'chia' user with password
+   - Allow installation of all security updates
+   - Reboot
+2) Log in and test network connections
+3) Adjust /etc/ssh/sshd_config as desired
+4) vi /etc/.bashrc
+   - Uncomment: force_color_yes
+   - Adjust prompt as desired
+   - source /etc/.bashrc
+5) vi /etc/netplan/00-installer-config.yaml
+   - Adjust MTU to 9000 for internal 10Gbe interface
+   - netplan tyr
+   - netplan apply
+6) Add following to crontab: @reboot /sbin/ifconfig eno2 txqueuelen 10000
+
    
    
