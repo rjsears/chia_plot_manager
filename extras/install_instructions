@@ -76,5 +76,11 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
     - rm -rf chianas
 29) Now I start path verification is all of my files
     - ./install.sh notes
+30) Install Chia per the instructions on their site
+    - https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL#ubuntudebian
+31) Install plotman per the instruction on their site
+    - https://github.com/ericaltendorf/plotman
+32 Configure Harvester for remote Farmer per:
+   - https://github.com/Chia-Network/chia-blockchain/wiki/Farming-on-many-machines
    
    
