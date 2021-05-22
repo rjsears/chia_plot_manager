@@ -706,12 +706,14 @@ def send_new_plot_notification():
             notify('New Plot Received', 'New Plot Received')
         os.remove('new_plot_received')
 
-
 def check_plots():
     with open(chia_log_file, 'rb', 0) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         i = m.rfind(b'Loaded')
-        m.seek(i)
+        try:
+            m.seek(i)
+        except ValueError as e:
+            return 0, 0
         line = m.readline()
         newline = line.decode("utf-8")
         x = newline.split()
