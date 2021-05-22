@@ -29,7 +29,7 @@ must_run_as_root(){
 ## Welcome everyone....
 welcome_message() {
         echo -e "\n\n                  * * * * * * * * Welcome to the ${red}P${yellow}l${green}o${white}t ${blue}M${red}a${yellow}n${green}g${white}e${blue}r${nc} Install Script * * * * * * * *\n"
-        echo -e "${red}WARNING!${nc} - This script assumes you are installing it on a NAS/Harvester. Some of the items (such as cron entries)"
+        echo -e "${red}WARNING!${nc} - This script assumes you are installing it on a ${yellow}NAS/Harvester${nc}. Some of the items (such as cron entries)"
         echo -e "${red}WARNING!${nc} - may not be suitable for all installations. If you are ${yellow}UNSURE${nc} what options to choose"
         echo -e "${red}WARNING!${nc} - during the install (crontab, network performance, creating directories), I suggest that you do not"
         echo -e "${red}WARNING!${nc} - utilize those options until you understand them completely!."
