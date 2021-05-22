@@ -62,5 +62,11 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
     - mount -a
     - Verify drives have mounted
     - df -h (look for mountpoints)
+27) Clean up install directory (this is for NAS/Harvester)
+    - cd /root/plot_manager
+    - rm -rf chiaplot
+    - rm -rf coin_monitor
+    - rm -rf extras
+    - rm -rf images
    
    
