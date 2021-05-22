@@ -36,8 +36,19 @@ These are the step-by-step procedures that I follow for installing my new NAS/Ha
     - Verify MTU and qlen
 16) vi /etc/sysctl.conf and very performance enteries at the bottom
 17) df -h to verify snap removal
-19) 
-
+19) run iperf3 connectivity test to very network connectivity and settings
+    - [  5]   0.00-10.00  sec  11.5 GBytes  9.90 Gbits/sec                  receiver
+20) Configure Postfix for system notifications and alerts
+21) mail -s "Test From ChiaNAS03" richardjs@gmail.com < /dev/null
+    - Verify the email arrived at it's intended destination
+22) Configure NVMe Drives (this for for a multipath drive, yours may differ):
+    - multipath -ll
+    - multipath -F
+    - fdisk all NVMe drives, create new partition filling drive and write.
+23) Create mdraid
+    - mdadm --create /dev/md/chia_temp_space --level=0 --raid-devices=2 /dev/nvme0n1p1 /dev/nvme1n1p1
+    - mdadm --create /dev/md/chia_dst_space --level=0 --raid-devices=2 /dev/nvme2n1p1 /dev/nvme3n1p1
+    - lsblk to see what md# was assigned
 
 
    
