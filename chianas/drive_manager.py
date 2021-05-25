@@ -463,7 +463,6 @@ def get_list_of_plot_drives():
     """
     Return list of tuples of all available plot drives on the system and the device assignment
     [('/mnt/enclosure0/front/column0/drive3', '/dev/sde1')]
-    ===> Currently Unused
     """
     partitions = psutil.disk_partitions(all=False)
     mountpoint = []
