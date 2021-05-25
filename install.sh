@@ -206,7 +206,7 @@ improve_network_performance(){
        fi
 }
 
-## Set CPU scaling governor to Performance
+## Set CPU scaling governor to Performance and add to crontab
 set_cpu_performance(){
     echo -e -n "\nShould we set our CPU Scaling Governor to ${yellow}PERFORMANCE${nc}? "
         read -n 1 -r
@@ -214,6 +214,18 @@ set_cpu_performance(){
         if [[ $REPLY =~ ^[Yy]$ ]]; then
            for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "performance" > $file; done
            echo -e "${yellow}PERFORMANCE${nc} mode set for all cores!\n"
+           echo -e -n "\nAdd to ${yellow}Crontab${nc} for persistence across reboots? "
+           read -n 1 -r
+           echo
+           if [[ $REPLY =~ ^[Yy]$ ]]; then
+               (crontab -l ; echo "@reboot /root/set_cpu_to_performance.sh")| crontab -
+               echo -e "\n${yellow}@reboot /root/set_cpu_to_performance.sh${nc} added to root crontab"
+               echo -e "${red}IMPORTANT:${nc} Move your ${yellow}set_cpu_to_performance.sh${nc} script to ${yellow}/root${nc}"
+               echo -e "and make sure to ${yellow}chmod +x set_cpu_to_performance.sh${nc}. Recommend rebooting to"
+               echo -e "proper operation.\n"
+            else
+              echo -e "${yellow}set_cpu_to_performance.sh${nc} was ${red}NOT${nc} added to crontab"
+            fi
         else
             echo -e "CPU Scaling Governor ${yellow}NOT${nc} adjusted.\n"
         fi
