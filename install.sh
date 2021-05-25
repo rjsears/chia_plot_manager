@@ -119,7 +119,7 @@ nuke_snap (){
 update_software_and_system(){
   echo -e "\n\n${green}Updating System Software and Installing Required Packages.........${nc}\n"
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
-  apt install locate vim wget dstat smartmontools tree unzip net-tools tmux glances python3-pip pv nmap iperf3 postfix mailutils -y
+  apt install locate vim wget dstat smartmontools tree unzip net-tools tmux glances python3-pip pv nmap postfix mailutils -y
   if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
       apt install openssh-server -y
       systemctl enable openssh
@@ -202,11 +202,11 @@ improve_network_performance(){
             sysctl -e -p /etc/sysctl.conf
             echo -e "${green}DONE${nc}\n"
         else
-          echo -e "${green}DONE${nc}\n"
+          echo -e "${green}DONE${nc} - We will ${red}NOT${nc} update performance settings.\n"
        fi
 }
 
-## Set CPU scaling governor to Performance and add to crontab
+## Set CPU scaling governor to Performance
 set_cpu_performance(){
     echo -e -n "\nShould we set our CPU Scaling Governor to ${yellow}PERFORMANCE${nc}? "
         read -n 1 -r
@@ -245,18 +245,18 @@ final_notes(){
   echo -e "${green}$current_directory/auto_drive/auto_drive.py${nc}:"
   echo -e "   - Verify the following: chia_config_file, get_drive_uuid & file_system"
   echo -e "   - Also verify that your path_glob is correct for get_next_mountpoint()\n"
-  echo -e "${green}$current_directory/chianas/drive_manager.py${nc}:"
+  echo -e "${green}$current_directory/chia_nas/drive_manager.py${nc}:"
   echo -e "   - Verify the following: sys.path.append, receive_script & chia_log_file"
   echo -e "   - Also verify the correct path in the read_config_data & update_config_data functions.\n"
-  echo -e "${green}$current_directory/chianas/logging.yaml${nc}:"
+  echo -e "${green}$current_directory/chia_nas/logging.yaml${nc}:"
   echo -e "   - Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
-  echo -e "${green}$current_directory/chianas/move_local_plots.py${nc}:"
+  echo -e "${green}$current_directory/chia_nas/move_local_plots.py${nc}:"
   echo -e "   - Verify sys.path.append, drive_activity_test, drive_activity_log, read_config_data\n"
-  echo -e "${green}$current_directory/chianas/offlined_drives${nc}:"
+  echo -e "${green}$current_directory/chia_nas/offlined_drives${nc}:"
   echo -e "   - Enter any drives you want 'offlined'. Should match drives returned bu path_glob in drive_manager.py\n"
-  echo -e "${green}$current_directory/chianas/system_info.py${nc}:"
+  echo -e "${green}$current_directory/chia_nas/system_info.py${nc}:"
   echo -e "   - Update information as necessary.\n"
-  echo -e "${green}$current_directory/chianas/system_logging.py${nc}:"
+  echo -e "${green}$current_directory/chia_nas/system_logging.py${nc}:"
   echo -e "   - Verify sys.path.append, default_logging() and read_logging_config() for correct paths.\n"
   echo -e "${green}$current_directory/chiaplot/logging.yaml${nc}:"
   echo -e "   - Verify correct filename and paths for your logging files, should be ${green}$current_directory/logs${nc}\n"
@@ -290,7 +290,6 @@ echo -e "\nWelcome to ${green}Chia Plot Manager${nc} and associated utilities!\n
 echo -e "Options:"
 echo -e "   ${yellow}install${nc}      Starts the install process."
 echo -e "   ${yellow}network${nc}      Only install network performance updates and exits."
-echo -e "   ${yellow}cpu${nc}          Sets CPU to Performance Mode."
 echo -e "   ${yellow}cron${nc}         Updates root crontab."
 echo -e "   ${yellow}notes${nc}        Shows after-installation notes."
 echo -e "   ${yellow}help${nc}         Shows this help message.\n"
@@ -321,8 +320,7 @@ case "$1" in
   network)  improve_network_performance ;;
   notes)    final_notes ;;
   cron)     update_crontab ;;
-  cpu)      set_cpu_performance ;;
-  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | cpu | cron | notes | help ]\n" >&2
+  *) echo -e "\n${yellow}Usage${nc}: $0 [ install | network | cron | notes | help ]\n" >&2
      exit 1
      ;;
    esac
