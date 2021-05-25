@@ -76,7 +76,7 @@ other things like notifications and stuff.
 import os
 import sys
 
-sys.path.append('/root/plot_manager/plot_manager')
+sys.path.append('/root/plot_manager')
 import subprocess
 import shutil
 import psutil
@@ -114,7 +114,7 @@ nc='\033[0m'
 nas_server = 'chianas01' #THIS server hostname should go here!
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
-receive_script = '/root/plot_manager/plot_manager/receive_plot.sh'
+receive_script = '/root/plot_manager/receive_plot.sh'
 chia_log_file = '/root/.chia/mainnet/log/debug.log'
 
 # Date and Time Stuff
@@ -314,7 +314,7 @@ program_descripton = f'''
 
 # Grab command line arguments if there are any
 def init_argparser():
-    with open('/root/plot_manager/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     parser = argparse.ArgumentParser(description=program_descripton, formatter_class=RawFormatter)
     parser.add_argument('-v', '--version', action='version', version=f'{parser.prog} {VERSION}')
@@ -333,7 +333,7 @@ def get_offlined_drives():
     """
     Get a list of all of our offlined drives.
     """
-    with open('/root/plot_manager/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
         if offlined_drives != None:
             return offlined_drives
@@ -345,7 +345,7 @@ def get_offlined_drives():
 # If we are expecting a boolean back pass True/1 for bool,
 # otherwise False/0
 def read_config_data(file, section, item, bool):
-    pathname = '/root/plot_manager/plot_manager/' + file
+    pathname = '/root/plot_manager/' + file
     config.read(pathname)
     if bool:
         return config.getboolean(section, item)
@@ -354,7 +354,7 @@ def read_config_data(file, section, item, bool):
 
 
 def update_config_data(file, section, item, value):
-    pathname = '/root/plot_manager/plot_manager/' + file
+    pathname = '/root/plot_manager/' + file
     config.read(pathname)
     cfgfile = open(pathname, 'w')
     config.set(section, item, value)
