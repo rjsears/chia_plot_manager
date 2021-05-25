@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.7 - May 17th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.8 - May 24th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -137,6 +137,7 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
   <li><a href="https://github.com/truenas/py-SMART">py-SMART (0.3)</a> - Used for reading drive information</li>
   <li><a href="https://pypi.org/project/natsort/">Natsort (7.1.1)</a> - Used for natural sorting of drive numbers</li>
  <li><a href="http://dag.wieers.com/home-made/dstat/">DStat (0.8.0)</a> - Used to monitor Disk I/O Stats</li>
+ <li><a href="http://www.paramiko.org/">Paramike (2.7.2)</a> - Used to grab remote harvester stats</li>
  
  </ul>
  <hr>
@@ -458,7 +459,7 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
 These options print out the help message or version information and exits.
 
 ```
-******** ChiaNAS Drive Manager - 0.6 (2021-04-22) ********
+******** ChiaNAS Drive Manager - 0.8 (2021-05-24) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
@@ -477,6 +478,12 @@ There are several commandline switches you can use to get immediate reports and 
                             how many plots are currently on the system and how many more
                             you can add based on the current drive configuration. It also
                             includes plotting speed information for the last 24 hours.
+
+-fr or --farm_report        This queries your farm and returns a report letting you know
+                            how many plots are currently in the farm and how many more
+                            you can add based on the current drive configuration. It also
+                            includes plotting speed information for the last 24 hours farm wide.
+                            **NOTE: Must be configured!
 
 -ud or --update_daily       This updates the total number of plots the system has created
                             over the past 24 hours. Use with CAUTION!. This should be ran
@@ -503,6 +510,7 @@ optional arguments:
   -dr, --daily_report   Run the ChiaPlot Daily Email Report and exit
   -ct, --check_temps    Return a list of drives and their temperatures and exit
   -pr, --plot_report    Return the total # of plots on the system and total you can add and exit
+  -fr, --farm_report    Return the total # of plots on your entire farm and total you can add and exit
   -ud, --update_daily   Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
   -off OFFLINE_HDD, --offline_hdd OFFLINE_HDD.  Offline a specific drive. Use drive number: drive6
                         
@@ -585,6 +593,50 @@ Latest Smart Drive Assessment of Plot Drive:            PASS
 ```
 
 <br><br>
+<b> -fr    --farm_report</b><br>
+This options prints out a full farm daily plot report to the screen
+and exits.
+ 
+```
+############################################################
+################### Farm Wide Plot Report ##################
+############################################################
+Harvesters: ['chianas01', 'chianas02', 'chianas03']
+Total Number of Plots on Farm:                          7043
+Total Number of Plots Chia is Farming:                  7032
+Total Amount of Drive Space (TiB) Chia is Farming:       696
+Total Number of Systemwide Plots Drives:                 122
+Total Number of k32 Plots until full:                   6082
+Maximum # of plots when full:                          13230
+Plots completed in the last 24 Hours:                    236
+Average Plots per Hours:                                  10
+Average Plotting Speed Last 24 Hours (TiB/Day):           24
+Appx Number of Days to fill all current plot drives:      26
+############################################################
+################ chianas01 Harvester Report ################
+############################################################
+Total number of plots on chianas01:                    6624
+Plots completed in the last 24 hours:                  131
+Average Plotting Speed Last 24 Hours (Tib/Day):        13.23
+Appx # of Days to fill all drives on this harvester:   8
+############################################################
+################ chianas02 Harvester Report ################
+############################################################
+Total number of plots on chianas02:                    287
+Plots completed in the last 24 hours:                  44
+Average Plotting Speed Last 24 Hours (Tib/Day):        4.44
+Appx # of Days to fill all drives on this harvester:   77
+############################################################
+################ chianas03 Harvester Report ################
+############################################################
+Total number of plots on chianas03:                    132
+Plots completed in the last 24 hours:                  61
+Average Plotting Speed Last 24 Hours (Tib/Day):        6.16
+Appx # of Days to fill all drives on this harvester:   26
+############################################################
+```
+ 
+<br><br>
 <b>-ud --update_daily</b><br>
 This option is really designed to be called from your crontab right before you run your daily email:
 
@@ -597,6 +649,8 @@ It is designed to calculate the information necessary for the daily plot report.
 you want but it will reset this information to the point in time you called it as oppoed to giving you
 a 24 hour view of your system.
 <br>
+
+
 
 ### <a name="coins"></a>Coin Monitor (Only Chia Version 1.1.1 or Higher)
 
@@ -696,6 +750,17 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+
+<b>V0.8 2021-05-24</b>
+   - Added Multi-Harvester Reporting. Once configured across all harvesters
+     you can run a farm report from any of your harvesters. Outputs all of 
+     your harvester data to a json file which is then grabbed when you run 
+     the report. Utilizes Paramiko to manage the sftp connection between 
+     the harvesters. If you want to utilize this, please be sure to read
+     the instructions below.
+     
+   - Added additional command line utility to drive_manager.py:
+        * -fr or --farm_report    Quick total Farm Report outputs to screen 
 
 <b>V0.7 2021-05-17</b>
    - Minor bug fixes and spelling error corrections.
