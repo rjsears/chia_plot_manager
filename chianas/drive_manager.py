@@ -157,7 +157,7 @@ remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
                         
 Finally if you want to run remote harvester reports, set to True below.
 """
-remote_harvester_reports = True
+remote_harvester_reports = False
 remote_harvesters = ['chianas02', 'chianas03'] # Only "other harvesters", not this harvester.
 remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
 local_export_file = f'/root/plot_info_export/{nas_server}_export.json'
