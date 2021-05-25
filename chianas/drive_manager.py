@@ -235,7 +235,7 @@ def farm_wide_space_report():
         print (f'Total Number of k32 Plots until full:                   {yellow}{totals.get("total_plots_until_full")}{nc}')
         print (f'Maximum # of plots when full:                          {yellow}{totals.get("max_plots_when_full")}{nc}')
         print (f'Plots completed in the last 24 Hours:                    {yellow}{totals.get("plots_last_day")}{nc}')
-        print (f'Average Plots per Hours:                                  {yellow}{round(totals.get("avg_plots_per_hour"))}{nc}')
+        print (f'Average Plots per Hour:                                  {yellow}{round(totals.get("avg_plots_per_hour"))}{nc}')
         print (f'Average Plotting Speed Last 24 Hours (TiB/Day):           {yellow}{round(totals.get("avg_plotting_speed"))}{nc}')
         print(f'Appx Number of Days to fill all current plot drives:     {yellow} {round(days_until_full)}{nc}')
         print(f'{blue}############################################################{nc}')
