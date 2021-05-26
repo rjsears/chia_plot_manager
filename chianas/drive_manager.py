@@ -540,17 +540,20 @@ def get_plot_drive_to_use():
          to make sure the drive selected has not been marked as "offline".
         #TODO incorporate in get_plot_drive_with_available_space()
         """
-    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open('/root/plot_manager/plot_manager/offlined_drives', 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     available_drives = []
-    for part in psutil.disk_partitions(all=False):
-        if part.device.startswith('/dev/sd') \
-                and part.mountpoint.startswith('/mnt/enclosure') \
-                and get_drive_info('space_free_plots_by_mountpoint', part.mountpoint) >= 1 \
-                and get_drive_by_mountpoint(part.mountpoint) not in offlined_drives:
-            drive = get_drive_by_mountpoint(part.mountpoint)
-            available_drives.append((part.mountpoint, part.device, drive))
-    return (natsorted(available_drives)[0][0])
+    try:
+        for part in psutil.disk_partitions(all=False):
+            if part.device.startswith('/dev/sd') \
+                    and part.mountpoint.startswith('/mnt/enclosure') \
+                    and get_drive_info('space_free_plots_by_mountpoint', part.mountpoint) >= 1 \
+                    and get_drive_by_mountpoint(part.mountpoint) not in offlined_drives:
+                drive = get_drive_by_mountpoint(part.mountpoint)
+                available_drives.append((part.mountpoint, part.device, drive))
+        return (natsorted(available_drives)[0][0])
+    except IndexError:
+        log.debug("ERROR: No Drives Found, Please add drives, run auto_drive.py and try again!")
 
 def get_sorted_drive_list():
     """
