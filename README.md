@@ -144,6 +144,8 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 
 ### <a name="install"></a>Installation & Configuration
 
+Here is a very indepth install document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
+ 
 The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. The plotter is pretty easy.
 
 #### Plotter Configuration
