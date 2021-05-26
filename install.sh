@@ -126,6 +126,9 @@ update_software_and_system(){
       systemctl start openssh
   fi
   pip3 install -r $current_directory/chianas/requirements.txt
+  git clone https://github.com/truenas/py-SMART.git
+  cd py-SMART
+  python3 setup.py install
   apt autoremove -y
   echo -e "${green}DONE${nc}\n"
 }
