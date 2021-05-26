@@ -61,7 +61,7 @@ blue='\033[0;34m'
 nc='\033[0m'
 
 # Where can we find your Chia Config File?
-chia_config_file = '/root/.chia/mainnet/config/config.yaml'
+chia_config_file = '/home/chia/.chia/mainnet/config/config.yaml'
 
 #Where did we put the get_drive_uuid.sh script:
 get_drive_uuid = '/root/plot_manager/get_drive_uuid.sh'
