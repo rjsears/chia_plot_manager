@@ -4,7 +4,7 @@
 
 __author__ = 'Richard J. Sears'
 VERSION = "0.8 (2021-05-25)"
-
+c
 """
 Simple python script that helps to move my chia plots from my plotter to
 my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -718,7 +718,7 @@ def send_daily_update_email():
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
     if read_config_data('plot_manager_config', 'notifications', 'daily_update', True):
         for email_address in system_info.alert_email:
-            create_index_html(template='index.html',
+            create_index_html(template='daily_update.html',
                               recipient=email_address,
                               subject='NAS Server Daily Update\nContent-Type: text/html',
                               current_time=current_military_time,
@@ -745,7 +745,7 @@ def send_daily_update_email():
 
 def create_new_index_html_report():
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
-    create_index_html(template='index.html',
+    create_index_html(template='daily_update.html',
                       current_time=current_military_time,
                       nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
                       current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
