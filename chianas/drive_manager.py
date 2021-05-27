@@ -115,7 +115,7 @@ nas_server = 'chianas01' #THIS server hostname should go here!
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
 receive_script = '/root/plot_manager/receive_plot.sh'
-chia_log_file = '/root/.chia/mainnet/log/debug.log'
+chia_log_file = '/home/chia/.chia/mainnet/log/debug.log'
 
 # Date and Time Stuff
 today = datetime.today().strftime('%A').lower()
@@ -540,7 +540,7 @@ def get_plot_drive_to_use():
          to make sure the drive selected has not been marked as "offline".
         #TODO incorporate in get_plot_drive_with_available_space()
         """
-    with open('/root/plot_manager/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     available_drives = []
     try:
