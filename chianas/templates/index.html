@@ -1,0 +1,33 @@
+<html>
+<body>
+<h3><b>NAS Server: {{nas_server}}</b></h3>
+
+<b>Plot Report Generated at {{current_time}}</b><br>
+
+Current Plotting Drive (by mountpoint)...................{{current_plotting_drive_by_mountpoint}}<br>
+Current Plotting Drive (by device)...........................{{current_plotting_drive_by_device}}<br>
+Drive Size...............................................................{{drive_size}}<br>
+
+<br>
+<b>Environmental & Health</b><br>
+Drive Serial Number................................................{{drive_serial_number}}<br>
+Current Drive Temperature......................................{{current_drive_temperature}}&deg;C<br>
+Last Smart Test Health Assessment........................{{smart_health_assessment}}<br>
+
+<br>
+<b>Other Information</b><br>
+Total Plots on <b>{{nas_server}}</b>.........................................{{total_serverwide_plots}}<br>
+Plots Being Farmed as reported by Chia.................{{total_serverwide_plots_chia}}<br>
+Current Total Number of Plot Drives........................{{total_number_of_drives}}<br>
+Number of k32 Plots until full...................................{{total_k32_plots_until_full}}<br>
+Max # of Plots with current # of Drives....................{{max_number_of_plots}}<br>
+Total Plot Space in use as reported by Chia............{{total_serverwide_space_per_chia}} <b>TiB</b><br>
+
+<br>
+<b>Plotting Speed</b><br>
+Total Plots Last 24 Hours.........................................{{total_plots_last_day}}<br>
+Average Plots Per Hour...........................................{{average_plots_per_hour}}<br>
+Average Plotting Speed Last 24 Hours....................{{average_plotting_speed}} <b>TiB/Day</b><br>
+Approx. # of Days to fill all Plot Drives.....................{{days_to_fill_drives}}<br>
+</body>
+</html>
