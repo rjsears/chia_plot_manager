@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.5 (2021-04-22)"
+VERSION = "0.9 (2021-05-27)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -18,7 +18,6 @@ VERSION = "0.5 (2021-04-22)"
 
 import os
 import sys
-sys.path.append('/root/plot_manager')
 import logging
 import psutil
 import configparser
@@ -29,6 +28,9 @@ import shutil
 from timeit import default_timer as timer
 from drive_manager import get_device_by_mountpoint
 import subprocess
+import pathlib
+
+script_path = pathlib.Path(__file__).parent.resolve()
 
 
 # Set the below file paths as necessary. The `drive_activity_log` needs to match
@@ -39,17 +41,17 @@ import subprocess
 # Are we testing?
 testing = False
 if testing:
-    plot_dir = '/root/plot_manager/test_plots/'
+    plot_dir = script_path.joinpath('test_plots/')
     plot_size = 10000000
-    status_file = '/root/plot_manager/local_transfer_job_running_testing'
-    drive_activity_test = '/root/plot_manager/check_drive_activity.sh'
-    drive_activity_log = '/root/plot_manager/drive_monitor.iostat'
+    status_file = script_path.joinpath('local_transfer_job_running_testing')
+    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
+    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 else:
-    plot_dir = '/mnt/enclosure1/front/column1/drive43'
+    plot_dir = '/mnt/enclosure1/front/column3/drive55' # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
-    status_file = '/root/plot_manager/local_transfer_job_running'
-    drive_activity_test = '/root/plot_manager/check_drive_activity.sh'
-    drive_activity_log = '/root/plot_manager/drive_monitor.iostat'
+    status_file = script_path.joinpath('local_transfer_job_running')
+    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
+    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 
 
 
@@ -69,7 +71,7 @@ log.setLevel(level)
 # otherwise False/0
 config = configparser.ConfigParser()
 def read_config_data(file, section, item, bool):
-    pathname = '/root/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     if bool:
         return config.getboolean(section, item)
@@ -115,7 +117,7 @@ def process_plot():
             else:
                 log.debug('FAILURE - Plot sizes DO NOT Match')
                 process_control('set_status', 'stop')  #Set to stop so it will attempt to run again in the event we want to retry....
-                main() # Try Again
+                main() # Try Again - no need to do anything with the file, shutil.copy2 will overwrite an existing file.
             process_control('set_status', 'stop')
             os.remove(plot_path)
             log.info(f'Removing: {plot_path}')
