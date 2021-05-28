@@ -194,7 +194,7 @@ def remote_harvester_report():
                 harvester = json.loads(local_host.read())
                 servers.append(harvester)
             for harvester in remote_harvesters:
-                remote_export_file = f'/root/plot_info_export/{harvester}_export.json'
+                remote_export_file = (script_path.joinpath(f'export/{harvester}_export.json').as_posix())
                 get_remote_exports(harvester, remote_export_file)
                 with open(remote_export_file, 'r') as remote_host:
                     harvester = json.loads(remote_host.read())
@@ -250,7 +250,7 @@ def host_check(host):
 
 def get_remote_exports(host, remote_export_file):
     """
-    Utilize Paramike to grab our harvester exports
+    Utilize Paramiko to grab our harvester exports
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
