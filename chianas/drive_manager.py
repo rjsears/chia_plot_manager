@@ -3,8 +3,8 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.8 (2021-05-25)"
-c
+VERSION = "0.9 (2021-05-27)"
+
 """
 Simple python script that helps to move my chia plots from my plotter to
 my nas. I wanted to use netcat as it was much faster on my 10GBe link than
@@ -14,6 +14,17 @@ other things like notifications and stuff.
 
 
  Updates
+   V0.9 2021-05-27
+   - Major changes to code to auto detect installation path and try
+     to make intelligent decisions as a result. Also updated the
+     directory structures. 
+    
+   - Added host checking for multi-nas setup and configuration. If a 
+     host is not available the farm report will still run after letting
+     you know that one of your NASs is offline. 
+     
+   - Added additional error checking.
+    
  
    V0.8 2021-05-24
    - Added Multi-Harvester Reporting. Once configured across all harvesters
@@ -75,8 +86,6 @@ other things like notifications and stuff.
 
 import os
 import sys
-
-sys.path.append('/root/plot_manager')
 import subprocess
 import shutil
 import psutil
@@ -100,6 +109,9 @@ from natsort import natsorted
 import mmap
 import json
 import paramiko
+import pathlib
+
+script_path = pathlib.Path(__file__).parent.resolve()
 
 # Define some colors for our help message
 red='\033[0;31m'
@@ -111,11 +123,13 @@ nc='\033[0m'
 
 
 # Let's do some housekeeping
-nas_server = 'chianas01' #THIS server hostname should go here!
+nas_server = 'chianas01' #THIS server's hostname should go here!
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
-receive_script = '/root/plot_manager/receive_plot.sh'
-chia_log_file = '/home/chia/.chia/mainnet/log/debug.log'
+receive_script = script_path.joinpath('receive_plot.sh')
+
+# Enter the full path (including filename) to your Chia install debug.log
+chia_log_file = '/root/.chia/mainnet/log/debug.log'
 
 # Date and Time Stuff
 today = datetime.today().strftime('%A').lower()
@@ -145,10 +159,12 @@ exact names you use below and that it can be reached vi ssh without a password.
 Remote reporting won't work otherwise.
 
 Also make sure the directory that you list here is the same on your remote
-harvesters.
+harvesters. There is NO NEED to change anything here is you installed 
+chia_plot_manager in the same directory on all systems, if not, you will
+need to alter these lines.
 
 For example, remote_export_file and local_export_file paths should all be the
-same so the script works correctly. Onny change the first part of the path, do 
+same so the script works correctly. Only change the first part of the path, do 
 not change the last part:
 
 remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
@@ -157,29 +173,29 @@ remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
                         
 Finally if you want to run remote harvester reports, set to True below.
 """
-remote_harvester_reports = False
+remote_harvester_reports_active = True
 remote_harvesters = ['chianas02', 'chianas03'] # Only "other harvesters", not this harvester.
-remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
-local_export_file = f'/root/plot_info_export/{nas_server}_export.json'
+remote_export_file = script_path.joinpath(f'export/{remote_harvesters}_export.json')
+local_export_file = script_path.joinpath(f'export/{nas_server}_export.json')
 
-def remote_harverster_report():
-    if not remote_harvester_reports:
+
+def remote_harvester_report():
+    if not remote_harvester_reports_active:
         log.debug('Remote Harvester Reports are NOT Configured')
     else:
-        #log.debug('Remote Harvester Reports are Configured and Active')
+        remote_harvesters = check_remote_harvesters()
         if nas_server in remote_harvesters:
-            log.debug('CAUTION: Your local harvester (this machine) is listed as one of your remote harvesters!')
-            log.debug('CAUTION: Please Correct!')
+            print(f'\n{red}CAUTION{nc}: Your local harvester {yellow}{nas_server}{nc} is listed as one of your remote harvesters!')
+            print(f'{red}CAUTION{nc}: Unable to Run Report. Please Correct!\n')
+            exit()
         else:
             servers = []
             with open(local_export_file, 'r') as local_host:
                 harvester = json.loads(local_host.read())
                 servers.append(harvester)
-           # log.debug(f'Local  Harvester Configured: {nas_server}')
-            for harverster in remote_harvesters:
-                #log.debug(f'Remote Harvester Configured: {harverster}')
-                remote_export_file = f'/root/plot_info_export/{harverster}_export.json'
-                get_remote_exports(harverster, remote_export_file)
+            for harvester in remote_harvesters:
+                remote_export_file = f'/root/plot_info_export/{harvester}_export.json'
+                get_remote_exports(harvester, remote_export_file)
                 with open(remote_export_file, 'r') as remote_host:
                     harvester = json.loads(remote_host.read())
                     servers.append(harvester)
@@ -197,14 +213,40 @@ def remote_harverster_report():
                 totals["avg_plots_per_hour"] += e["avg_plots_per_hour"]
                 totals["avg_plotting_speed"] += e["avg_plotting_speed"]
                 totals["approx_days_to_fill_drives"] += e["approx_days_to_fill_drives"]
-            return totals, servers
+            return totals, servers, remote_harvesters
 
+'''
 def get_all_harvesters():
     all_harvesters = []
     all_harvesters.append(nas_server)
     for harvester in remote_harvesters:
         all_harvesters.append(harvester)
     return(all_harvesters)
+'''
+
+def check_remote_harvesters():
+    """
+    Make sure our harvesters are online!
+    """
+    harvesters_check = {}
+    for harvester in remote_harvesters:
+        harvesters_check[harvester] = host_check(harvester)
+    dead_hosts = [host for host, alive in harvesters_check.items() if not alive]
+    if dead_hosts != []:
+        print(f'\n           {red}WARNING{nc}: {yellow}{dead_hosts}{nc} is OFFLINE!{nc}')
+    alive_hosts = [host for host, alive in harvesters_check.items() if alive]
+    return(alive_hosts)
+
+
+def host_check(host):
+    """
+    Check to see if a specific host is alive
+    """
+    proc = subprocess.run(
+        ['ping', '-W1', '-q', '-c', '2', host],
+        stdout=subprocess.DEVNULL)
+    return proc.returncode == 0
+
 
 def get_remote_exports(host, remote_export_file):
     """
@@ -212,22 +254,28 @@ def get_remote_exports(host, remote_export_file):
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(host)
-    sftp = ssh.open_sftp()
-    sftp.get(remote_export_file, remote_export_file)
+    try:
+        ssh.connect(host)
+        sftp = ssh.open_sftp()
+        sftp.get(remote_export_file, remote_export_file)
+    finally:
+        ssh.close()
+
 
 def farm_wide_space_report():
     """
     This prints out our Farm Wide Report
     """
-    if remote_harvester_reports:
-        totals = remote_harverster_report()[0]
+    if remote_harvester_reports_active:
+        remote_harvester_reports = (remote_harvester_report())
+        totals = remote_harvester_reports[0]
         days_until_full = (totals.get("total_plots_until_full") / totals.get("plots_last_day"))
+        harvesters = [nas_server, *remote_harvester_reports[2]]
         print('')
         print(f'{blue}############################################################{nc}')
         print(f'{blue}################### {green}Farm Wide Plot Report{blue} ##################{nc}' )
         print(f'{blue}############################################################{nc}')
-        print(f'Harvesters: {yellow}{get_all_harvesters()}{nc}')
+        print(f'Harvesters: {yellow}{harvesters}{nc}')
         print (f'Total Number of Plots on {green}Farm{nc}:                          {yellow}{totals.get("total_plots")}{nc}')
         print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{totals.get("total_plots_farming")}{nc}')
         print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{totals.get("total_tib_farming")}{nc}')
@@ -239,13 +287,12 @@ def farm_wide_space_report():
         print (f'Average Plotting Speed Last 24 Hours (TiB/Day):           {yellow}{round(totals.get("avg_plotting_speed"))}{nc}')
         print(f'Appx Number of Days to fill all current plot drives:     {yellow} {round(days_until_full)}{nc}')
         print(f'{blue}############################################################{nc}')
-        individual_harvester_report()
+        individual_harvester_report(remote_harvester_reports[1], remote_harvester_reports[2])
         print()
     else:
         print(f'\n{red}ERROR{nc}: {yellow}Farm Wide Reports Have Not Been Configured. Please Configure and Try Again!{nc}\n')
 
-def individual_harvester_report():
-    servers = remote_harverster_report()[1]
+def individual_harvester_report(servers, remote_harvesters):
     for server in servers:
         print(f'{blue}################ {green}{server["server"]} Harvester Report{blue} ################{nc}')
         print(f'{blue}############################################################{nc}')
@@ -314,7 +361,7 @@ program_descripton = f'''
 
 # Grab command line arguments if there are any
 def init_argparser():
-    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open(script_path.joinpath('offlined_drives'), 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     parser = argparse.ArgumentParser(description=program_descripton, formatter_class=RawFormatter)
     parser.add_argument('-v', '--version', action='version', version=f'{parser.prog} {VERSION}')
@@ -333,7 +380,7 @@ def get_offlined_drives():
     """
     Get a list of all of our offlined drives.
     """
-    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open(script_path.joinpath('offlined_drives'), 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
         if offlined_drives != None:
             return offlined_drives
@@ -345,7 +392,7 @@ def get_offlined_drives():
 # If we are expecting a boolean back pass True/1 for bool,
 # otherwise False/0
 def read_config_data(file, section, item, bool):
-    pathname = '/root/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     if bool:
         return config.getboolean(section, item)
@@ -354,7 +401,7 @@ def read_config_data(file, section, item, bool):
 
 
 def update_config_data(file, section, item, value):
-    pathname = '/root/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     cfgfile = open(pathname, 'w')
     config.set(section, item, value)
@@ -407,7 +454,10 @@ def get_drive_info(action, drive):
 
 
 def dev_test(drive):
-    return shutil.disk_usage(drive)
+    bytes_available = shutil.disk_usage(drive).free
+    gb_available = bytes_available /  1024 / 1024 / 1024
+    return gb_available / 102
+    #return shutil.disk_usage(drive).free
     #return Device(drive)
 
 def get_drive_by_mountpoint(mountpoint):
@@ -540,7 +590,7 @@ def get_plot_drive_to_use():
          to make sure the drive selected has not been marked as "offline".
         #TODO incorporate in get_plot_drive_with_available_space()
         """
-    with open('/root/plot_manager/offlined_drives', 'r') as offlined_drives_list:
+    with open(script_path.joinpath('offlined_drives'), 'r') as offlined_drives_list:
         offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     available_drives = []
     try:
@@ -745,7 +795,7 @@ def send_daily_update_email():
 
 def create_new_index_html_report():
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
-    create_index_html(template='daily_update.html',
+    create_index_html(template='index.html',
                       current_time=current_military_time,
                       nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
                       current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
@@ -799,7 +849,7 @@ def nas_report_export():
     This function generates the json file with all of the server information for
     our total farm report for those running multiple harvesters.
     """
-    if remote_harvester_reports:
+    if remote_harvester_reports_active:
         log.debug('nas_report_export() started')
         plots_last_day = int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))
         if plots_last_day == 0:
@@ -815,13 +865,14 @@ def nas_report_export():
             ('plots_last_day', int(plots_last_day)),
             ('avg_plots_per_hour', round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))) / 24, 1)),
             ('avg_plotting_speed', round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g) / 1000), 2)),
-            ('approx_days_to_fill_drives', int(get_all_available_system_space('free')[1] / plots_last_day))
+            ('approx_days_to_fill_drives', int(get_all_available_system_space('free')[1] / plots_last_day)),
+            ('current_plot_drive', read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))
         ])
         try:
             with open(local_export_file, 'w') as nas_export:
                 nas_export.write(json.dumps(nas_server_export))
         except:
-            log.debug(f'Unable to write to export file! Check \"{export_file}\" path above and try again!')
+            log.debug(f'Unable to write to export file! Check \"{local_export_file}\" path above and try again!')
         return nas_server_export
     else:
         pass
@@ -999,6 +1050,7 @@ def main():
         nas_report_export()
         send_new_plot_notification()
         update_receive_plot()
+
 
 
 if __name__ == '__main__':
