@@ -1,1 +1,0 @@
-mdadm --create /dev/md/chia_temp_space --level=0 --raid-devices=2 /dev/nvme0n1p1 /dev/nvme1n1p1
