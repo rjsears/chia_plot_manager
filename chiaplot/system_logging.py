@@ -3,10 +3,10 @@
 
 """
 Part of drive_manager. This is the logging module.
-For use with drive_manager V0.1
+For use with drive_manager
 """
 
-VERSION = "V0.1 (2021-03-17)"
+VERSION = "V0.9 (2021-05-27)"
 
 import sys
 import os
@@ -15,10 +15,12 @@ import logging.config
 import logging
 import logging.handlers
 import configparser
-sys.path.append('/home/chia/plot_manager')
 config = configparser.ConfigParser()
+import pathlib
 
-def setup_logging(default_path='/home/chia/plot_manager/logging.yaml', default_level=logging.CRITICAL, env_key='LOG_CFG'):
+script_path = pathlib.Path(__file__).parent.resolve()
+
+def setup_logging(default_path=script_path.joinpath('logging.yaml'), default_level=logging.CRITICAL, env_key='LOG_CFG'):
     """Module to configure program-wide logging. Designed for yaml configuration files."""
     log_level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
     log = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ def setup_logging(default_path='/home/chia/plot_manager/logging.yaml', default_l
                     logging.config.dictConfig(config)
                 except Exception as e:
                     print(e)
-                    print('Error in Logging Configuration. Using default configs. Check File Permissions (for a start)!')
+                    print('Error in Logging Configuration. Using default configs!')
                     logging.basicConfig(level=default_level)
         else:
             logging.basicConfig(level=default_level)
@@ -48,7 +50,7 @@ def setup_logging(default_path='/home/chia/plot_manager/logging.yaml', default_l
 
 
 def read_logging_config(file, section, status):
-    pathname = '/home/chia/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     if status == "logging":
         current_status = config.getboolean(section, status)
