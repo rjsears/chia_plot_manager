@@ -129,7 +129,7 @@ plot_size_g = 101.3623551
 receive_script = script_path.joinpath('receive_plot.sh')
 
 # Enter the full path (including filename) to your Chia install debug.log
-chia_log_file = '/root/.chia/mainnet/log/debug.log'
+chia_log_file = '/home/chia/.chia/mainnet/log/debug.log'
 
 # Date and Time Stuff
 today = datetime.today().strftime('%A').lower()
