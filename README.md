@@ -173,6 +173,7 @@ I recommend installing in ```/root/plot_manager```. If you would like to install
  <br>
  ```
 /root/plot_manager
+├── export
 ├── extras
 ├── logs
 ├── test_plots
