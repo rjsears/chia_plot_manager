@@ -187,14 +187,14 @@ Here is the directure structure on my plotter:
 ├── logs
 └── test_plots
 ```
-
+<br><br>
  
  
 Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However you do need to make some changes in ```plot_manager.py```. Most of these are in the beginning of the file:
 
-```testing = False``` - Pretty self explanatory 
-```multiple_harvesters = False``` - Default to False, set to ```True``` if you have more than one Harvester/NAS
- ```remote_harvesters = ['chianas01', 'chianas02', 'chianas03']``` - Enter the hostnames of your remote harvesters. 
+```testing = False``` - Pretty self explanatory <br>
+```multiple_harvesters = False``` - Default to False, set to ```True``` if you have more than one Harvester/NAS<br>
+```remote_harvesters = ['chianas01', 'chianas02', 'chianas03']``` - Enter the hostnames of your remote harvesters.<br> 
  
 ```
 # Are we testing?
