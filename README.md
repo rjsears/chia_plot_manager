@@ -365,6 +365,12 @@ drive_manager:269 - update_receive_plot: DEBUG No changes necessary to /root/plo
 drive_manager:270 - update_receive_plot: DEBUG Plots left available on configured plotting drive: 58
 ```
 <br><br>
+ 
+#### Notifications
+
+If you want to receive votifications, you need to properly configure your local MTA (install.sh install postfix by default) and test it. In addition, if you want to use Pushbullet ot receive SMS text messages via Twillio you need to configure those accounts and then update ```system_info.py``` with the correct account information. Failure to do so will result in you not getting any notifications.<br><br>
+ 
+Once you have notifications setup and tested:<br>
 
 When the plot drives does change, you get a nicely formatted email:
 ```
@@ -741,6 +747,13 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+
+<b>V0.9 2021-05-28</b>
+   - Added full multi-harvester capabilities to ```plot_manager.py``` along
+     with host checks for all harvesters prior to attempting a plot move.
+   - Reworked all scripts to auto detect installation path and remove
+     the necessity to make a bunch of path changes in the scripts.
+   - Various bug fixes and other small enhancements.
 
 <b>V0.8 2021-05-24</b>
    - Added Multi-Harvester Reporting. Once configured across all harvesters
