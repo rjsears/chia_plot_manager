@@ -169,7 +169,7 @@ I recommend installing in ```/root/plot_manager```. If you would like to install
  
 ```git clone https://github.com/rjsears/chia_plot_manager.git```<br><br>
 
- Once cloned, I copy everything to the ```/root/plot_manager``` directory. The my final directory structure looks like this:
+ Once cloned, I copy everything to the ```/root/plot_manager``` directory. My final directory structure looks like this:
  <br>
  ```
 /root/plot_manager
