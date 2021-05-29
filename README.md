@@ -199,7 +199,8 @@ The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These
 While all of my actual plotting is done as the ```chia``` user, I store all of my scripts at ```/root/plot_manager``` I do have a little bit of testing built into the script and that is what the test_plots directory is used for. I simple ```dd``` 10G of zeros into a test plot file and turn on testing in the script to test everything before going live. Eventually I will add a lot more testing capability, but that is down the road. 
 
 <br><br>
- 
+
+## Update ```plot_manager.py```
  
 Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However you do need to make some changes in ```plot_manager.py```. Most of these are in the beginning of the file:
 
