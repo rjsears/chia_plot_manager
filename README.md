@@ -143,7 +143,7 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
   <li><a href="https://github.com/truenas/py-SMART">py-SMART (0.3)</a> - Used for reading drive information</li>
   <li><a href="https://pypi.org/project/natsort/">Natsort (7.1.1)</a> - Used for natural sorting of drive numbers</li>
  <li><a href="http://dag.wieers.com/home-made/dstat/">DStat (0.8.0)</a> - Used to monitor Disk I/O Stats</li>
- <li><a href="http://www.paramiko.org/">Paramike (2.7.2)</a> - Used to grab remote harvester stats</li>
+ <li><a href="http://www.paramiko.org/">Paramiko (2.7.2)</a> - Used to grab remote harvester stats</li>
  
  </ul>
  <hr>
