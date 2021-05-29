@@ -150,9 +150,9 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 
 ### <a name="install"></a>Installation & Configuration
 
-Here is a very indepth installation document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
+Here is a very in-depth installation document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
  
-The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>INDEPTH</em> instructions pretty much step-by-step, take a look at the google doc I linked to above.
+The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>IN-DEPTH</em> instructions pretty much step-by-step, take a look at the google doc I linked to above. Again, please read the document above for very in-depth instructions.
 
 #### Network Configuration
 
@@ -200,76 +200,18 @@ While all of my actual plotting is done as the ```chia``` user, I store all of m
 
 <br><br>
 
-## Update ```plot_manager.py```
+#### Update ```plot_manager.py```
  
 Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However you do need to make some changes in ```plot_manager.py```. Most of these are in the beginning of the file:
 
 ```testing = False``` - Pretty self explanatory <br>
 ```multiple_harvesters = False``` - Default to False, set to ```True``` if you have more than one Harvester/NAS<br>
-```remote_harvesters = ['chianas01', 'chianas02', 'chianas03']``` - Enter the hostnames of your remote harvesters.<br> 
+```remote_harvesters = ['chianas01', 'chianas02', 'chianas03']``` - Enter the hostnames of your remote harvesters<br> 
+ ```nas_server = ('chianas01')``` - If you are <em>NOT</em> using multiple harvesters, this will be the hostname of your only harvester/NAS<br>
+ ```network_interface = 'VLAN95_AR03_1-1'``` - Entter the network name of you internal NIC here, verify with ```ip a```<br>
+ ```plot_dir = '/mnt/ssdraid/array0/'``` - Your ```-d``` directory path<br>
  
- 
- 
-```
-# Are we testing?
-testing = False
-if testing:
-    plot_dir = '/home/chia/plot_manager/test_plots/'
-    plot_size = 10000000
-    status_file = '/home/chia/plot_manager/transfer_job_running_testing'
-else:
-    plot_dir = "/mnt/ssdraid/array0/"
-    plot_size = 108644374730  # Based on K32 plot size
-    status_file = '/home/chia/plot_manager/transfer_job_running'
-
-remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
-```
-
 Change the ```plot_dir``` and ```plot_size``` for both testing and not testing to suit your system and needs. 
-
-
-```status_file``` is a local file that is created when we start a plot move and deleted once we have completed that move. We check for that when we first run to make sure we are not attempting to move several plots at the same time. 
-
-You will see this in the logs:<br>
-```2021-03-19 18:50:01,830 - plot_manager:155 - process_control: DEBUG Checkfile Exists, We are currently Running a Transfer, Exiting```
-<br><br>
-As I grow, I plan on adding in a second dedicated 10Gbe link for moving plots and I can expand this out to include the ability to track sessions across each link.
-<br><br>
-```remote_checkfile``` is used on the NAS system to prevent our NAS drive_manager.py script from altering the destination drive in the middle of a plot move. On the NAS, I run everything as the ```root``` user hence the directory path. Alter to meet your needs.
-<br>
-That is pretty much everything on the plotter side. The final part of the puzzle is the ```send_plot.sh``` shell script. On line 99 of the ```plot_manager.py``` script you will find this line:<br>
-```subprocess.call(['/home/chia/plot_manager/send_plot.sh', plot_path, plot_to_process])```
-You need to alter the directory and name of the script to suite you needs. This is the script that is called that actually send the plot to the nas. This is the contents:
-
-```
-#!/bin/bash
-#
-ssh root@chianas01-internal "nohup /root/plot_manager/receive_plot.sh $2 > foo.out 2> foo.err < /dev/null &"
-sudo /usr/bin/pv "$1" | sudo /usr/bin/nc -q 5 chianas01-internal 4040
-```
-Here are a few more paths you need to check. I would put line numbers but those could change, just search the code and replace as necessary.<br><br>
-
-Before starting the script, make sure you have the following paths correctly identified in the script:<br><br>
-Located in the `process_plot()` function:<br>
-`['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`<br><br>
-This is the location on the NAS side where the script looks for the current drive being utilized. For example if you have `drive_manager.py`
-installed in your home directory `/home/your_name/plot_manager` then this line would look like this:<br>
-`['ssh', nas_server, 'grep enclosure /home/your_name/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")`
-<br><br>
-Enter the location the script lives here:<br>
-`sys.path.append('/home/chia/plot_manager')`<br>
-<br>
-And also on this line:
-`['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])`
-<br><br>
-And here is where the script lives on the NAS server:<br>
-`subprocess.check_output(['ssh', nas_server, 'touch %s' % '/root/plot_manager/new_plot_received'])`<br>
-<br><br>
-Finally, take a look in the `system_logging.py` script and make sure all of the paths there are correct and do the same in the `loggin.yaml` file for your log file locations. <br><br>
-
-
-Depending on how you have your NAS setup, we may have to change a few more lines of code. I will come back to that after we talk about the NAS.<br>
-
 
 
 <hr>
