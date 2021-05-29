@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.9 (2021-05-27)"
+VERSION = "0.9 (2021-05-28)"
 
 """
 This script is part of the chia_plot_manager set of scripts.
