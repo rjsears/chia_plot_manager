@@ -150,9 +150,9 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 
 ### <a name="install"></a>Installation & Configuration
 
-Here is a very indepth install document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
+Here is a very indepth installation document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
  
-The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs.
+The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>INDEPTH</em> instructions pretty much step-by-step, take a look at the google doc I linked to above.
 
 #### Network Configuration
 
@@ -165,7 +165,20 @@ You could have an entire discussion on network performance and the install scrip
 
 ### To get started
  
-```git clone https://github.com/rjsears/chia_plot_manager.git```
+I recommend installing in ```/root/plot_manager```. If you would like to install elsewhere that is fine, if you want to use a virtual environment, that should work as well. I have not personally tried running these outside of ```/root/plot_manager``` but so long as you have the basic directory structure <em>under</em> your install directory, it should work out of the box. 
+ 
+```git clone https://github.com/rjsears/chia_plot_manager.git```<br><br>
+
+ Once cloned, I copy everything to the ```/root/plot_manager``` directory. The my final directory structure looks like this:
+ <br>
+ ```
+/root/plot_manager
+├── extras
+├── logs
+├── test_plots
+├── utilities
+└── web
+```
  
 #### Plotter Configuration
 
@@ -185,12 +198,6 @@ The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These
 
 While all of my actual plotting is done as the ```chia``` user, I store all of my scripts at ```/root/plot_manager``` I do have a little bit of testing built into the script and that is what the test_plots directory is used for. I simple ```dd``` 10G of zeros into a test plot file and turn on testing in the script to test everything before going live. Eventually I will add a lot more testing capability, but that is down the road. 
 
-Here is the directure structure on my plotter:
-```
-/root/plot_manager
-├── logs
-└── test_plots
-```
 <br><br>
  
  
