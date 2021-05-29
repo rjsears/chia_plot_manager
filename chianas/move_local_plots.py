@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.9 (2021-05-27)"
+VERSION = "0.9 (2021-05-28)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -17,13 +17,10 @@ VERSION = "0.9 (2021-05-27)"
 
 
 import os
-import sys
 import logging
-import psutil
 import configparser
 from system_logging import setup_logging
 from system_logging import read_logging_config
-import pathlib
 import shutil
 from timeit import default_timer as timer
 from drive_manager import get_device_by_mountpoint
@@ -101,8 +98,8 @@ def process_plot():
             process_control('set_status', 'start')
             plot_path = plot_dir + '/' + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
-            current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
-            log.debug(f'Current Plotting Drive is: {current_plotting_drive}')
+            current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
+            log.debug(f'Current Internal Plotting Drive is: {current_plotting_drive}')
             log.debug(f'Starting Copy of {plot_path}')
             start_time = timer()
             try:
@@ -174,7 +171,8 @@ def process_control(command, action):
 
 def check_drive_activity():
     try:
-        subprocess.call([drive_activity_test, get_device_by_mountpoint(plot_dir)[0][1].split('/')[2]])
+        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive_internal', False)
+        subprocess.call([drive_activity_test, get_device_by_mountpoint(current_plotting_drive)[0][1].split('/')[2]])
     except subprocess.CalledProcessError as e:
         log.warning(e.output)
     with open(drive_activity_log, 'rb') as f:
