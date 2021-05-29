@@ -16,6 +16,7 @@ per_plot = False
 
 [plotting_drives]
 current_plotting_drive = /mnt/enclosure0/front/column0/drive3
+current_internal_drive = /mnt/enclosure0/front/column0/drive4
 
 [plotting_information]
 current_total_plots_midnight = 1

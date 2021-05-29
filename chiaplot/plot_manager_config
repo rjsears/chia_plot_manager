@@ -4,3 +4,9 @@ debug = True
 [system_logging]
 logging = True
 log_level = DEBUG
+
+[notifications]
+alerting = True
+pb = True
+email = True
+sms = True

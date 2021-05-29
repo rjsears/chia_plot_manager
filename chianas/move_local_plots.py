@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.5 (2021-04-22)"
+VERSION = "0.9 (2021-05-28)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -17,18 +17,17 @@ VERSION = "0.5 (2021-04-22)"
 
 
 import os
-import sys
-sys.path.append('/root/plot_manager')
 import logging
-import psutil
 import configparser
 from system_logging import setup_logging
 from system_logging import read_logging_config
-import pathlib
 import shutil
 from timeit import default_timer as timer
 from drive_manager import get_device_by_mountpoint
 import subprocess
+import pathlib
+
+script_path = pathlib.Path(__file__).parent.resolve()
 
 
 # Set the below file paths as necessary. The `drive_activity_log` needs to match
@@ -39,28 +38,25 @@ import subprocess
 # Are we testing?
 testing = False
 if testing:
-    plot_dir = '/root/plot_manager/test_plots/'
+    plot_dir = script_path.joinpath('test_plots/')
     plot_size = 10000000
-    status_file = '/root/plot_manager/local_transfer_job_running_testing'
-    drive_activity_test = '/root/plot_manager/check_drive_activity.sh'
-    drive_activity_log = '/root/plot_manager/drive_monitor.iostat'
+    status_file = script_path.joinpath('local_transfer_job_running_testing')
+    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
+    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 else:
-    plot_dir = '/mnt/enclosure1/front/column1/drive43'
+    plot_dir = '/mnt/enclosure1/front/column3/drive55' # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
-    status_file = '/root/plot_manager/local_transfer_job_running'
-    drive_activity_test = '/root/plot_manager/check_drive_activity.sh'
-    drive_activity_log = '/root/plot_manager/drive_monitor.iostat'
-
-
+    status_file = script_path.joinpath('local_transfer_job_running')
+    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
+    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
 level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
 level = logging._checkLevel(level)
-log = logging.getLogger('move_local_plots')
+log = logging.getLogger(__name__)
 log.setLevel(level)
-
 
 # Let's Get Started
 
@@ -69,7 +65,7 @@ log.setLevel(level)
 # otherwise False/0
 config = configparser.ConfigParser()
 def read_config_data(file, section, item, bool):
-    pathname = '/root/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     if bool:
         return config.getboolean(section, item)
@@ -99,8 +95,8 @@ def process_plot():
             process_control('set_status', 'start')
             plot_path = plot_dir + '/' + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
-            current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
-            log.debug(f'Current Plotting Drive is: {current_plotting_drive}')
+            current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
+            log.debug(f'Current Internal Plotting Drive is: {current_plotting_drive}')
             log.debug(f'Starting Copy of {plot_path}')
             start_time = timer()
             try:
@@ -115,7 +111,7 @@ def process_plot():
             else:
                 log.debug('FAILURE - Plot sizes DO NOT Match')
                 process_control('set_status', 'stop')  #Set to stop so it will attempt to run again in the event we want to retry....
-                main() # Try Again
+                main() # Try Again - no need to do anything with the file, shutil.copy2 will overwrite an existing file.
             process_control('set_status', 'stop')
             os.remove(plot_path)
             log.info(f'Removing: {plot_path}')
@@ -172,7 +168,8 @@ def process_control(command, action):
 
 def check_drive_activity():
     try:
-        subprocess.call([drive_activity_test, get_device_by_mountpoint(plot_dir)[0][1].split('/')[2]])
+        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive_internal', False)
+        subprocess.call([drive_activity_test, get_device_by_mountpoint(current_plotting_drive)[0][1].split('/')[2]])
     except subprocess.CalledProcessError as e:
         log.warning(e.output)
     with open(drive_activity_log, 'rb') as f:

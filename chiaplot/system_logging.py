@@ -3,52 +3,72 @@
 
 """
 Part of drive_manager. This is the logging module.
-For use with drive_manager V0.1
+For use with plot_manager V0.9
 """
 
-VERSION = "V0.1 (2021-03-17)"
+VERSION = "V0.9 (2021-05-27)"
 
-import sys
-import os
-import yaml
 import logging.config
 import logging
 import logging.handlers
 import configparser
-sys.path.append('/home/chia/plot_manager')
 config = configparser.ConfigParser()
+import pathlib
+script_path = pathlib.Path(__file__).parent.resolve()
 
-def setup_logging(default_path='/home/chia/plot_manager/logging.yaml', default_level=logging.CRITICAL, env_key='LOG_CFG'):
-    """Module to configure program-wide logging. Designed for yaml configuration files."""
+
+def setup_logging(default_level=logging.CRITICAL):
+    """Module to configure program-wide logging."""
     log_level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
     log = logging.getLogger(__name__)
     level = logging._checkLevel(log_level)
     log.setLevel(level)
     system_logging = read_logging_config('plot_manager_config', 'system_logging', 'logging')
     if system_logging:
-        path = default_path
-        value = os.getenv(env_key, None)
-        if value:
-            path = value
-        if os.path.exists(path):
-            with open(path, 'rt') as f:
-                try:
-                    config = yaml.safe_load(f.read())
-                    logging.config.dictConfig(config)
-                except Exception as e:
-                    print(e)
-                    print('Error in Logging Configuration. Using default configs. Check File Permissions (for a start)!')
-                    logging.basicConfig(level=default_level)
-        else:
+        try:
+            logging.config.dictConfig(log_config)
+        except Exception as e:
+            print(e)
+            print('Error in Logging Configuration. Using default configs. Check File Permissions (for a start)!')
             logging.basicConfig(level=default_level)
-            print('Failed to load configuration file. Using default configs')
-            return log
+        return log
     else:
         log.disabled = True
 
+log_config = {'version': 1, 'disable_existing_loggers': False,
+            'formatters': {'console': {'format': '%(message)s'},
+                           'console_expanded': {'format': '%(module)2s:%(lineno)s - %(funcName)3s: %(levelname)3s:    %(message)s'},
+                           'standard': {'format': '%(asctime)s - %(module)2s:%(lineno)s - %(funcName)3s: %(levelname)3s %(message)s'},
+                           'error': {'format': '%(levelname)s <PID %(process)d:%(processName)s> %(module)s.%(funcName)s(): %(message)s'}},
+
+            'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'console_expanded', 'stream': 'ext://sys.stdout'},
+                         'info_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'INFO', 'formatter': 'standard',
+                                               'filename': script_path.joinpath("logs/info.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
+
+                         'error_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'ERROR', 'formatter': 'error',
+                                                'filename': script_path.joinpath("logs/errors.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
+
+                         'debug_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'DEBUG', 'formatter': 'standard',
+                                                'filename': script_path.joinpath("logs/debug.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
+
+                         'critical_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'CRITICAL', 'formatter': 'standard',
+                                                   'filename': script_path.joinpath("logs/critical.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
+
+                         'warning_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'WARNING', 'formatter': 'standard',
+                                                  'filename': script_path.joinpath("logs/warning.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
+
+                         'plot_manager_handler': {'class': 'logging.handlers.RotatingFileHandler', 'formatter': 'standard', 'filename': script_path.joinpath("logs/plot_manager.log").as_posix(),
+                                                  'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'}},
+
+            'root': {'level': 'NOTSET', 'handlers': None, 'propogate': False},
+            'loggers': {'__main__':
+                            {'handlers': ['console', 'info_file_handler', 'error_file_handler', 'critical_file_handler',
+                                                  'debug_file_handler', 'warning_file_handler', 'plot_manager_handler'], 'propogate': False}}}
+
+
 
 def read_logging_config(file, section, status):
-    pathname = '/home/chia/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     if status == "logging":
         current_status = config.getboolean(section, status)
