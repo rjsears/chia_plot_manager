@@ -2,75 +2,108 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.5 (2021-04-22)"
+VERSION = "0.9 (2021-05-27)"
 
-# Simple python script that helps to move my chia plots from my plotter to
-# my nas. I wanted to use netcat as it was much faster on my 10GBe link than
-# rsync and the servers are secure so I wrote this script to manage that
-# move process.
+"""
+Simple python script that helps to move my chia plots from my plotter to
+my nas. I wanted to use netcat as it was much faster on my 10GBe link than
+rsync and the servers are secure so I wrote this script to manage that
+move process.
 
-# This is part of a two part process. On the NAS server there is drive_manager.py
-# that manages the drives themselves and decides based on various criteria where
-# the incoming plots will be placed. This script simply sends those plots when
-# they are ready to send.
+This is part of a two part process. On the NAS server there is drive_manager.py
+that manages the drives themselves and decides based on various criteria where
+the incoming plots will be placed. This script simply sends those plots when
+they are ready to send.
 
-#   Updates
-#
-#   V0.5 2021-04-13
-#   - Altered process_plot() and process_control() to integrate network
-#     activity monitoring so we do not simply rely on the checkfile. This
-#     now requites that Glances be installed and in API mode. We call the
-#     Glances API and verify if we have network traffic on the link to the
-#     NAS. If we have traffic and the checkfile exists then we know that a 
-#     transfer is in progress. If we do not have any network transfer activity
-#     we assume there is no transfer and we attempt a reset by removing the
-#     checkfile and calling main(). As part of this update we also added 
-#     a couple of functions to try and determine if Glances is running and if
-#     is not, throw an error and exit. 
-#
-#   V0.4 2021-04-13 (bumped version to match drive_manager.py
-#   - Due to issue with plot size detection happening after plot selection
-#     caused an issue where plots did not get moved at all if the first selected
-#     plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
-#     for proper filesize before passing along the plot name.
-#
-#   V0.2 2021-03-23
-#   - Added per_plot system notification function (send_new_plot_notification()
-#     in chianas drive_manager.py and updated process_plot() and verify_plot_move()
-#     to support the new function
-#   - Moved remote_mount lookup to happen before starting the plot move
+
+
+Updates
+
+  v0.9 2021-05-28
+  - Rewritten logging to support path autodetection, support for multiple
+    NAS/Harvesters. Chooses Harvester with the most available plots on it
+    and sends the next plot to that NAS. 
+  - Various functions added to support multiple harvesters
+
+  V0.4 2021-04013 (bumped version to match drive_manager.py
+  - Due to issue with plot size detection happening after plot selection
+    caused an issue where plots did not get moved at all if the first selected
+    plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
+    for proper filesize before passing along the plot name.
+
+  V0.2 2021-03-23
+  - Added per_plot system notification function (send_new_plot_notification()
+    in chianas drive_manager.py and updated process_plot() and verify_plot_move()
+    to support the new function
+  - Moved remote_mount lookup to happen before starting the plot move
+"""
 
 import os
-import sys
-sys.path.append('/root/plot_manager')
 import subprocess
 import logging
 from system_logging import setup_logging
 from system_logging import read_logging_config
-import glob
 import pathlib
 import json
 import urllib.request
 import psutil
+import system_info
+from pushbullet import Pushbullet, errors as pb_errors
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
+import paramiko
+import configparser
+config = configparser.ConfigParser()
+script_path = pathlib.Path(__file__).parent.resolve()
 
+
+# Are We Testing?
+testing = False
+
+# Multiple Harvester Configuration
+# If you are running multiple NAS/Harvesters, configure them here:
+multiple_harvesters = True
+"""
+List your NAS/Harvesters here. You should have keyless ssh configured between
+this plotter and all Harvesters you list here. If you do not, this script will
+fail.
+
+Hostnames should be resolvable via DNS or `/etc/hosts` and should be on internal
+network interface (ie 10Gbe) if you have one.
+"""
+remote_harvesters = ['chianas01', 'chianas02', 'chianas03'] # <==== enter host names of Harvesters
+def multiple_harvesters_check():
+    log.debug('multiple_harvesters() Started')
+    global nas_server
+    if multiple_harvesters:
+        remote_export_file = script_path.joinpath(f'export/{remote_harvesters}_export.json')
+        nas_server = get_next_nas()
+        log.debug(f'Multiple NAS/Harvesters Found - Selected NAS/Harvester: {nas_server}')
+    else:
+        nas_server = ('chianas01') # <======== if you are NOT using multiple harvesters, put your harvester/NAS here
+        log.debug(f'Selected NAS/Harvester: {nas_server}')
 
 # Let's do some housekeeping
-nas_server = 'chianas01-internal' # Internal 10Gbe link, entry in /etc/hosts
-plot_server = 'chiaplot01'
-network_interface = 'VLAN95_AR03_1-1' # Network interface (ifconfig) that plots are sent over
+"""
+This network interface is the name (as shown by `ip a`) of the interface that you
+transfer your plots over to your Harvester. We utilize this to determine is there is
+network traffic flowing across it during a transfer. 
+"""
+network_interface = 'VLAN95_AR03_1-1'
 
-# Are we testing?
-testing = False
 if testing:
-    plot_dir = '/root/plot_manager/test_plots/'
+    plot_dir = script_path.joinpath('test_plots/')
+    print (f'This is your plot Dir: {plot_dir}')
     plot_size = 10000000
-    status_file = '/root/plot_manager/transfer_job_running_testing'
+    status_file = script_path.joinpath('transfer_job_running_testing')
 else:
     plot_dir = '/mnt/ssdraid/array0/'
     plot_size = 108644374730  # Based on K32 plot size
-    status_file = '/root/plot_manager/transfer_job_running'
+    status_file = script_path.joinpath('transfer_job_running')
 
-remote_checkfile = '/root/plot_manager/remote_transfer_is_active'
+
+remote_checkfile = script_path.joinpath('remote_transfer_is_active')
+
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
@@ -103,15 +136,14 @@ def process_plot():
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
             try:
-                remote_mount = str(subprocess.check_output(
-                    ['ssh', nas_server, 'grep enclosure /root/plot_manager/plot_manager_config | awk {\'print $3\'}']).decode(('utf-8'))).strip("\n")
+                remote_mount = str(subprocess.check_output(['ssh', nas_server, f"grep current_plotting_drive {script_path.joinpath('plot_manager_config')} | awk {{'print $3'}}"]).decode(('utf-8'))).strip("\n")
             except subprocess.CalledProcessError as e:
                 log.warning(e.output)  # TODO Do something here...cannot go on...
                 quit()
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
-            subprocess.call(['/home/chia/plot_manager/send_plot.sh', plot_path, plot_to_process])
+            subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
             try:
-                subprocess.call(['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])  # make sure all of the nc processes are dead on the receiving end
+                subprocess.call(['ssh', nas_server, f'{script_path.joinpath("utilities/kill_nc.sh")}'])  # make sure all of the nc processes are dead on the receiving end
                 log.debug('Remote nc kill called!')
             except subprocess.CalledProcessError as e:
                 log.warning(e.output)
@@ -141,50 +173,54 @@ def process_plot():
 
 def process_control(command, action):
     log.debug(f'process_control() called with [{command}] and [{action}]')
-    if command == 'set_status':
-        if action == "start":
-            if os.path.isfile(status_file):
-                log.debug(f'Status File: [{status_file}] already exists!')
-                return
-            else:
-                os.open(status_file, os.O_CREAT)
-                try:
-                    subprocess.check_output(['ssh', nas_server, 'touch %s' % remote_checkfile])
-                except subprocess.CalledProcessError as e:
-                    log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
-        if action == "stop":
-            if os.path.isfile(status_file):
+    if host_check(nas_server):
+        if command == 'set_status':
+            if action == "start":
+                if os.path.isfile(status_file):
+                    log.debug(f'Status File: [{status_file}] already exists!')
+                    return
+                else:
+                    os.open(status_file, os.O_CREAT)
+                    try:
+                        subprocess.check_output(['ssh', nas_server, 'touch %s' % remote_checkfile])
+                    except subprocess.CalledProcessError as e:
+                        log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
+            if action == "stop":
+                if os.path.isfile(status_file):
+                    os.remove(status_file)
+                    try:
+                        subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
+                    except subprocess.CalledProcessError as e:
+                        log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
+                else:
+                    log.debug(f'Status File: [{status_file}] does not exist!')
+                    return
+        elif command == 'check_status':
+            if os.path.isfile(status_file) and check_transfer():
+                log.debug(f'Checkfile and Network Traffic Exists, We are currently Running a Transfer, Exiting')
+                return True
+            elif os.path.isfile(status_file) and not check_transfer():
+                log.debug('WARNING! - Checkfile exists but there is no network traffic! Forcing Reset')
                 os.remove(status_file)
                 try:
                     subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
                 except subprocess.CalledProcessError as e:
-                    log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
+                    log.warning(e.output)
+                try:
+                    subprocess.call(['ssh', nas_server, script_path.joinpath('utilities/kill_nc.sh')])  # make sure all of the nc processes are dead on the receiving end
+                    log.debug('Remote nc kill called!')
+                except subprocess.CalledProcessError as e:
+                    log.warning(e.output)
+                main()
             else:
-                log.debug(f'Status File: [{status_file}] does not exist!')
-                return
-    elif command == 'check_status':
-        if os.path.isfile(status_file) and check_transfer():
-            log.debug(f'Checkfile and Network Traffic Exists, We are currently Running a Transfer, Exiting')
-            return True
-        elif os.path.isfile(status_file) and not check_transfer():
-            log.debug('WARNING! - Checkfile exists but there is no network traffic! Forcing Reset')
-            os.remove(status_file)
-            try:
-                subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
-            except subprocess.CalledProcessError as e:
-                log.warning(e.output)
-            try:
-                subprocess.call(['ssh', nas_server, '/root/plot_manager/kill_nc.sh'])  # make sure all of the nc processes are dead on the receiving end
-                log.debug('Remote nc kill called!')
-            except subprocess.CalledProcessError as e:
-                log.warning(e.output)
-            main()
+                log.debug(f'Checkfile Does Not Exist and there is no network traffic!')
+                return False
         else:
-            log.debug(f'Checkfile Does Not Exist and there is no network traffic!')
-            return False
+            return
     else:
-        return
-
+        log.debug(f'WARNING: {nas_server} is OFFLINE! We Cannot Continue......')
+        notify(f'{nas_server} OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
+        exit()
 
 def verify_plot_move(remote_mount, plot_path, plot_to_process):
     log.debug('verify_plot_move() Started')
@@ -199,7 +235,7 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
     log.debug(f'Local Plot Size Reported as: {local_plot_size}')
     if remote_plot_size == local_plot_size:
         try:
-            subprocess.check_output(['ssh', nas_server, 'touch %s' % '/root/plot_manager/new_plot_received'])
+            subprocess.check_output(['ssh', nas_server, 'touch %s' % script_path.joinpath("new_plot_received")])
         except subprocess.CalledProcessError as e:
             log.warning(e.output)
         return True
@@ -234,6 +270,15 @@ def checkIfProcessRunning(processName):
             pass
     return False
 
+def host_check(host):
+    """
+    Check to see if a specific host is alive
+    """
+    proc = subprocess.run(
+        ['ping', '-W1', '-q', '-c', '2', host],
+        stdout=subprocess.DEVNULL)
+    return proc.returncode == 0
+
 
 def verify_glances_is_running():
     log.debug('verify_glances_is_running() Started')
@@ -245,8 +290,134 @@ def verify_glances_is_running():
         return True
 
 
+def notify(title, message):
+    """ Notify system for email, pushbullet and sms (via Twilio)"""
+    log.debug(f'notify() called with Title: {title} and Message: {message}')
+    if (read_config_data('plot_manager_config', 'notifications', 'alerting', True)):
+        if (read_config_data('plot_manager_config', 'notifications', 'pb', True)):
+            send_push_notification(title, message)
+        if (read_config_data('plot_manager_config', 'notifications', 'email', True)):
+            for email_address in system_info.alert_email:
+                send_email(email_address, title, message)
+        if (read_config_data('plot_manager_config', 'notifications', 'sms', True)):
+            for phone_number in system_info.twilio_to:
+                send_sms_notification(message, phone_number)
+    else:
+        pass
+
+# Setup to read and write to our config file.
+# If we are expecting a boolean back pass True/1 for bool,
+# otherwise False/0
+def read_config_data(file, section, item, bool):
+    pathname = '/home/chia/plot_manager/' + file
+    config.read(pathname)
+    if bool:
+        return config.getboolean(section, item)
+    else:
+        return config.get(section, item)
+
+
+def send_email(recipient, subject, body):
+    """
+    Part of our notification system.
+    Setup to send email via the builtin linux mail command.
+    Your local system **must** be configured already to send mail or this will fail.
+    https://stackoverflow.com/questions/27874102/executing-shell-mail-command-using-python
+    https://nedbatchelder.com/text/unipain.html
+    https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-20-04
+    """
+    try:
+        subprocess.run(['mail', '-s', subject, recipient], input=body, encoding='utf-8')
+        log.debug(f"Email Notification Sent: Subject: {subject}, Recipient: {recipient}, Message: {body}")
+    except subprocess.CalledProcessError as e:
+        log.debug(f'send_email error: {e}')
+    except Exception as e:
+        log.debug(f'send_email: Unknown Error! Email not sent.')
+
+
+# Setup to send out Pushbullet alerts. Pushbullet config is in system_info.py
+def send_push_notification(title, message):
+    """Part of our notification system. This handles sending PushBullets."""
+    try:
+        pb = Pushbullet(system_info.pushbilletAPI)
+        push = pb.push_note(title, message)
+        log.debug(f"Pushbullet Notification Sent: {title} - {message}")
+    except pb_errors.InvalidKeyError as e:
+        log.debug(f'Pushbullet Exception: Invalid API Key! Message not sent.')
+    except Exception as e:
+        log.debug(f'Pushbullet Exception: Unknown Pushbullet Error: {e}. Message not sent.')
+
+def send_sms_notification(body, phone_number):
+    """Part of our notification system. This handles sending SMS messages."""
+    try:
+        client = Client(system_info.twilio_account, system_info.twilio_token)
+        message = client.messages.create(to=phone_number, from_=system_info.twilio_from, body=body)
+        log.debug(f"SMS Notification Sent: {body}.")
+    except TwilioRestException as e:
+        log.debug(f'Twilio Exception: {e}. Message not sent.')
+    except Exception as e:
+        log.debug(f'Twilio Exception: {e}. Message not sent.')
+
+
+
+def check_remote_harvesters():
+    """
+    This verifies that the remote_harvesters listed above are actually alive.
+    """
+    harvesters_check = {}
+    for harvester in remote_harvesters:
+        harvesters_check[harvester] = host_check(harvester)
+    dead_hosts = [host for host, alive in harvesters_check.items() if not alive]
+    if dead_hosts != []:
+        log.debug(f'WARNING: {dead_hosts} is OFFLINE!')
+    alive_hosts = [host for host, alive in harvesters_check.items() if alive]
+    return(alive_hosts)
+
+def remote_harvester_report():
+    """
+    This reaches out to each 'alive' remote harvester and get all of
+    :return:
+    """
+    remote_harvesters = check_remote_harvesters()
+    servers = []
+    for harvester in remote_harvesters:
+        remote_export_file = (script_path.joinpath(f'export/{harvester}_export.json').as_posix())
+        get_remote_exports(harvester, remote_export_file)
+        with open(remote_export_file, 'r') as remote_host:
+            harvester = json.loads(remote_host.read())
+            servers.append(harvester)
+    return servers, remote_harvesters
+
+def get_remote_exports(host, remote_export_file):
+    """
+    Utilize Paramiko to grab our harvester export information files.
+    """
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(host)
+        sftp = ssh.open_sftp()
+        sftp.get(remote_export_file, remote_export_file)
+    finally:
+        ssh.close()
+
+def get_next_nas():
+    """
+    Returns the server name of the server with the most space left.
+    This is where we will be sending our next plot!
+    """
+    servers = (remote_harvester_report()[0])
+    next_nas = []
+    for server in servers:
+        nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
+        log.debug(nas_server)
+        next_nas.append(nas_server)
+    return (sorted(next_nas, key=lambda i: i['total_plots_until_full'],reverse=True)[0].get('server'))
+
+
 def main():
     if verify_glances_is_running():
+        multiple_harvesters_check()
         process_plot()
     else:
         print('Glances is Required for this script!')
@@ -255,4 +426,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
