@@ -440,6 +440,7 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
   <li><em>-v</em> or <em>--version</em></li>
   <li><em>-ct</em> or <em>--check_temps</em></li>
   <li><em>-pr</em> or <em>--plot_report</em></li>
+ <li><em>-fr</em> or <em>--farm_report</em></li>
   <li><em>-ud</em> or <em>--update_daily</em></li>
  <li><em>-off</em> or <em>--offline_hdd</em></li>
  <li><em>-on</em> or <em>--online_hdd</em></li>
@@ -449,7 +450,7 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
 These options print out the help message or version information and exits.
 
 ```
-******** ChiaNAS Drive Manager - 0.8 (2021-05-24) ********
+******** ChiaNAS Drive Manager - 0.9 (2021-05-28) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
