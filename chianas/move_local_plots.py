@@ -51,15 +51,12 @@ else:
     drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 
 
-
-
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
 level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
 level = logging._checkLevel(level)
-log = logging.getLogger('move_local_plots')
+log = logging.getLogger(__name__)
 log.setLevel(level)
-
 
 # Let's Get Started
 
