@@ -158,7 +158,7 @@ The installation of the actual scripts are pretty easy. Just clone the repo and 
 
 Before we get too deep into the installation and configuration of the scripts, I want to explain how ```I``` have my servers and networks setup. Everything you read of see here will be based on this network dirgram:
  
- 
+ <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/plot_manager_network.jpg" alt="Chia Plot Manager Network"></a><br>
  
 #### Plotter Configuration
 
