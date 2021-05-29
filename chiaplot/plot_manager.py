@@ -24,6 +24,7 @@ Updates
     NAS/Harvesters. Chooses Harvester with the most available plots on it
     and sends the next plot to that NAS. 
   - Various functions added to support multiple harvesters
+  - Adding in host checking to verify host is up, if not, sends notification.
 
   V0.4 2021-04013 (bumped version to match drive_manager.py
   - Due to issue with plot size detection happening after plot selection
@@ -309,7 +310,7 @@ def notify(title, message):
 # If we are expecting a boolean back pass True/1 for bool,
 # otherwise False/0
 def read_config_data(file, section, item, bool):
-    pathname = '/home/chia/plot_manager/' + file
+    pathname = script_path.joinpath(file)
     config.read(pathname)
     if bool:
         return config.getboolean(section, item)
