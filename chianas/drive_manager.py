@@ -173,7 +173,7 @@ remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
                         
 Finally if you want to run remote harvester reports, set to True below.
 """
-remote_harvester_reports_active = True
+remote_harvester_reports_active = False
 remote_harvesters = ['chianas02', 'chianas03'] # Only "other harvesters", not this harvester.
 remote_export_file = script_path.joinpath(f'export/{remote_harvesters}_export.json')
 local_export_file = script_path.joinpath(f'export/{nas_server}_export.json')
@@ -601,9 +601,10 @@ def get_plot_drive_to_use():
                     and get_drive_by_mountpoint(part.mountpoint) not in offlined_drives:
                 drive = get_drive_by_mountpoint(part.mountpoint)
                 available_drives.append((part.mountpoint, part.device, drive))
-        return (natsorted(available_drives)[0][0])
+        return (natsorted(available_drives)[0][0], natsorted(available_drives)[1][0])
     except IndexError:
         log.debug("ERROR: No Drives Found, Please add drives, run auto_drive.py and try again!")
+
 
 def get_sorted_drive_list():
     """
@@ -620,7 +621,7 @@ def get_current_plot_drive_info():
     """
     Designed for debugging and logging purposes when we switch drives
     """
-    return Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1])
+    return Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1])
 
 
 def log_drive_report():
@@ -631,15 +632,15 @@ def log_drive_report():
     log.info(templ % ("New Plot Drive", "Size", "Avail Plots", "Serial #", "Temp °C",
                       "Mount Point"))
 
-    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
+    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
 
     log.info(templ % (
-        get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
+        get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1],
         bytes2human(usage.total),
-        get_drive_info('space_free_plots_by_mountpoint', (get_plot_drive_to_use())),
-        Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
-        Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
-        get_device_by_mountpoint(get_plot_drive_to_use())[0][0]))
+        get_drive_info('space_free_plots_by_mountpoint', (get_plot_drive_to_use()[0])),
+        Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).serial,
+        Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).temperature,
+        get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0]))
 
 
 def online_offline_drive(drive, onoffline):
@@ -712,9 +713,9 @@ def update_receive_plot():
         quit()
     else:
         current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
-        if current_plotting_drive == get_plot_drive_to_use():
+        if current_plotting_drive == get_plot_drive_to_use()[0]:
             log.debug(f'Currently Configured Plot Drive: {current_plotting_drive}')
-            log.debug(f'System Selected Plot Drive:      {get_plot_drive_to_use()}')
+            log.debug(f'System Selected Plot Drive:      {get_plot_drive_to_use()[0]}')
             log.debug('Configured and Selected Drives Match!')
             log.debug(f'No changes necessary to {receive_script}')
             log.debug(
@@ -722,19 +723,20 @@ def update_receive_plot():
         else:
             send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
             # notify() function.
-            notify('Plot Drive Updated', f'Plot Drive Updated: Was: {current_plotting_drive},  Now: {get_plot_drive_to_use()}')
+            notify('Plot Drive Updated', f'Plot Drive Updated: Was: {current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
             f = open(receive_script, 'w+')
             f.write('#! /bin/bash \n')
-            f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()}/$1" < /dev/null')
+            f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()[0]}/$1" < /dev/null')
             f.close()
-            update_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', get_plot_drive_to_use())
+            update_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', get_plot_drive_to_use()[0])
+            update_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', get_plot_drive_to_use()[1])
             log.info(f'Updated {receive_script} and system config file with new plot drive.')
-            log.info(f'Was: {current_plotting_drive},  Now: {get_plot_drive_to_use()}')
+            log.info(f'Was: {current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
             log_drive_report()
 
 
 def send_new_plot_disk_email():
-    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
+    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
     current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
     if read_config_data('plot_manager_config', 'notifications', 'new_plot_drive', True):
         for email_address in system_info.alert_email:
@@ -745,13 +747,13 @@ def send_new_plot_disk_email():
                                 nas_server=nas_server,
                                 previous_plotting_drive=current_plotting_drive,
                                 plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint',current_plotting_drive),
-                                current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
-                                current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
+                                current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
+                                current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1],
                                 drive_size=bytes2human(usage.total),
-                                plots_available=get_drive_info('space_free_plots_by_mountpoint', (get_plot_drive_to_use())),
-                                drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
-                                current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
-                                smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
+                                plots_available=get_drive_info('space_free_plots_by_mountpoint', (get_plot_drive_to_use()[0])),
+                                drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).serial,
+                                current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).temperature,
+                                smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).assessment,
                                 total_serverwide_plots=get_all_available_system_space('used')[1],
                                 total_serverwide_plots_chia=check_plots()[0],
                                 total_serverwide_space_per_chia=check_plots()[1],
@@ -765,19 +767,19 @@ def send_new_plot_disk_email():
 
 
 def send_daily_update_email():
-    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
+    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
     if read_config_data('plot_manager_config', 'notifications', 'daily_update', True):
         for email_address in system_info.alert_email:
             create_index_html(template='daily_update.html',
                               recipient=email_address,
                               subject='NAS Server Daily Update\nContent-Type: text/html',
                               current_time=current_military_time,
-                              nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
-                              current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
+                              nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
+                              current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1],
                               drive_size=bytes2human(usage.total),
-                              drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
-                              current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
-                              smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
+                              drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).serial,
+                              current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).temperature,
+                              smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).assessment,
                               total_serverwide_plots=get_all_available_system_space('used')[1],
                               total_number_of_drives=get_all_available_system_space('total')[0],
                               total_k32_plots_until_full=get_all_available_system_space('free')[1],
@@ -794,15 +796,15 @@ def send_daily_update_email():
 
 
 def create_new_index_html_report():
-    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use())[0][0])
+    usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
     create_index_html(template='index.html',
                       current_time=current_military_time,
-                      nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use(),
+                      nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
                       current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
                       drive_size=bytes2human(usage.total),
-                      drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).serial,
-                      current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).temperature,
-                      smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use())[0][1]).assessment,
+                      drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).serial,
+                      current_drive_temperature=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).temperature,
+                      smart_health_assessment=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).assessment,
                       total_serverwide_plots=get_all_available_system_space('used')[1],
                       total_number_of_drives=get_all_available_system_space('total')[0],
                       total_k32_plots_until_full=get_all_available_system_space('free')[1],
@@ -1051,7 +1053,6 @@ def main():
         send_new_plot_notification()
         update_receive_plot()
 
-
-
 if __name__ == '__main__':
     main()
+
