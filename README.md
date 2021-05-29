@@ -104,7 +104,7 @@ Beginning with V0.9, the software now supports multiple Harvesters/NASs across t
   <li>Sends a daily email report including # of drives, # of plots currently and # of plots total based on current drive storage</li>
   <li>Daily email also includes plot speed, total plots in last 24 hours and TiB plotting in last 24 hours</li>
   <li>Since notifications are already built in, will extend it to alert on drive temps and smartctl warnings</li>
-  <li>For local plotting on Harverster/NAS (Which I do), includes a `move_local_plots.py` script to manage local plot movement (via cron)
+  <li>For local plotting on Harverster/NAS (Which I do), includes a ```move_local_plots.py``` script to manage local plot movement (via cron)
   <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
 <br>
