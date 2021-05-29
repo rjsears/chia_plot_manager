@@ -162,6 +162,10 @@ You could have an entire discussion on network performance and the install scrip
  <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/v0.9/images/plot_manager_network.jpg" alt="Chia Plot Manager Network"></a><br><br>
  
 
+
+### To get started
+ 
+```git clone https://github.com/rjsears/chia_plot_manager.git```
  
 #### Plotter Configuration
 
@@ -195,6 +199,8 @@ Beginning with Version 0.9, I attempt to autodetect your install path automatica
 ```testing = False``` - Pretty self explanatory <br>
 ```multiple_harvesters = False``` - Default to False, set to ```True``` if you have more than one Harvester/NAS<br>
 ```remote_harvesters = ['chianas01', 'chianas02', 'chianas03']``` - Enter the hostnames of your remote harvesters.<br> 
+ 
+ 
  
 ```
 # Are we testing?
