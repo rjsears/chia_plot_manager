@@ -156,9 +156,9 @@ The installation of the actual scripts are pretty easy. Just clone the repo and 
 
 #### Network Configuration
 
-Before we get too deep into the installation and configuration of the scripts, I want to explain how ```I``` have my servers and networks setup. Everything you read of see here will be based on this network dirgram:
+Before we get too deep into the installation and configuration of the scripts, I want to explain how ```I``` have my servers and networks setup. Everything you read of see here will be based on this network dirgram. If you have multiple Harvesters, they would connect the same way the first one does. Something to note, you absolutely should separate your Harvester/NAS traffic from your plotter and that of your farmer traffic to and from your Harvesters. Failure to do so can result in link saturation during plot transfers and your main node falling offline as a result.<br>
  
- <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/v0.9/images/plot_manager_network.jpg" alt="Chia Plot Manager Network"></a><br>
+ <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/v0.9/images/plot_manager_network.jpg" alt="Chia Plot Manager Network"></a><br><br>
  
 
  
