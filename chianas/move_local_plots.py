@@ -172,6 +172,11 @@ def process_control(command, action):
         return
 
 def check_drive_activity():
+    """
+    Here we are checking drive activity on the drive we are moving plots to internally. If there is 
+    drive activity, then we are most likely moving a plot to that drive and do not want to 'double
+    up' on moves.
+    """
     try:
         current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
         subprocess.call([drive_activity_test, get_device_by_mountpoint(current_plotting_drive)[0][1].split('/')[2]])
