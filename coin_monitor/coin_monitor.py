@@ -12,7 +12,6 @@ VERSION = "0.6 (2021-04-24)"
 import sys
 import re
 import os
-sys.path.append('/root/coin_monitor')
 import subprocess
 import logging
 from system_logging import setup_logging
@@ -22,7 +21,7 @@ from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 import configparser
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, select_autoescape, FileSystemLoader
 from datetime import datetime
 import time
 config = configparser.ConfigParser()
@@ -179,7 +178,7 @@ def send_template_email(template, recipient, subject, **kwargs):
     """Sends an email using a jinja template."""
     log.debug(f'send_template_email() called with Template: {template}, Recipient: {recipient} and Subject: {subject}')
     env = Environment(
-        loader=PackageLoader('coin_monitor', 'templates'),
+        loader=FileSystemLoader('%s/templates/' % os.path.dirname(__file__)),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(template)
