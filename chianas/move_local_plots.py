@@ -173,7 +173,7 @@ def process_control(command, action):
 
 def check_drive_activity():
     try:
-        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive_internal', False)
+        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
         subprocess.call([drive_activity_test, get_device_by_mountpoint(current_plotting_drive)[0][1].split('/')[2]])
     except subprocess.CalledProcessError as e:
         log.warning(e.output)
