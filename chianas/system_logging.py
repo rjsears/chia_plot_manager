@@ -35,36 +35,128 @@ def setup_logging(default_level=logging.CRITICAL):
     else:
         log.disabled = True
 
-log_config = {'version': 1, 'disable_existing_loggers': False,
-            'formatters': {'console': {'format': '%(message)s'},
-                           'console_expanded': {'format': '%(module)2s:%(lineno)s - %(funcName)3s: %(levelname)3s:    %(message)s'},
-                           'standard': {'format': '%(asctime)s - %(module)2s:%(lineno)s - %(funcName)3s: %(levelname)3s %(message)s'},
-                           'error': {'format': '%(levelname)s <PID %(process)d:%(processName)s> %(module)s.%(funcName)s(): %(message)s'}},
-
-            'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'console_expanded', 'stream': 'ext://sys.stdout'},
-                         'info_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'INFO', 'formatter': 'standard',
-                                               'filename': script_path.joinpath("logs/info.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
-
-                         'error_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'ERROR', 'formatter': 'error',
-                                                'filename': script_path.joinpath("logs/errors.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
-
-                         'debug_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'DEBUG', 'formatter': 'standard',
-                                                'filename': script_path.joinpath("logs/debug.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
-
-                         'critical_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'CRITICAL', 'formatter': 'standard',
-                                                   'filename': script_path.joinpath("logs/critical.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
-
-                         'warning_file_handler': {'class': 'logging.handlers.RotatingFileHandler', 'level': 'WARNING', 'formatter': 'standard',
-                                                  'filename': script_path.joinpath("logs/warning.log").as_posix(), 'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'},
-
-                         'plot_manager_handler': {'class': 'logging.handlers.RotatingFileHandler', 'formatter': 'standard', 'filename': script_path.joinpath("logs/plot_manager.log").as_posix(),
-                                                  'maxBytes': 10485760, 'backupCount': 2, 'encoding': 'utf8'}},
-
-            'root': {'level': 'NOTSET', 'handlers': None, 'propogate': False},
-            'loggers': {'__main__':
-                            {'handlers': ['console', 'info_file_handler', 'error_file_handler', 'critical_file_handler',
-                                                  'debug_file_handler', 'warning_file_handler', 'plot_manager_handler'], 'propogate': False}}}
-
+log_config = {
+   "version": 1,
+   "disable_existing_loggers": false,
+   "formatters": {
+      "console": {
+         "format": "%(message)s"
+      },
+      "console_expanded": {
+         "format": "%(module)2s:%(lineno)s - %(funcName)3s: %(levelname)3s:    %(message)s"
+      },
+      "standard": {
+         "format": "%(asctime)s - %(module)2s:%(lineno)s - %(funcName)3s: %(levelname)3s %(message)s"
+      },
+      "error": {
+         "format": "%(levelname)s <PID %(process)d:%(processName)s> %(module)s.%(funcName)s(): %(message)s"
+      }
+   },
+   "handlers": {
+      "console": {
+         "class": "logging.StreamHandler",
+         "formatter": "console",
+         "stream": "ext://sys.stdout"
+      },
+      "expanded_console": {
+         "class": "logging.StreamHandler",
+         "formatter": "console_expanded",
+         "stream": "ext://sys.stdout"
+      },
+      "info_file_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "level": "INFO",
+         "formatter": "standard",
+         "filename": "/root/plot_manager/logs/info.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
+      "error_file_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "level": "ERROR",
+         "formatter": "error",
+         "filename": "/root/plot_manager/logs/errors.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
+      "debug_file_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "level": "DEBUG",
+         "formatter": "standard",
+         "filename": "/root/plot_manager/logs/debug.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
+      "critical_file_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "level": "CRITICAL",
+         "formatter": "standard",
+         "filename": "/root/plot_manager/logs/critical.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
+      "warning_file_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "level": "WARNING",
+         "formatter": "standard",
+         "filename": "/root/plot_manager/logs/warning.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
+      "drive_manager_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "formatter": "standard",
+         "filename": "/root/plot_manager/logs/drive_manager.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
+      "move_local_plots_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "formatter": "standard",
+         "filename": "/root/plot_manager/logs/move_local_plots.log",
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      }
+   },
+   "root": {
+      "level": "NOTSET",
+      "handlers": null,
+      "propogate": "no"
+   },
+   "loggers": {
+      "__main__": {
+         "handlers": [
+            "console",
+            "info_file_handler",
+            "error_file_handler",
+            "critical_file_handler",
+            "debug_file_handler",
+            "warning_file_handler",
+            "drive_manager_handler"
+         ],
+         "propogate": "no"
+      },
+      "move_local_plots": {
+         "handlers": [
+            "console",
+            "info_file_handler",
+            "error_file_handler",
+            "critical_file_handler",
+            "debug_file_handler",
+            "warning_file_handler",
+            "move_local_plots_handler"
+         ],
+         "propogate": "yes"
+      }
+   }
+}
 
 
 def read_logging_config(file, section, status):
