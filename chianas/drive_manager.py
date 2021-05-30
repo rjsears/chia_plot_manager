@@ -99,7 +99,7 @@ from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 import configparser
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, select_autoescape, FileSystemLoader
 from datetime import datetime
 import time
 config = configparser.ConfigParser()
@@ -971,7 +971,7 @@ def notify(title, message):
 def send_template_email(template, recipient, subject, **kwargs):
     """Sends an email using a jinja template."""
     env = Environment(
-        loader=PackageLoader('drive_manager', 'templates'),
+        loader=FileSystemLoader('%s/templates/' % os.path.dirname(__file__)),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(template)
@@ -983,11 +983,15 @@ def send_template_email(template, recipient, subject, **kwargs):
 def create_index_html(template, **kwargs):
     """Sends an email using a jinja template."""
     env = Environment(
-        loader=PackageLoader('drive_manager', 'templates'),
+        loader=FileSystemLoader('%s/templates/' % os.path.dirname(__file__)),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(template)
     index_html(template.render(**kwargs))
+
+def index_html(report):
+    with open ('web/index.html', 'w') as report_body:
+        report_body.write(report)
 
 def index_html(report):
     with open ('web/index.html', 'w') as report_body:
