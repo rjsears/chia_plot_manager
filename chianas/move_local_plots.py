@@ -44,7 +44,7 @@ if testing:
     drive_activity_test = script_path.joinpath('check_drive_activity.sh')
     drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 else:
-    plot_dir = '/mnt/enclosure1/front/column3/drive55' # Where do you hold your plots before they are moved?
+    plot_dir = 'not_set' # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('local_transfer_job_running')
     drive_activity_test = script_path.joinpath('check_drive_activity.sh')
@@ -88,39 +88,44 @@ def get_list_of_plots():
 # we are NOT testing the script, then process the next plot if there is
 # one to process.
 def process_plot():
-    log.debug('process_plot() Started')
-    if not process_control('check_status', 0):
-        plot_to_process = get_list_of_plots()
-        if plot_to_process and not testing:
-            process_control('set_status', 'start')
-            plot_path = plot_dir + '/' + plot_to_process
-            log.info(f'Processing Plot: {plot_path}')
-            current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
-            log.debug(f'Current Internal Plotting Drive is: {current_plotting_drive}')
-            log.debug(f'Starting Copy of {plot_path}')
-            start_time = timer()
-            try:
-                shutil.copy2(plot_path, current_plotting_drive)
-            except:
-                log.debug(f'ERROR: There was a problem copying: {plot_dir}!')
-                exit()
-            end_time = timer()
-            if verify_plot_move(current_plotting_drive, plot_path, plot_to_process):
-                log.info('Plot Sizes Match, we have a good plot move!')
-                log.info(f'Total Elapsed Time: {end_time - start_time:.2f} seconds or {(end_time - start_time)/60:.2f} Minutes')
+    if plot_dir == 'not_set':
+        log.debug('You need to set the Directory where your local plots are located!')
+        log.debug('Please set "plot_dir" to the correct mount point and try again!')
+        exit()
+    else:
+        log.debug('process_plot() Started')
+        if not process_control('check_status', 0):
+            plot_to_process = get_list_of_plots()
+            if plot_to_process and not testing:
+                process_control('set_status', 'start')
+                plot_path = plot_dir + '/' + plot_to_process
+                log.info(f'Processing Plot: {plot_path}')
+                current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
+                log.debug(f'Current Internal Plotting Drive is: {current_plotting_drive}')
+                log.debug(f'Starting Copy of {plot_path}')
+                start_time = timer()
+                try:
+                    shutil.copy2(plot_path, current_plotting_drive)
+                except:
+                    log.debug(f'ERROR: There was a problem copying: {plot_dir}!')
+                    exit()
+                end_time = timer()
+                if verify_plot_move(current_plotting_drive, plot_path, plot_to_process):
+                    log.info('Plot Sizes Match, we have a good plot move!')
+                    log.info(f'Total Elapsed Time: {end_time - start_time:.2f} seconds or {(end_time - start_time)/60:.2f} Minutes')
+                else:
+                    log.debug('FAILURE - Plot sizes DO NOT Match')
+                    process_control('set_status', 'stop')  #Set to stop so it will attempt to run again in the event we want to retry....
+                    main() # Try Again - no need to do anything with the file, shutil.copy2 will overwrite an existing file.
+                process_control('set_status', 'stop')
+                os.remove(plot_path)
+                log.info(f'Removing: {plot_path}')
+            elif testing:
+                log.debug('Testing Only - Nothing will be Done!')
             else:
-                log.debug('FAILURE - Plot sizes DO NOT Match')
-                process_control('set_status', 'stop')  #Set to stop so it will attempt to run again in the event we want to retry....
-                main() # Try Again - no need to do anything with the file, shutil.copy2 will overwrite an existing file.
-            process_control('set_status', 'stop')
-            os.remove(plot_path)
-            log.info(f'Removing: {plot_path}')
-        elif testing:
-            log.debug('Testing Only - Nothing will be Done!')
+                return
         else:
             return
-    else:
-        return
 
 
 def verify_plot_move(current_plotting_drive, plot_path, plot_to_process):
