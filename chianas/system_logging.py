@@ -37,7 +37,7 @@ def setup_logging(default_level=logging.CRITICAL):
 
 log_config = {
    "version": 1,
-   "disable_existing_loggers": false,
+   "disable_existing_loggers": False,
    "formatters": {
       "console": {
          "format": "%(message)s"
@@ -67,7 +67,7 @@ log_config = {
          "class": "logging.handlers.RotatingFileHandler",
          "level": "INFO",
          "formatter": "standard",
-         "filename": "/root/plot_manager/logs/info.log",
+         "filename": script_path.joinpath("logs/info.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -76,7 +76,7 @@ log_config = {
          "class": "logging.handlers.RotatingFileHandler",
          "level": "ERROR",
          "formatter": "error",
-         "filename": "/root/plot_manager/logs/errors.log",
+         "filename": script_path.joinpath("logs/errors.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -85,7 +85,7 @@ log_config = {
          "class": "logging.handlers.RotatingFileHandler",
          "level": "DEBUG",
          "formatter": "standard",
-         "filename": "/root/plot_manager/logs/debug.log",
+         "filename": script_path.joinpath("logs/debug.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -94,7 +94,7 @@ log_config = {
          "class": "logging.handlers.RotatingFileHandler",
          "level": "CRITICAL",
          "formatter": "standard",
-         "filename": "/root/plot_manager/logs/critical.log",
+         "filename": script_path.joinpath("logs/critical.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -103,7 +103,7 @@ log_config = {
          "class": "logging.handlers.RotatingFileHandler",
          "level": "WARNING",
          "formatter": "standard",
-         "filename": "/root/plot_manager/logs/warning.log",
+         "filename": script_path.joinpath("logs/warning.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -111,7 +111,7 @@ log_config = {
       "drive_manager_handler": {
          "class": "logging.handlers.RotatingFileHandler",
          "formatter": "standard",
-         "filename": "/root/plot_manager/logs/drive_manager.log",
+         "filename": script_path.joinpath("logs/drive_manager.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -119,7 +119,7 @@ log_config = {
       "move_local_plots_handler": {
          "class": "logging.handlers.RotatingFileHandler",
          "formatter": "standard",
-         "filename": "/root/plot_manager/logs/move_local_plots.log",
+         "filename": script_path.joinpath("logs/move_local_plots.log").as_posix(),
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
@@ -127,8 +127,8 @@ log_config = {
    },
    "root": {
       "level": "NOTSET",
-      "handlers": null,
-      "propogate": "no"
+      "handlers": None,
+      "propogate": False
    },
    "loggers": {
       "__main__": {
@@ -141,7 +141,7 @@ log_config = {
             "warning_file_handler",
             "drive_manager_handler"
          ],
-         "propogate": "no"
+         "propogate": False
       },
       "move_local_plots": {
          "handlers": [
@@ -153,7 +153,7 @@ log_config = {
             "warning_file_handler",
             "move_local_plots_handler"
          ],
-         "propogate": "yes"
+         "propogate": True
       }
    }
 }
