@@ -55,7 +55,7 @@ else:
 setup_logging()
 level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
 level = logging._checkLevel(level)
-log = logging.getLogger(__name__)
+log = logging.getLogger('move_local_plots.py')
 log.setLevel(level)
 
 # Let's Get Started
