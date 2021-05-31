@@ -42,16 +42,14 @@ if testing:
     plot_dir = script_path.joinpath('test_plots/')
     plot_size = 10000000
     status_file = script_path.joinpath('local_transfer_job_running_testing')
-    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
-    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
+    drive_check = script_path.joinpath('drive_stats.sh')
+    drive_check_output = script_path.joinpath('drive_stats.io')
 else:
     plot_dir = '/mnt/enclosure1/rear/column3/drive79' # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('local_transfer_job_running')
-    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
     drive_check = script_path.joinpath('drive_stats.sh')
     drive_check_output = script_path.joinpath('drive_stats.io')
-    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 
 
 # Setup Module logging. Main logging is configured in system_logging.py
