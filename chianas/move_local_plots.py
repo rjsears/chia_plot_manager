@@ -187,7 +187,7 @@ def check_drive_activity():
         while f.read(1) != b'\n':
             f.seek(-2, os.SEEK_CUR)
         last_line = f.readline().decode()
-    if float((str.split(last_line)[1])) > 10:
+    if float((str.split(last_line)[1])) > 5:
         return True
     else:
         return False
