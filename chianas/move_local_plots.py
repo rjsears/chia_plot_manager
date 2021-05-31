@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.9 (2021-05-28)"
+VERSION = "0.9 (2021-05-31)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -26,6 +26,7 @@ from timeit import default_timer as timer
 from drive_manager import get_device_by_mountpoint
 import subprocess
 import pathlib
+import psutil
 
 script_path = pathlib.Path(__file__).parent.resolve()
 
@@ -44,10 +45,12 @@ if testing:
     drive_activity_test = script_path.joinpath('check_drive_activity.sh')
     drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 else:
-    plot_dir = 'not_set' # Where do you hold your plots before they are moved?
+    plot_dir = '/mnt/enclosure1/rear/column3/drive79' # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('local_transfer_job_running')
     drive_activity_test = script_path.joinpath('check_drive_activity.sh')
+    drive_check = script_path.joinpath('drive_stats.sh')
+    drive_check_output = script_path.joinpath('drive_stats.io')
     drive_activity_log = script_path.joinpath('drive_monitor.iostat')
 
 
@@ -171,26 +174,29 @@ def process_control(command, action):
     else:
         return
 
+
 def check_drive_activity():
     """
-    Here we are checking drive activity on the drive we are moving plots to internally. If there is 
+    Here we are checking drive activity on the drive we are moving plots to internally. If there is
     drive activity, then we are most likely moving a plot to that drive and do not want to 'double
     up' on moves.
     """
+    log.debug('check_drive_activity() called')
     try:
-        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
-        subprocess.call([drive_activity_test, get_device_by_mountpoint(current_plotting_drive)[0][1].split('/')[2]])
+        subprocess.call([drive_check])
     except subprocess.CalledProcessError as e:
         log.warning(e.output)
-    with open(drive_activity_log, 'rb') as f:
+    with open(drive_check_output, 'rb') as f:
         f.seek(-2, os.SEEK_END)
         while f.read(1) != b'\n':
             f.seek(-2, os.SEEK_CUR)
         last_line = f.readline().decode()
-    if float((str.split(last_line)[1])) > 5:
-        return True
-    else:
+        log.debug(last_line)
+    if (str.split(last_line)[1]) == 'Time':
+        log.debug('No Drive Activity detected')
         return False
+    else:
+        return True
 
 
 def main():
