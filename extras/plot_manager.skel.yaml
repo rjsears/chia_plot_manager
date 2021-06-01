@@ -14,6 +14,7 @@ log_level: DEBUG
 # Where is your chia log file located? Remember to set the logging level
 # in your chia config to INFO. By default, it is set to WARNING.
 chia_log_file: not_set
+chia_config_file: not_set
 
 # If you are running multiple remote harvesters, set this to true
 # and enter their hostnames below. These hostnames should NOT
