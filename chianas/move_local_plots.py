@@ -20,7 +20,6 @@ import os
 import logging
 import configparser
 from system_logging import setup_logging
-from system_logging import read_logging_config
 import shutil
 from timeit import default_timer as timer
 from drive_manager import get_device_by_mountpoint
