@@ -13,7 +13,7 @@ import yaml
 from pathlib import Path
 import logging
 from system_logging import setup_logging
-#from system_logging import read_logging_config
+
 
 user_home_dir = str(Path.home())
 config_file = (user_home_dir + '/.config/plot_manager/plot_manager.yaml')
@@ -35,7 +35,7 @@ class DriveManager:
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, chia_log_file, remote_harvester_reports, remote_harvesters,
+        def __init__(self, configured, hostname, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
                      notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, local_plotter, temp_dirs,
                      dst_dir, warnings, emails, phones, twilio_from, twilio_account,
                      twilio_token, pb_api, current_internal_drive, current_plotting_drive,
@@ -43,6 +43,7 @@ class DriveManager:
             self.configured = configured
             self.hostname = hostname
             self.chia_log_file = chia_log_file
+            self.chia_config_file = chia_config_file
             self.remote_harvester_reports = remote_harvester_reports
             self.remote_harvesters = remote_harvesters
             self.notifications = notifications
@@ -78,6 +79,7 @@ class DriveManager:
                     configured=server['configured'],
                     hostname=server['hostname'],
                     chia_log_file=server['chia_log_file'],
+                    chia_config_file=server['chia_config_file'],
                     remote_harvester_reports=server['remote_harvester_reports']['active'],
                     remote_harvesters=server['remote_harvester_reports']['remote_harvesters'],
                     notifications=server['notifications']['active'],
