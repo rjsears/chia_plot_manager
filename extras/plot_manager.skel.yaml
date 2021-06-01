@@ -1,0 +1,102 @@
+# Once you have made the necessary modifications to this file, change this to
+# True.
+configured: False
+
+# Enter the hostname of this server:
+hostname: chianas01
+
+# Enter Logging Information
+logging: True
+log_level: DEBUG
+
+
+# Where is your chia log file located? Remember to set the logging level
+# in your chia config to INFO. By default, it is set to WARNING.
+chia_log_file: not_set
+
+# If you are running multiple remote harvesters, set this to true
+# and enter their hostnames below. These hostnames should NOT
+# include your local hostname listed above. Also, these hostname
+# should be configured for passwordless ssh and should be configured
+# such that when you ping the hostname, it goes across the fastest
+# interface you have between these harvesters. Set to True if you
+# have multiple harvesters and want combined reporting.
+remote_harvester_reports:
+  active: False
+  remote_harvesters:
+    - chianas02
+    - chianas03
+
+# This is the local drive where we store inbound plots from our
+# main plotter. Also stores information about our current plots
+# on our server.
+harvester:
+  current_plotting_drive: /mnt/enclosure0/front/column0/drive3
+  current_total_plots_midnight: 1
+  current_total_plots_daily: 1
+
+  # List of 'offlined' drives that we do not want plots written to
+  # for any reason. In this case maybe 'drive0' and 'drive1' are our
+  # OS drives, or maybe they are throwing errors and we don't want to
+  # use them until they are replaced. If you have no offlined drives,
+  # this line should look like this:   offlined_drives: []
+  offlined_drives:
+    - drive0
+    - drive1
+
+# I use Plotman to do my plotting, but this should work for anything. This
+# has NOTHING to do with setting up your plotting configuration and is
+# only used for monitoring drive space for notifications. Set to True if
+# locally plotting and configure the rest of the settings.
+local_plotter:
+  active: True
+
+  # Make sure to use the actual device and not the mountpoint
+  temp_dirs:
+    - /dev/nvme0n1p1
+    - /dev/nvme1n1p1
+
+  # This is the directory that you are using for your plots. If you will be
+  # utilizing the integrated 'move_local_plots.py' scripts, this is usually
+  # just a single drive. The plots are then moved out of this directory to
+  # their final resting place on the harvester. move_local_plots.py is
+  # currently only written to support a single drive here.
+  dst_dir: not_set
+
+  # This is the current internal drive we are using to stop plots moved off
+  # of dst_dir above. This is not the same drive we use for storing plots
+  # coming from an outside plotter. We use a different drive to prevent
+  # drive IO saturation.
+  current_internal_drive: /mnt/enclosure0/front/column0/drive4
+
+# This is where we set up our notifications
+notifications:
+  active: True
+  methods:
+    pb: False
+    email: True
+    sms: False
+  types:
+    new_plot_drive: True
+    daily_update: True
+    per_plot: True
+    warnings: True
+  # What email addresses will get the emails?
+  emails:
+    - someone@gmail.com
+    - someoneelse@gmail.com
+  # What phones numbers will received the SMS text messages? Include '+1'
+  phones:
+    - '+18584140000'
+    - '+18584142355'
+
+  # These are your notification account settings. For email, you must configure
+  # your locate MTA. Installer installs Postfix by default. Twilio (SMS) requires
+  # a paid account, PushBullet is free.
+  accounts:
+    twilio:
+      from: '+18585551212'
+      account: your_account_code_here
+      token: your_account_token_here
+    pushBullet:
+      api: your_pb_api_token_here
