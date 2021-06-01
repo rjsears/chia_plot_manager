@@ -123,7 +123,6 @@ create_example_directory_structure(){
 }
 
 
-
 ### Clean Up Directories
 clean_up_nas_directory(){
    echo -e "\n\n${green}Cleaning Up Directory Structure & Setting File Permissions.........${nc}\n"
@@ -167,8 +166,6 @@ clean_up_coin_directory(){
    chmod +x $current_directory/*.py
    chmod +x $current_directory/*.sh
 }
-
-
 
 ## Let's get rid of SNAP, shall we.....
 nuke_snap (){
@@ -368,7 +365,6 @@ set_cpu_performance(){
         fi
 }
 
-
 ## Share some final notes...
 final_notes(){
   clear
@@ -400,7 +396,6 @@ echo -e "   ${yellow}notes${nc}          Shows after-installation notes."
 echo -e "   ${yellow}help${nc}           Shows this help message.\n"
 echo -e "For additional help, please open an issue on my github page.\n"
 }
-
 
 ## Here is where we start our install....
 start_install_nas(){
@@ -445,7 +440,6 @@ start_install_coin(){
     final_notes
     thank_you
 }
-
 
 ## And we're off....
 case "$1" in
