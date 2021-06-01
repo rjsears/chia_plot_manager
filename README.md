@@ -166,8 +166,10 @@ You could have an entire discussion on network performance and the install scrip
 ### To get started
  
 I recommend installing in ```/root/plot_manager```. If you would like to install elsewhere that is fine, if you want to use a virtual environment, that should work as well. I have not personally tried running these outside of ```/root/plot_manager``` but so long as you have the basic directory structure <em>under</em> your install directory, it should work out of the box. 
- 
-```git clone https://github.com/rjsears/chia_plot_manager.git```<br><br>
+
+Assuming a clean install, you can try this:
+
+```git clone https://github.com/rjsears/chia_plot_manager.git && mv chia_plot_manager plot_manager && cd plot_manager && chmod +x install.sh && ./install.sh help```<br><br>
 
  Once cloned, I copy everything to the ```/root/plot_manager``` directory. My final directory structure looks like this:
  <br>
