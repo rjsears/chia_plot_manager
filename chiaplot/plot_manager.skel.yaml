@@ -1,0 +1,84 @@
+# Once you have made the necessary modifications to this file, change this to
+# True.
+
+configured: False
+
+# Enter the hostname of this server:
+hostname: chiaplot01
+
+# Enter Logging Information
+logging: True
+log_level: DEBUG
+
+# I use Plotman to do my plotting, but this should work for anything. This
+# has NOTHING to do with setting up your plotting configuration and is
+# only used for monitoring drive space for notifications. Set to True if
+# locally plotting and configure the rest of the settings.
+local_plotter:
+  active: True
+
+  # Make sure to use the actual device and not the mountpoint
+  temp_dirs:
+    - /dev/nvme0n1p1
+    - /dev/nvme1n1p1
+
+  # This is the directory that you are using for your plots. The plots
+  # are then moved out of this directory to their final resting place on
+  # a harvester. Currently we only support a single drive here. This is
+  # considered the `-d` drive if you are using plotman. This MUST have the
+  # '/' slash!
+  plot_dir: /mnt/ssdraid/array0/
+
+# If you are running multiple remote harvesters, set this to true
+# and enter their hostnames below.These hostnames
+# should be configured for passwordless ssh and should be configured
+# such that when you ping the hostname, it goes across the fastest
+# interface you have between these harvesters. Set to True if you
+# have multiple harvesters and want to automate sending plots to
+# the Harvester with the least number of plots.
+multiple_harvesters:
+  active: True
+  remote_harvesters:
+    - chianas01
+    - chianas02
+    - chianas03
+
+# If we are not using multiple harvesters, then set the hostname of your NAS
+# here.
+default_nas: chianas01
+
+# This is our high speed, internal Network interface name that we send plots over
+network_interface: eno2
+
+
+# This is where we set up our notifications
+notifications:
+  active: True
+  methods:
+    pb: False
+    email: True
+    sms: False
+  types:
+    new_plot_drive: True
+    daily_update: True
+    per_plot: True
+    warnings: True
+  # What email addresses will get the emails?
+  emails:
+    - someone@gmail.com
+    - someoneelse@gmail.com
+  # What phones numbers will received the SMS text messages? Include '+1'
+  phones:
+    - '+18584103312'
+    - '+18584103387'
+
+  # These are your notification account settings. For email, you must configure
+  # your locate MTA. Installer installs Postfix by default. Twilio (SMS) requires
+  # a paid account, PushBullet is free.
+  accounts:
+    twilio:
+      from: '+18585551212'
+      account: your_account_here
+      token: your_token_here
+    pushBullet:
+      api: your_pbi_api_here
