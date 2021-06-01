@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.9 (2021-05-31)"
+VERSION = "0.92 (2021-05-31)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -27,13 +27,11 @@ from drive_manager import get_device_by_mountpoint
 import subprocess
 import pathlib
 import psutil
+from drivemanager_classes import DriveManager, config_file
+chianas = DriveManager.read_configs()
 
 script_path = pathlib.Path(__file__).parent.resolve()
 
-
-# Set the below file paths as necessary. The `drive_activity_log` needs to match
-# the file you have set in the `check_drive_activity.sh` shell script in order to
-# work. Make sure you have Dstat installed otherwise this script will not work.
 
 
 # Are we testing?
@@ -45,33 +43,28 @@ if testing:
     drive_check = script_path.joinpath('drive_stats.sh')
     drive_check_output = script_path.joinpath('drive_stats.io')
 else:
-    plot_dir = '/mnt/enclosure1/rear/column3/drive79' # Where do you hold your plots before they are moved?
+    plot_dir = chianas.dst_dir # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('local_transfer_job_running')
     drive_check = script_path.joinpath('drive_stats.sh')
     drive_check_output = script_path.joinpath('drive_stats.io')
 
+def are_we_configured():
+    if not chianas.configured:
+        log.debug('We have not been configured! Please edit the main config file')
+        log.debug(f'{config_file} and try again!')
+        exit()
+    else:
+        pass
+
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
-level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
-level = logging._checkLevel(level)
+level = logging._checkLevel(chianas.log_level)
 log = logging.getLogger('move_local_plots.py')
 log.setLevel(level)
 
 # Let's Get Started
-
-# Setup to read and write to our config file.
-# If we are expecting a boolean back pass True/1 for bool,
-# otherwise False/0
-config = configparser.ConfigParser()
-def read_config_data(file, section, item, bool):
-    pathname = script_path.joinpath(file)
-    config.read(pathname)
-    if bool:
-        return config.getboolean(section, item)
-    else:
-        return config.get(section, item)
 
 # Look in our plot directory and get a list of plots. Do a basic
 # size check for sanity's sake.
@@ -92,6 +85,7 @@ def process_plot():
     if plot_dir == 'not_set':
         log.debug('You need to set the Directory where your local plots are located!')
         log.debug('Please set "plot_dir" to the correct mount point and try again!')
+        log.debug(f'Edit {config_file} to update this setting.')
         exit()
     else:
         log.debug('process_plot() Started')
@@ -101,17 +95,16 @@ def process_plot():
                 process_control('set_status', 'start')
                 plot_path = plot_dir + '/' + plot_to_process
                 log.info(f'Processing Plot: {plot_path}')
-                current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', False)
-                log.debug(f'Current Internal Plotting Drive is: {current_plotting_drive}')
-                log.debug(f'Starting Copy of {plot_path}')
+                log.debug(f'Current Internal Plotting Drive is: {chianas.current_internal_drive}')
+                log.debug(f'Starting Copy of {plot_path} to {chianas.current_internal_drive}')
                 start_time = timer()
                 try:
-                    shutil.copy2(plot_path, current_plotting_drive)
+                    shutil.copy2(plot_path, chianas.current_internal_drive)
                 except:
                     log.debug(f'ERROR: There was a problem copying: {plot_dir}!')
                     exit()
                 end_time = timer()
-                if verify_plot_move(current_plotting_drive, plot_path, plot_to_process):
+                if verify_plot_move(chianas.current_internal_drive, plot_path, plot_to_process):
                     log.info('Plot Sizes Match, we have a good plot move!')
                     log.info(f'Total Elapsed Time: {end_time - start_time:.2f} seconds or {(end_time - start_time)/60:.2f} Minutes')
                 else:
@@ -198,7 +191,9 @@ def check_drive_activity():
 
 
 def main():
+    are_we_configured()
     process_plot()
 
 if __name__ == '__main__':
     main()
+
