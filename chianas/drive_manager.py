@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.9 (2021-05-27)"
+VERSION = "0.92 (2021-05-31)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -14,6 +14,10 @@ other things like notifications and stuff.
 
 
  Updates
+ 
+   V0.92 2021-05-31
+   - Converted to a central YAML config file
+ 
    V0.9 2021-05-27
    - Major changes to code to auto detect installation path and try
      to make intelligent decisions as a result. Also updated the
@@ -93,8 +97,6 @@ from pySMART import Device  # CAUTION - DO NOT use PyPI version, use https://git
 from psutil._common import bytes2human
 import logging
 from system_logging import setup_logging
-from system_logging import read_logging_config
-import system_info
 from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
@@ -102,7 +104,6 @@ import configparser
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from datetime import datetime
 import time
-config = configparser.ConfigParser()
 import argparse
 import textwrap
 from natsort import natsorted
@@ -110,8 +111,10 @@ import mmap
 import json
 import paramiko
 import pathlib
-
+from drivemanager_classes import DriveManager, config_file
+chianas = DriveManager.read_configs()
 script_path = pathlib.Path(__file__).parent.resolve()
+
 
 # Define some colors for our help message
 red='\033[0;31m'
@@ -123,13 +126,10 @@ nc='\033[0m'
 
 
 # Let's do some housekeeping
-nas_server = 'chianas01' #THIS server's hostname should go here!
 plot_size_k = 108995911228
 plot_size_g = 101.3623551
 receive_script = script_path.joinpath('receive_plot.sh')
 
-# Enter the full path (including filename) to your Chia install debug.log
-chia_log_file = '/home/chia/.chia/mainnet/log/debug.log'
 
 # Date and Time Stuff
 today = datetime.today().strftime('%A').lower()
@@ -138,54 +138,48 @@ current_timestamp = int(time.time())
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
-level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
-level = logging._checkLevel(level)
+level = logging._checkLevel(chianas.log_level)
 log = logging.getLogger(__name__)
 log.setLevel(level)
 
 
+def are_we_configured():
+    if not chianas.configured:
+        log.debug('We have not been configured! Please edit the main config file')
+        log.debug(f'{config_file} and try again!')
+        exit()
+    elif chianas.chia_log_file == 'net_set':
+        log.debug('Your chia debug logfile path has not been set.')
+        log.debug(f'Please edit {config_file} and put the correct path in for your chia log file.')
+        exit()
+    else:
+        pass
+
+
 """
-If you have multiple harvesters, load their host names here but make sure the
-server can be reached by ssh via this hostname and make sure you have configured
-passwordless ssh between them first. Do not include this harvester in the list.
-This is only if you want to run the -hr or --harvester_report to report on
+If you have multiple harvesters, load their host names in the config file. Make
+sure each server can be reached by ssh via their hostname and make sure you have
+configured passwordless ssh between them first. Do not include this harvester in
+the list. This is only if you want to run the -hr or --harvester_report to report on
 all of your harvesters.
 
-For your local harvester (this machine), make sure this hostname also matched
-the entry for "nas_server" above.
-
 It is important that this server can reach your remote harvesters by using the
-exact names you use below and that it can be reached vi ssh without a password.
+exact names you use and that it can be reached vi ssh without a password.
 Remote reporting won't work otherwise.
 
-Also make sure the directory that you list here is the same on your remote
-harvesters. There is NO NEED to change anything here is you installed 
-chia_plot_manager in the same directory on all systems, if not, you will
-need to alter these lines.
-
-For example, remote_export_file and local_export_file paths should all be the
-same so the script works correctly. Only change the first part of the path, do 
-not change the last part:
-
-remote_export_file = f'/root/plot_info_export/{remote_harvesters}_export.json'
-                       ^^^^^^^^^^^^^^^^^^^^^^
-                       Only change this part!
-                        
-Finally if you want to run remote harvester reports, set to True below.
+Finally if you want to run remote harvester reports, set to True in the YAML
+config file.
 """
-remote_harvester_reports_active = False
-remote_harvesters = ['chianas02', 'chianas03'] # Only "other harvesters", not this harvester.
-remote_export_file = script_path.joinpath(f'export/{remote_harvesters}_export.json')
-local_export_file = script_path.joinpath(f'export/{nas_server}_export.json')
+local_export_file = script_path.joinpath(f'export/{chianas.hostname}_export.json')
 
 
 def remote_harvester_report():
-    if not remote_harvester_reports_active:
+    if not chianas.remote_harvester_reports:
         log.debug('Remote Harvester Reports are NOT Configured')
     else:
         remote_harvesters = check_remote_harvesters()
-        if nas_server in remote_harvesters:
-            print(f'\n{red}CAUTION{nc}: Your local harvester {yellow}{nas_server}{nc} is listed as one of your remote harvesters!')
+        if chianas.hostname in remote_harvesters:
+            print(f'\n{red}CAUTION{nc}: Your local harvester {yellow}{chianas.hostname}{nc} is listed as one of your remote harvesters!')
             print(f'{red}CAUTION{nc}: Unable to Run Report. Please Correct!\n')
             exit()
         else:
@@ -215,21 +209,13 @@ def remote_harvester_report():
                 totals["approx_days_to_fill_drives"] += e["approx_days_to_fill_drives"]
             return totals, servers, remote_harvesters
 
-'''
-def get_all_harvesters():
-    all_harvesters = []
-    all_harvesters.append(nas_server)
-    for harvester in remote_harvesters:
-        all_harvesters.append(harvester)
-    return(all_harvesters)
-'''
 
 def check_remote_harvesters():
     """
     Make sure our harvesters are online!
     """
     harvesters_check = {}
-    for harvester in remote_harvesters:
+    for harvester in chianas.remote_harvesters:
         harvesters_check[harvester] = host_check(harvester)
     dead_hosts = [host for host, alive in harvesters_check.items() if not alive]
     if dead_hosts != []:
@@ -266,11 +252,11 @@ def farm_wide_space_report():
     """
     This prints out our Farm Wide Report
     """
-    if remote_harvester_reports_active:
+    if chianas.remote_harvester_reports:
         remote_harvester_reports = (remote_harvester_report())
         totals = remote_harvester_reports[0]
         days_until_full = (totals.get("total_plots_until_full") / totals.get("plots_last_day"))
-        harvesters = [nas_server, *remote_harvester_reports[2]]
+        harvesters = [chianas.hostname, *remote_harvester_reports[2]]
         print('')
         print(f'{blue}############################################################{nc}')
         print(f'{blue}################### {green}Farm Wide Plot Report{blue} ##################{nc}' )
@@ -359,10 +345,7 @@ program_descripton = f'''
     USAGE:
     '''
 
-# Grab command line arguments if there are any
 def init_argparser():
-    with open(script_path.joinpath('offlined_drives'), 'r') as offlined_drives_list:
-        offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     parser = argparse.ArgumentParser(description=program_descripton, formatter_class=RawFormatter)
     parser.add_argument('-v', '--version', action='version', version=f'{parser.prog} {VERSION}')
     parser.add_argument('-dr', '--daily_report', action='store_true', help='Run the ChiaPlot Daily Email Report and exit')
@@ -371,8 +354,8 @@ def init_argparser():
     parser.add_argument('-fr', '--farm_report', action='store_true',help='Return the total # of plots on your entire farm and total you can add and exit')
     parser.add_argument('-ud', '--update_daily', action='store_true', help=f'Updates 24 hour plot count. {red}USE WITH CAUTION, USE WITH CRONTAB{nc}')
     parser.add_argument('-off', '--offline_hdd', action='store', help=f'Offline a specific drive. Use drive number: {green}drive6{nc}')
-    if offlined_drives != []:
-        parser.add_argument('-on', '--online_hdd', action='store', help=f'Online a specific drive.' , choices=offlined_drives)
+    if chianas.offlined_drives != []:
+        parser.add_argument('-on', '--online_hdd', action='store', help=f'Online a specific drive.' , choices=chianas.offlined_drives)
     return parser
 
 
@@ -380,33 +363,10 @@ def get_offlined_drives():
     """
     Get a list of all of our offlined drives.
     """
-    with open(script_path.joinpath('offlined_drives'), 'r') as offlined_drives_list:
-        offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
-        if offlined_drives != None:
-            return offlined_drives
-        else:
-            return False
-
-
-# Setup to read and write to our config file.
-# If we are expecting a boolean back pass True/1 for bool,
-# otherwise False/0
-def read_config_data(file, section, item, bool):
-    pathname = script_path.joinpath(file)
-    config.read(pathname)
-    if bool:
-        return config.getboolean(section, item)
+    if chianas.offlined_drives != None:
+        return chianas.offlined_drives
     else:
-        return config.get(section, item)
-
-
-def update_config_data(file, section, item, value):
-    pathname = script_path.joinpath(file)
-    config.read(pathname)
-    cfgfile = open(pathname, 'w')
-    config.set(section, item, value)
-    config.write(cfgfile)
-    cfgfile.close()
+        return False
 
 
 def get_drive_info(action, drive):
@@ -590,15 +550,13 @@ def get_plot_drive_to_use():
          to make sure the drive selected has not been marked as "offline".
         #TODO incorporate in get_plot_drive_with_available_space()
         """
-    with open(script_path.joinpath('offlined_drives'), 'r') as offlined_drives_list:
-        offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
     available_drives = []
     try:
         for part in psutil.disk_partitions(all=False):
             if part.device.startswith('/dev/sd') \
                     and part.mountpoint.startswith('/mnt/enclosure') \
                     and get_drive_info('space_free_plots_by_mountpoint', part.mountpoint) >= 1 \
-                    and get_drive_by_mountpoint(part.mountpoint) not in offlined_drives:
+                    and get_drive_by_mountpoint(part.mountpoint) not in chianas.offlined_drives:
                 drive = get_drive_by_mountpoint(part.mountpoint)
                 available_drives.append((part.mountpoint, part.device, drive))
         return (natsorted(available_drives)[0][0], natsorted(available_drives)[1][0])
@@ -644,6 +602,10 @@ def log_drive_report():
 
 
 def online_offline_drive(drive, onoffline):
+    """
+    Function to online and offline a drive for maintenance, etc. A drive that has been
+    'offlined' will not have any plots written to it.
+    """
     log.debug(f'online_offline_drive() called with [{drive}] , [{onoffline}]')
     if get_device_info_by_drive_number(drive) == None:
         print()
@@ -652,46 +614,36 @@ def online_offline_drive(drive, onoffline):
         log.debug(f'Drive: {drive} does not exist or is not mounted on this system!')
     else:
         if onoffline == 'offline':
-            offlined_drives = []
-            with open('offlined_drives', 'r') as offlined_drives_list:
-                offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
-                if drive in offlined_drives:
-                    print()
-                    print(f'Drive: {blue}{drive}{nc} Already in {red}OFFLINE{nc} mode! No action taken.')
-                    print()
-                    log.debug(f'Drive: {drive} Already in offline mode!')
-                else:
-                    offlined_drives.append(drive)
-                    with open('offlined_drives', 'w') as offlined_drive_list:
-                        offlined_drive_list.writelines("%s\n"  % drives for drives in offlined_drives)
-                        print()
-                        print(f'Drive: {blue}{drive}{nc} Put into {red}OFFLINE{nc} mode! Plots will not be written to this drive!')
-                        print()
-                        log.debug(f'Drive: {drive} Put into OFFLINE mode! Plots will not be written to this drive!')
+            if drive in chianas.offlined_drives:
+                print()
+                print(f'Drive: {blue}{drive}{nc} Already in {red}OFFLINE{nc} mode! No action taken.')
+                print()
+                log.debug(f'Drive: {drive} Already in offline mode!')
+            else:
+                chianas.onoffline_drives('offline', drive)
+                print()
+                print(f'Drive: {blue}{drive}{nc} Put into {red}OFFLINE{nc} mode! Plots will not be written to this drive!')
+                print()
+                log.debug(f'Drive: {drive} Put into OFFLINE mode! Plots will not be written to this drive!')
         elif onoffline == 'online':
-            offlined_drives = []
-            with open('offlined_drives', 'r') as offlined_drives_list:
-                offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
-                if drive in offlined_drives:
-                    offlined_drives.remove(drive)
-                    with open('offlined_drives', 'w') as offlined_drive_list:
-                        offlined_drive_list.writelines("%s\n"  % drives for drives in offlined_drives)
-                        print()
-                        print(f'Drive: {blue}{drive}{nc} Put into {green}ONLINE{nc} mode! Plots will now be written to this drive!')
-                        print()
-                        log.debug(f'Drive: {drive} Put into ONLINE mode! Plots will now be written to this drive!')
-                else:
-                    print()
-                    print(f'Drive: {blue}{drive}{nc} was not in {red}OFFLINE{nc} mode! No action taken.')
-                    print()
-                    log.debug(f'Drive: {drive} was not offline!')
+            if drive in chianas.offlined_drives:
+                chianas.onoffline_drives('online', drive)
+                print()
+                print(f'Drive: {blue}{drive}{nc} Put into {green}ONLINE{nc} mode! Plots will now be written to this drive!')
+                print()
+                log.debug(f'Drive: {drive} Put into ONLINE mode! Plots will now be written to this drive!')
+            else:
+                print()
+                print(f'Drive: {blue}{drive}{nc} was not in {red}OFFLINE{nc} mode! No action taken.')
+                print()
+                log.debug(f'Drive: {drive} was not offline!')
         elif onoffline == 'check':
-            with open('offlined_drives', 'r') as offlined_drives_list:
-                offlined_drives = [current_drives.rstrip() for current_drives in offlined_drives_list.readlines()]
-                if drive in offlined_drives:
-                    return True
-                else:
-                    return False
+            if drive in chianas.offlined_drives:
+                return True
+            else:
+                return False
+
+
 
 def update_receive_plot():
     """
@@ -708,45 +660,47 @@ def update_receive_plot():
     total_serverwide_plots = get_all_available_system_space('used')[1]
     log.debug(f'Total Serverwide Plots: {total_serverwide_plots}')
     # First determine if there is a remote file transfer in process. If there is, pass until it is done:
-    if os.path.isfile(read_config_data('plot_manager_config', 'remote_transfer', 'remote_transfer_active', False)):
+    if os.path.isfile(script_path.joinpath('remote_transfer_is_active')):
         log.debug('Remote Transfer in Progress, will try again soon!')
         quit()
     else:
-        current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
-        if current_plotting_drive == get_plot_drive_to_use()[0]:
-            log.debug(f'Currently Configured Plot Drive: {current_plotting_drive}')
+        if chianas.current_plotting_drive == get_plot_drive_to_use()[0]:
+            log.debug(f'Currently Configured Plot Drive: {chianas.current_plotting_drive}')
             log.debug(f'System Selected Plot Drive:      {get_plot_drive_to_use()[0]}')
             log.debug('Configured and Selected Drives Match!')
             log.debug(f'No changes necessary to {receive_script}')
             log.debug(
-                f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", current_plotting_drive)}')
+                f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_plotting_drive)}')
         else:
             send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
-            # notify() function.
-            notify('Plot Drive Updated', f'Plot Drive Updated: Was: {current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
+                                        # notify() function.
+            notify('Plot Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
             f = open(receive_script, 'w+')
             f.write('#! /bin/bash \n')
             f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()[0]}/$1" < /dev/null')
             f.close()
-            update_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', get_plot_drive_to_use()[0])
-            update_config_data('plot_manager_config', 'plotting_drives', 'current_internal_drive', get_plot_drive_to_use()[1])
+            chianas.update_current_plotting_drive(get_plot_drive_to_use()[0])
+            chianas.update_current_internal_drive(get_plot_drive_to_use()[1])
             log.info(f'Updated {receive_script} and system config file with new plot drive.')
-            log.info(f'Was: {current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
+            log.info(f'Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
             log_drive_report()
 
 
 def send_new_plot_disk_email():
+    """
+    This is the function that we call when we want to send an email letting you know that a new
+    plot has been created.
+    """
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
-    current_plotting_drive = read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False)
-    if read_config_data('plot_manager_config', 'notifications', 'new_plot_drive', True):
-        for email_address in system_info.alert_email:
+    if chianas.new_plot_drive:
+        for email_address in chianas.emails:
             send_template_email(template='new_plotting_drive.html',
                                 recipient=email_address,
                                 subject='New Plotting Drive Selected\nContent-Type: text/html',
                                 current_time=current_military_time,
-                                nas_server=nas_server,
-                                previous_plotting_drive=current_plotting_drive,
-                                plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint',current_plotting_drive),
+                                nas_server=chianas.hostname,
+                                previous_plotting_drive=chianas.current_plotting_drive,
+                                plots_on_previous_plotting_drive=get_drive_info('total_current_plots_by_mountpoint',chianas.current_plotting_drive),
                                 current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
                                 current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1],
                                 drive_size=bytes2human(usage.total),
@@ -760,21 +714,24 @@ def send_new_plot_disk_email():
                                 total_number_of_drives=get_all_available_system_space('total')[0],
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
                                 max_number_of_plots=get_all_available_system_space('total')[1],
-                                days_to_fill_drives=(int(get_all_available_system_space('free')[1] / int(read_config_data(
-                                    'plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))))
+                                days_to_fill_drives=(int(get_all_available_system_space('free')[1] / chianas.current_total_plots_daily)))
     else:
         pass
 
 
 def send_daily_update_email():
+    """
+    Function that generates and sends the daily update email.
+    """
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
-    if read_config_data('plot_manager_config', 'notifications', 'daily_update', True):
-        for email_address in system_info.alert_email:
-            create_index_html(template='daily_update.html',
+    if chianas.daily_update:
+        for email_address in chianas.emails:
+            print(email_address)
+            send_template_email(template='daily_update.html',
                               recipient=email_address,
                               subject='NAS Server Daily Update\nContent-Type: text/html',
                               current_time=current_military_time,
-                              nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
+                              nas_server=chianas.hostname, current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
                               current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1],
                               drive_size=bytes2human(usage.total),
                               drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).serial,
@@ -786,16 +743,18 @@ def send_daily_update_email():
                               max_number_of_plots=get_all_available_system_space('total')[1],
                               total_serverwide_plots_chia=check_plots()[0],
                               total_serverwide_space_per_chia=check_plots()[1],
-                              total_plots_last_day=read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False),
-                              days_to_fill_drives=(int(get_all_available_system_space('free')[1] / int(read_config_data(
-                                  'plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))),
-                              average_plots_per_hour=round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))) / 24, 1),
-                              average_plotting_speed=(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g) / 1000))
+                              total_plots_last_day=chianas.current_total_plots_daily,
+                              days_to_fill_drives=(int(get_all_available_system_space('free')[1] / chianas.current_total_plots_daily)),
+                              average_plots_per_hour=round((chianas.current_total_plots_daily) / 24, 1),
+                              average_plotting_speed=chianas.current_total_plots_daily * int(plot_size_g) / 1000)
     else:
         pass
 
 
 def create_new_index_html_report():
+    """
+    Not is use, but can be used to generate a new web index.html for a static website.
+    """
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
     create_index_html(template='index.html',
                       current_time=current_military_time,
@@ -811,37 +770,39 @@ def create_new_index_html_report():
                       max_number_of_plots=get_all_available_system_space('total')[1],
                       total_serverwide_plots_chia=check_plots()[0],
                       total_serverwide_space_per_chia=check_plots()[1],
-                      total_plots_last_day=read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False),
-                      days_to_fill_drives=(int(get_all_available_system_space('free')[1] / int(read_config_data(
-                          'plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)))),
-                      average_plots_per_hour=round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))) / 24, 1),
-                      average_plotting_speed=(int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g) / 1000))
+                      total_plots_last_day=chianas.current_total_plots_daily,
+                      days_to_fill_drives=(int(get_all_available_system_space('free')[1] / chianas.current_total_plots_daily)),
+                      average_plots_per_hour=round(chianas.current_total_plots_daily / 24, 1),
+                      average_plotting_speed=chianas.current_total_plots_daily * int(plot_size_g) / 1000)
 
 
 
 
 
 def space_report():
-    plots_last_day = int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))
+    """
+    Function that creates the space report from the command line.
+    """
+    plots_last_day = chianas.current_total_plots_daily
     if plots_last_day == 0:
         plots_last_day = 1
     print('')
     print(f'{blue}############################################################{nc}')
-    print(f'{blue}################### {green}{nas_server} Plot Report{blue} ##################{nc}' )
+    print(f'{blue}################### {green}{chianas.hostname} Plot Report{blue} ##################{nc}' )
     print(f'{blue}############################################################{nc}')
-    print (f'Total Number of Plots on {green}{nas_server}{nc}:                     {yellow}{get_all_available_system_space("used")[1]}{nc}')
+    print (f'Total Number of Plots on {green}{chianas.hostname}{nc}:                     {yellow}{get_all_available_system_space("used")[1]}{nc}')
     print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{check_plots()[0]}{nc}')
     print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{check_plots()[1]}{nc}')
     print (f'Total Number of Systemwide Plots Drives:                  {yellow}{get_all_available_system_space("total")[0]}{nc}')
     print (f'Total Number of k32 Plots until full:                   {yellow}{get_all_available_system_space("free")[1]}{nc}')
     print (f'Maximum # of plots when full:                           {yellow}{get_all_available_system_space("total")[1]}{nc}')
     print (f"Plots completed in the last 24 Hours:                     {yellow}{plots_last_day}{nc}")
-    print (f"Average Plots per Hours:                                 {yellow}{round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))) / 24, 1)}{nc}")
-    print (f"Average Plotting Speed Last 24 Hours (TiB/Day):         {yellow}{round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g) / 1000), 2)}{nc} ")
+    print (f"Average Plots per Hours:                                 {yellow}{round(chianas.current_total_plots_daily / 24, 1)}{nc}")
+    print (f"Average Plotting Speed Last 24 Hours (TiB/Day):         {yellow}{round((chianas.current_total_plots_daily * int(plot_size_g) / 1000), 2)}{nc} ")
     print (f"Appx Number of Days to fill all current plot drives:     {yellow} {int(get_all_available_system_space('free')[1] / plots_last_day)} {nc} ")
-    print (f"Current Plot Storage Drive:                        {yellow}{(get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])}{nc}")
-    print (f"Temperature of Current Plot Drive:                      {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).temperature}°C{nc}")
-    print (f"Latest Smart Drive Assessment of Plot Drive:            {yellow}{Device((get_device_by_mountpoint(read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))[0][1])).assessment}{nc}")
+    print (f"Current Plot Storage Drive:                        {yellow}{(get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])}{nc}")
+    print (f"Temperature of Current Plot Drive:                      {yellow}{Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).temperature}°C{nc}")
+    print (f"Latest Smart Drive Assessment of Plot Drive:            {yellow}{Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).assessment}{nc}")
     print(f'{blue}############################################################{nc}')
     print('')
     print('')
@@ -851,24 +812,24 @@ def nas_report_export():
     This function generates the json file with all of the server information for
     our total farm report for those running multiple harvesters.
     """
-    if remote_harvester_reports_active:
+    if chianas.remote_harvester_reports:
         log.debug('nas_report_export() started')
-        plots_last_day = int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))
+        plots_last_day = chianas.current_total_plots_daily
         if plots_last_day == 0:
             plots_last_day = 1
         nas_server_export = dict([
-            ('server', nas_server),
+            ('server', chianas.hostname),
             ('total_plots', int(get_all_available_system_space("used")[1])),
             ('total_plots_farming', int(check_plots()[0])),
             ('total_tib_farming', int(check_plots()[1])),
             ('total_plot_drives', int(get_all_available_system_space("total")[0])),
             ('total_plots_until_full', int(get_all_available_system_space("free")[1])),
             ('max_plots_when_full', int(get_all_available_system_space("total")[1])),
-            ('plots_last_day', int(plots_last_day)),
-            ('avg_plots_per_hour', round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False))) / 24, 1)),
-            ('avg_plotting_speed', round((int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', False)) * int(plot_size_g) / 1000), 2)),
-            ('approx_days_to_fill_drives', int(get_all_available_system_space('free')[1] / plots_last_day)),
-            ('current_plot_drive', read_config_data('plot_manager_config', 'plotting_drives', 'current_plotting_drive', False))
+            ('plots_last_day', plots_last_day),
+            ('avg_plots_per_hour', round((int(chianas.current_total_plots_daily)) / 24, 1)),
+            ('avg_plotting_speed', round((int(chianas.current_total_plots_daily)) * int(plot_size_g) / 1000, 2)),
+            ('approx_days_to_fill_drives', (int(get_all_available_system_space('free')[1] / plots_last_day))),
+            ('current_plot_drive', chianas.current_plotting_drive)
         ])
         try:
             with open(local_export_file, 'w') as nas_export:
@@ -901,12 +862,11 @@ def temperature_report():
 # not be correct. I use midnight here for my purposes, but
 # this is just a var name.
 def update_daily_plot_counts():
-    current_total_plots_midnight = int(read_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_midnight', False))
-    total_serverwide_plots = get_all_available_system_space('used')[1]
-    update_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_midnight', str(total_serverwide_plots))
+    current_total_plots_midnight = chianas.current_total_plots_midnight
+    total_serverwide_plots = int(get_all_available_system_space('used')[1])
+    chianas.update_current_total_plots_midnight(total_serverwide_plots)
     total_plots_daily = (total_serverwide_plots - current_total_plots_midnight)
-    update_config_data('plot_manager_config', 'plotting_information', 'current_total_plots_daily', str(total_plots_daily))
-
+    chianas.update_current_total_plots_daily(total_plots_daily)
 
 def send_email(recipient, subject, body):
     """
@@ -930,7 +890,7 @@ def send_email(recipient, subject, body):
 def send_push_notification(title, message):
     """Part of our notification system. This handles sending PushBullets."""
     try:
-        pb = Pushbullet(system_info.pushbilletAPI)
+        pb = Pushbullet(chianas.pb_api)
         push = pb.push_note(title, message)
         log.debug(f"Pushbullet Notification Sent: {title} - {message}")
     except pb_errors.InvalidKeyError as e:
@@ -941,8 +901,8 @@ def send_push_notification(title, message):
 def send_sms_notification(body, phone_number):
     """Part of our notification system. This handles sending SMS messages."""
     try:
-        client = Client(system_info.twilio_account, system_info.twilio_token)
-        message = client.messages.create(to=phone_number, from_=system_info.twilio_from, body=body)
+        client = Client(chianas.twilio_account, chianas.twilio_token)
+        message = client.messages.create(to=phone_number, from_=chianas.twilio_from, body=body)
         log.debug(f"SMS Notification Sent: {body}.")
     except TwilioRestException as e:
         log.debug(f'Twilio Exception: {e}. Message not sent.')
@@ -954,14 +914,14 @@ def send_sms_notification(body, phone_number):
 def notify(title, message):
     """ Notify system for email, pushbullet and sms (via Twilio)"""
     log.debug(f'notify() called with Title: {title} and Message: {message}')
-    if (read_config_data('plot_manager_config', 'notifications', 'alerting', True)):
-        if (read_config_data('plot_manager_config', 'notifications', 'pb', True)):
+    if chianas.notifications:
+        if chianas.pb:
             send_push_notification(title, message)
-        if (read_config_data('plot_manager_config', 'notifications', 'email', True)):
-            for email_address in system_info.alert_email:
+        if chianas.email:
+            for email_address in chianas.emails:
                 send_email(email_address, title, message)
-        if (read_config_data('plot_manager_config', 'notifications', 'sms', True)):
-            for phone_number in system_info.twilio_to:
+        if chianas.sms:
+            for phone_number in chianas.phones:
                 send_sms_notification(message, phone_number)
     else:
         pass
@@ -993,10 +953,6 @@ def index_html(report):
     with open ('web/index.html', 'w') as report_body:
         report_body.write(report)
 
-def index_html(report):
-    with open ('web/index.html', 'w') as report_body:
-        report_body.write(report)
-
 
 
 # This function called from crontab. First run the daily update (-ud) then (-dr):
@@ -1011,12 +967,12 @@ def send_new_plot_notification():
     log.debug('send_new_plot_notification() Started')
     if os.path.isfile('new_plot_received'):
         log.debug('New Plot Received')
-        if read_config_data('plot_manager_config', 'notifications', 'per_plot', True):
+        if chianas.per_plot:
             notify('New Plot Received', 'New Plot Received')
         os.remove('new_plot_received')
 
 def check_plots():
-    with open(chia_log_file, 'rb', 0) as f:
+    with open(chianas.chia_log_file, 'rb', 0) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         i = m.rfind(b'Loaded')
         try:
@@ -1031,6 +987,7 @@ def check_plots():
         return plots, f'{TiB:.0f}'
 
 def main():
+    are_we_configured()
     parser = init_argparser()
     args = parser.parse_args()
     if args.daily_report:
@@ -1057,6 +1014,8 @@ def main():
         send_new_plot_notification()
         update_receive_plot()
 
+
 if __name__ == '__main__':
     main()
+
 
