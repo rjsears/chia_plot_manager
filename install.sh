@@ -137,8 +137,17 @@ clean_up_nas_directory(){
    chmod +x $current_directory/utilities/*.py
    chmod +x $current_directory/utilities/*.sh
    mkdir -p /root/.config/plot_manager
-   cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
-   cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+   if test -f "/root/.config/plot_manager/plot_manager.yaml"; then
+     echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
+     echo -e  "Making a backup...."
+     cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
+     cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+     cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     echo -e "Please make sure to check your settings!!!"
+    else
+      cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+      cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+   fi
 }
 
 ### Clean Up Directories
@@ -153,8 +162,17 @@ clean_up_plot_directory(){
    chmod +x $current_directory/*.py
    chmod +x $current_directory/*.sh
    mkdir -p /root/.config/plot_manager
-   cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
-   cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+   if test -f "/root/.config/plot_manager/plot_manager.yaml"; then
+     echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
+     echo -e  "Making a backup...."
+     cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
+     cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+     cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     echo -e "Please make sure to check your settings!!!"
+    else
+      cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+      cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+   fi
 }
 
 ### Clean Up Directories
