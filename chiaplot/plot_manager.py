@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.9 (2021-05-27)"
+VERSION = "0.92 (2021-05-31)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -39,50 +39,58 @@ Updates
   - Moved remote_mount lookup to happen before starting the plot move
 """
 
+
 import os
 import subprocess
 import logging
 from system_logging import setup_logging
-from system_logging import read_logging_config
 import pathlib
 import json
 import urllib.request
 import psutil
-import system_info
 from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 import paramiko
+import yaml
 import configparser
 config = configparser.ConfigParser()
 script_path = pathlib.Path(__file__).parent.resolve()
+from plotmanager_classes import PlotManager, config_file
+chiaplot = PlotManager.read_configs()
 
 
 # Are We Testing?
 testing = False
 
-# Multiple Harvester Configuration
-# If you are running multiple NAS/Harvesters, configure them here:
-multiple_harvesters = True
-"""
-List your NAS/Harvesters here. You should have keyless ssh configured between
-this plotter and all Harvesters you list here. If you do not, this script will
-fail.
+def are_we_configured():
+    if not chiaplot.configured:
+        log.debug('We have not been configured! Please edit the main config file')
+        log.debug(f'{config_file} and try again!')
+        exit()
+    else:
+        pass
 
-Hostnames should be resolvable via DNS or `/etc/hosts` and should be on internal
-network interface (ie 10Gbe) if you have one.
-"""
-remote_harvesters = ['chianas01', 'chianas02', 'chianas03'] # <==== enter host names of Harvesters
+
+# If you are running multiple harvesters/NAS, make sure to set your YAML config file
+# up correctly. 
 def multiple_harvesters_check():
     log.debug('multiple_harvesters() Started')
     global nas_server
-    if multiple_harvesters:
-        remote_export_file = script_path.joinpath(f'export/{remote_harvesters}_export.json')
+    global remote_mount
+    if chiaplot.multiple_harvesters:
         nas_server = get_next_nas()
         log.debug(f'Multiple NAS/Harvesters Found - Selected NAS/Harvester: {nas_server}')
+        with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
+            server = yaml.safe_load(f)
+            remote_mount=server['current_plot_drive']
     else:
-        nas_server = ('chianas01') # <======== if you are NOT using multiple harvesters, put your harvester/NAS here
-        log.debug(f'Selected NAS/Harvester: {nas_server}')
+        nas_server = chiaplot.default_nas
+        log.debug(f'Using Default NAS/Harvester: {nas_server}')
+        with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
+            server = yaml.safe_load(f)
+            remote_mount=server['current_plot_drive']
+
 
 # Let's do some housekeeping
 """
@@ -90,7 +98,7 @@ This network interface is the name (as shown by `ip a`) of the interface that yo
 transfer your plots over to your Harvester. We utilize this to determine is there is
 network traffic flowing across it during a transfer. 
 """
-network_interface = 'VLAN95_AR03_1-1'
+network_interface = chiaplot.network_interface
 
 if testing:
     plot_dir = script_path.joinpath('test_plots/')
@@ -98,7 +106,7 @@ if testing:
     plot_size = 10000000
     status_file = script_path.joinpath('transfer_job_running_testing')
 else:
-    plot_dir = '/mnt/ssdraid/array0/'
+    plot_dir = chiaplot.plot_dir
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('transfer_job_running')
 
@@ -108,8 +116,7 @@ remote_checkfile = script_path.joinpath('remote_transfer_is_active')
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
-level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
-level = logging._checkLevel(level)
+level = logging._checkLevel(chiaplot.log_level)
 log = logging.getLogger(__name__)
 log.setLevel(level)
 
@@ -136,11 +143,11 @@ def process_plot():
             process_control('set_status', 'start')
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
-            try:
-                remote_mount = str(subprocess.check_output(['ssh', nas_server, f"grep current_plotting_drive {script_path.joinpath('plot_manager_config')} | awk {{'print $3'}}"]).decode(('utf-8'))).strip("\n")
-            except subprocess.CalledProcessError as e:
-                log.warning(e.output)  # TODO Do something here...cannot go on...
-                quit()
+            #try:
+            #    remote_mount = str(subprocess.check_output(['ssh', nas_server, f"grep current_plotting_drive {script_path.joinpath('plot_manager_config')} | awk {{'print $3'}}"]).decode(('utf-8'))).strip("\n")
+            #except subprocess.CalledProcessError as e:
+            #    log.warning(e.output)  # TODO Do something here...cannot go on...
+            #    quit()
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
             try:
@@ -294,14 +301,14 @@ def verify_glances_is_running():
 def notify(title, message):
     """ Notify system for email, pushbullet and sms (via Twilio)"""
     log.debug(f'notify() called with Title: {title} and Message: {message}')
-    if (read_config_data('plot_manager_config', 'notifications', 'alerting', True)):
-        if (read_config_data('plot_manager_config', 'notifications', 'pb', True)):
+    if chiaplot.notifications:
+        if chiaplot.pb:
             send_push_notification(title, message)
-        if (read_config_data('plot_manager_config', 'notifications', 'email', True)):
-            for email_address in system_info.alert_email:
+        if chiaplot.email:
+            for email_address in chiaplot.emails:
                 send_email(email_address, title, message)
-        if (read_config_data('plot_manager_config', 'notifications', 'sms', True)):
-            for phone_number in system_info.twilio_to:
+        if chiaplot.sms:
+            for phone_number in chiaplot.phones:
                 send_sms_notification(message, phone_number)
     else:
         pass
@@ -340,7 +347,7 @@ def send_email(recipient, subject, body):
 def send_push_notification(title, message):
     """Part of our notification system. This handles sending PushBullets."""
     try:
-        pb = Pushbullet(system_info.pushbilletAPI)
+        pb = Pushbullet(chiaplot.pb_api)
         push = pb.push_note(title, message)
         log.debug(f"Pushbullet Notification Sent: {title} - {message}")
     except pb_errors.InvalidKeyError as e:
@@ -351,8 +358,8 @@ def send_push_notification(title, message):
 def send_sms_notification(body, phone_number):
     """Part of our notification system. This handles sending SMS messages."""
     try:
-        client = Client(system_info.twilio_account, system_info.twilio_token)
-        message = client.messages.create(to=phone_number, from_=system_info.twilio_from, body=body)
+        client = Client(chiaplot.twilio_account, chiaplot.twilio_token)
+        message = client.messages.create(to=phone_number, from_=chiaplot.twilio_from, body=body)
         log.debug(f"SMS Notification Sent: {body}.")
     except TwilioRestException as e:
         log.debug(f'Twilio Exception: {e}. Message not sent.')
@@ -366,7 +373,7 @@ def check_remote_harvesters():
     This verifies that the remote_harvesters listed above are actually alive.
     """
     harvesters_check = {}
-    for harvester in remote_harvesters:
+    for harvester in chiaplot.remote_harvesters:
         harvesters_check[harvester] = host_check(harvester)
     dead_hosts = [host for host, alive in harvesters_check.items() if not alive]
     if dead_hosts != []:
