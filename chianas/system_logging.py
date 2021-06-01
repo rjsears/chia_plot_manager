@@ -6,25 +6,27 @@ Part of drive_manager. This is the logging module.
 For use with plot_manager V0.9
 """
 
-VERSION = "V0.9 (2021-05-27)"
+VERSION = "V0.92 (2021-05-31)"
 
 import logging.config
 import logging
 import logging.handlers
-import configparser
-config = configparser.ConfigParser()
+import yaml
 import pathlib
+
+user_home_dir = str(pathlib.Path.home())
+config_file = (user_home_dir + '/.config/plot_manager/plot_manager.yaml')
 script_path = pathlib.Path(__file__).parent.resolve()
 
 
 def setup_logging(default_level=logging.CRITICAL):
     """Module to configure program-wide logging."""
-    log_level = read_logging_config('plot_manager_config', 'system_logging', 'log_level')
+    with open(config_file, 'r') as config:
+       server = yaml.safe_load(config)
     log = logging.getLogger(__name__)
-    level = logging._checkLevel(log_level)
+    level = logging._checkLevel(server['log_level'])
     log.setLevel(level)
-    system_logging = read_logging_config('plot_manager_config', 'system_logging', 'logging')
-    if system_logging:
+    if server['logging']:
         try:
             logging.config.dictConfig(log_config)
         except Exception as e:
@@ -158,7 +160,7 @@ log_config = {
    }
 }
 
-
+'''
 def read_logging_config(file, section, status):
     pathname = script_path.joinpath(file)
     config.read(pathname)
@@ -167,7 +169,7 @@ def read_logging_config(file, section, status):
     else:
         current_status = config.get(section, status)
     return current_status
-
+'''
 
 def main():
     print("This script is not intended to be run directly.")
