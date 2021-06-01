@@ -160,17 +160,6 @@ log_config = {
    }
 }
 
-'''
-def read_logging_config(file, section, status):
-    pathname = script_path.joinpath(file)
-    config.read(pathname)
-    if status == "logging":
-        current_status = config.getboolean(section, status)
-    else:
-        current_status = config.get(section, status)
-    return current_status
-'''
-
 def main():
     print("This script is not intended to be run directly.")
     print("This is the systemwide logging module.")
