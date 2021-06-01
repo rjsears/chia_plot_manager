@@ -680,10 +680,29 @@ def update_receive_plot():
             f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()[0]}/$1" < /dev/null')
             f.close()
             chianas.update_current_plotting_drive(get_plot_drive_to_use()[0])
-            chianas.update_current_internal_drive(get_plot_drive_to_use()[1])
             log.info(f'Updated {receive_script} and system config file with new plot drive.')
             log.info(f'Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
             log_drive_report()
+
+
+def update_move_local_plot():
+    """
+    This function just keeps our local plot moves off the same drive as our remote plot moves so
+    we don't saturate a single drive with multiple inbound plots.
+    """
+
+    log.debug("update_move_local_plot() Started")
+    if chianas.current_internal_drive == get_plot_drive_to_use()[1]:
+        log.debug(f'Currently Configured Internal Plot Drive: {chianas.current_internal_drive}')
+        log.debug(f'System Selected Internal Plot Drive:      {get_plot_drive_to_use()[1]}')
+        log.debug('Configured and Selected Drives Match!')
+        log.debug(f'No changes necessary to Internal Plotting Drive')
+        log.debug(
+            f'Plots left available on configured Internal plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_internal_drive)}')
+    else:
+        notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {get_plot_drive_to_use()[1]}')
+        chianas.update_current_internal_drive(get_plot_drive_to_use()[1])
+        log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {get_plot_drive_to_use()[1]}')
 
 
 def send_new_plot_disk_email():
@@ -1009,13 +1028,17 @@ def main():
             nas_report_export()
             send_new_plot_notification()
             update_receive_plot()
+            if chianas.local_plotter:
+                update_move_local_plot()
     else:
         nas_report_export()
         send_new_plot_notification()
         update_receive_plot()
+        if chianas.local_plotter:
+            update_move_local_plot()
+    
 
 
 if __name__ == '__main__':
     main()
-
 
