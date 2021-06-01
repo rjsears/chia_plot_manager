@@ -152,6 +152,9 @@ clean_up_plot_directory(){
    rm -rf $current_directory/images
    chmod +x $current_directory/*.py
    chmod +x $current_directory/*.sh
+   mkdir -p /root/.config/plot_manager
+   cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+   cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
 }
 
 ### Clean Up Directories
