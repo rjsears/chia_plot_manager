@@ -171,6 +171,8 @@ I recommend installing in ```/root/plot_manager```. If you would like to install
 Assuming a clean install, you can try this:
 
 ```git clone https://github.com/rjsears/chia_plot_manager.git && mv chia_plot_manager plot_manager && cd plot_manager && chmod +x install.sh && ./install.sh help```<br><br>
+ 
+If you are upgrding from a previous version, simply ```mv plot_manager plot_manager.old``` and then run the command above.
 
  Once cloned, I copy everything to the ```/root/plot_manager``` directory. My final directory structure looks like this:
  <br>
