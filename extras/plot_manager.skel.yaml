@@ -53,7 +53,9 @@ harvester:
 local_plotter:
   active: True
 
-  # Make sure to use the actual device and not the mountpoint
+  # Make sure to use the actual device and not the mountpoint. This is so we
+  # can add in drive monitoring (space, life, etc). This have NOTHING to do
+  # with plotting!
   temp_dirs:
     - /dev/nvme0n1p1
     - /dev/nvme1n1p1
