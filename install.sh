@@ -127,6 +127,8 @@ create_example_directory_structure(){
 clean_up_nas_directory(){
    echo -e "\n\n${green}Cleaning Up Directory Structure & Setting File Permissions.........${nc}\n"
    mv $current_directory/chianas/* $current_directory/
+   mv $current_directory/utilities/auto_drive.py $current_directory/
+   mv $current_directory/utilities/get_drive_uuid.sh $current_directory/
    rm -rf $current_directory/chianas
    rm -rf $current_directory/chiaplot
    rm -rf $current_directory/coin_monitor
