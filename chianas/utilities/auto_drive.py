@@ -9,7 +9,7 @@ VERSION = "0.92 (2021-05-31)"
 This script is part of the chia_plot_manager set of scripts.
 
 Script to help automate the addition of new hard drives
-to a Chia NAS/Harvester. PLease make sure you understand
+to a Chia NAS/Harvester. Please make sure you understand
 everything that this script does before using it!
 
 This script is intended to make my life easier. It is ONLY
