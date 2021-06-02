@@ -230,6 +230,18 @@ update_software_and_system(){
   echo -e "${green}DONE${nc}\n"
 }
 
+
+## Figure out exactly what directory we are in so we can make decisions...
+get_current_directory(){
+  SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+current_directory="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+}
+
 ## Figure out exactly what directory we are in so we can make decisions...
 get_current_directory_nas_plot(){
   SOURCE="${BASH_SOURCE[0]}"
@@ -390,7 +402,6 @@ set_cpu_performance(){
 
 ## Share some final notes...
 final_notes(){
-  clear
   get_current_directory
   echo -e "\n\nThank you for choosing to try ${green}plot_manager${nc}, I hope it works well for you. If you"
   echo -e "Have any trouble or issues, please feel free to reach me on my github page.\n"
