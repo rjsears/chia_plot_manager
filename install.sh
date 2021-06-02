@@ -422,9 +422,10 @@ thank_you(){
 help (){
 echo -e "\nWelcome to ${green}Chia Plot Manager${nc} and associated utilities!\n"
 echo -e "Options:"
-echo -e "   ${yellow}install_nas${nc}    Starts the install process for a NAS/Harvester."
-echo -e "   ${yellow}install_plot${nc}   Starts the install process for a dedicated Plotter."
-echo -e "   ${yellow}install_coin${nc}   Starts the install process for the Coin Monitor on a Full Node."
+echo -e "   ${yellow}nas${nc}            Starts the install process for a NAS/Harvester."
+echo -e "   ${yellow}plot${nc}           Starts the install process for a dedicated Plotter."
+echo -e "   ${yellow}coin${nc}           Starts the install process for the Coin Monitor on a Full Node."
+echo -e "   ${yellow}auto_drive${nc}     Starts the install process for a stand alone version of Auto_Drive"
 echo -e "   ${yellow}network${nc}        Only install network performance updates and exits."
 echo -e "   ${yellow}notes${nc}          Shows after-installation notes."
 echo -e "   ${yellow}help${nc}           Shows this help message.\n"
@@ -477,13 +478,13 @@ start_install_coin(){
 
 ## And we're off....
 case "$1" in
-  install_nas)  start_install_nas ;;
-  install_plot)  start_install_plot ;;
-  install_coin)  start_install_coin ;;
+  nas)  start_install_nas ;;
+  plot)  start_install_plot ;;
+  coin)  start_install_coin ;;
   help)     help ;;
   network)  improve_network_performance ;;
   notes)    final_notes ;;
-  *) echo -e "\n${yellow}Usage${nc}: $0 [ install_nas | install_plot | install_coin | network | notes | help ]\n" >&2
+  *) echo -e "\n${yellow}Usage${nc}: $0 [ nas | plot | coin | network | notes | help ]\n" >&2
      exit 1
      ;;
    esac
