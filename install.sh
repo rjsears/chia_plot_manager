@@ -168,14 +168,15 @@ clean_up_plot_directory(){
      echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
      echo -e  "Making a backup...."
      cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
-     cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
-     cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
      echo -e "Please make sure to check your settings!!!"
     else
       cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
       cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
    fi
 }
+
 
 ### Clean Up Directories
 clean_up_coin_directory(){
