@@ -224,7 +224,9 @@ update_software_and_system(){
   fi
   pip3 install -r $current_directory/chianas/requirements.txt
   git clone https://github.com/truenas/py-SMART.git
-  python3 $current_directory/py-SMART/setup.py install
+  cd $current_directory/py-SMART
+  python3 setup.py install
+  cd ..
   rm -rf $current_directory/py-SMART
   apt autoremove -y
   echo -e "${green}DONE${nc}\n"
