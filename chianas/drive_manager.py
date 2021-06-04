@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-05-31)"
+VERSION = "0.92 (2021-06-03)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -655,34 +655,45 @@ def update_receive_plot():
     accordingly. Eventually I will do all of the netcat within the script
     here. See TODO: Update to use netcat native to python.
     """
-
     log.debug("update_receive_plot() Started")
-    total_serverwide_plots = get_all_available_system_space('used')[1]
-    log.debug(f'Total Serverwide Plots: {total_serverwide_plots}')
-    # First determine if there is a remote file transfer in process. If there is, pass until it is done:
-    if os.path.isfile(script_path.joinpath('remote_transfer_is_active')):
-        log.debug('Remote Transfer in Progress, will try again soon!')
-        quit()
+    if not os.path.isfile(receive_script):
+        log.debug(f'{receive_script} not found. Build it now...')
+        build_receive_plot()
     else:
-        if chianas.current_plotting_drive == get_plot_drive_to_use()[0]:
-            log.debug(f'Currently Configured Plot Drive: {chianas.current_plotting_drive}')
-            log.debug(f'System Selected Plot Drive:      {get_plot_drive_to_use()[0]}')
-            log.debug('Configured and Selected Drives Match!')
-            log.debug(f'No changes necessary to {receive_script}')
-            log.debug(
-                f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_plotting_drive)}')
+        total_serverwide_plots = get_all_available_system_space('used')[1]
+        log.debug(f'Total Serverwide Plots: {total_serverwide_plots}')
+        # First determine if there is a remote file transfer in process. If there is, pass until it is done:
+        if os.path.isfile(script_path.joinpath('remote_transfer_is_active')):
+            log.debug('Remote Transfer in Progress, will try again soon!')
+            quit()
         else:
-            send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
-                                        # notify() function.
-            notify('Plot Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
-            f = open(receive_script, 'w+')
-            f.write('#! /bin/bash \n')
-            f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()[0]}/$1" < /dev/null')
-            f.close()
-            chianas.update_current_plotting_drive(get_plot_drive_to_use()[0])
-            log.info(f'Updated {receive_script} and system config file with new plot drive.')
-            log.info(f'Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
-            log_drive_report()
+            if chianas.current_plotting_drive == get_plot_drive_to_use()[0]:
+                log.debug(f'Currently Configured Plot Drive: {chianas.current_plotting_drive}')
+                log.debug(f'System Selected Plot Drive:      {get_plot_drive_to_use()[0]}')
+                log.debug('Configured and Selected Drives Match!')
+                log.debug(f'No changes necessary to {receive_script}')
+                log.debug(
+                    f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_plotting_drive)}')
+            else:
+                send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
+                                            # notify() function.
+                notify('Plot Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
+                build_receive_plot()
+
+def build_receive_plot():
+    """
+    Function to build or rebuild our receive_plot.sh script.
+    :return:
+    """
+    f = open(receive_script, 'w+')
+    f.write('#! /bin/bash \n')
+    f.write(f'nc -l -q5 -p 4040 > "{get_plot_drive_to_use()[0]}/$1" < /dev/null')
+    f.close()
+    os.chmod(receive_script, 0o755)
+    chianas.update_current_plotting_drive(get_plot_drive_to_use()[0])
+    log.info(f'Updated {receive_script} and system config file with new plot drive.')
+    log.info(f'Was: {chianas.current_plotting_drive},  Now: {get_plot_drive_to_use()[0]}')
+    log_drive_report()
 
 
 def update_move_local_plot():
@@ -1036,9 +1047,10 @@ def main():
         update_receive_plot()
         if chianas.local_plotter:
             update_move_local_plot()
-    
+
 
 
 if __name__ == '__main__':
     main()
+
 
