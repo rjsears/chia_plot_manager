@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-06-03)"
+VERSION = "0.92 (2021-06-04)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -1076,5 +1076,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
