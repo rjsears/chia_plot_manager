@@ -788,7 +788,7 @@ def create_new_index_html_report():
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
     create_index_html(template='index.html',
                       current_time=current_military_time,
-                      nas_server=nas_server, current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
+                      nas_server=chianas.hostname, current_plotting_drive_by_mountpoint=get_plot_drive_to_use()[0],
                       current_plotting_drive_by_device=get_device_by_mountpoint(get_plot_drive_to_use())[0][1],
                       drive_size=bytes2human(usage.total),
                       drive_serial_number=Device(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][1]).serial,
@@ -877,7 +877,7 @@ def temperature_report():
     """
     print('')
     print(f'{blue}#################################################################{nc}')
-    print(f'{blue}################# {green}{nas_server} Temperature Report {blue}##################{nc}')
+    print(f'{blue}################# {green}{chianas.hostname} Temperature Report {blue}##################{nc}')
     print(f'{blue}#################################################################{nc}')
     print(f'{blue}#    {nc}Serial#{blue}     #{nc}     Device{blue}     #{nc}     Drive{blue}     #{nc}    Temp{blue}     #{nc}')
     print(f'{blue}#################################################################{nc}')
