@@ -2,36 +2,29 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-05-31)"
+VERSION = "0.92 (2021-06-04)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
 my nas. I wanted to use netcat as it was much faster on my 10GBe link than
 rsync and the servers are secure so I wrote this script to manage that
 move process.
-
 This is part of a two part process. On the NAS server there is drive_manager.py
 that manages the drives themselves and decides based on various criteria where
 the incoming plots will be placed. This script simply sends those plots when
 they are ready to send.
-
-
-
 Updates
-
   v0.9 2021-05-28
   - Rewritten logging to support path autodetection, support for multiple
     NAS/Harvesters. Chooses Harvester with the most available plots on it
     and sends the next plot to that NAS. 
   - Various functions added to support multiple harvesters
   - Adding in host checking to verify host is up, if not, sends notification.
-
   V0.4 2021-04013 (bumped version to match drive_manager.py
   - Due to issue with plot size detection happening after plot selection
     caused an issue where plots did not get moved at all if the first selected
     plot was the wrong size. Updated get_list_of_plots() to use pathlib to check
     for proper filesize before passing along the plot name.
-
   V0.2 2021-03-23
   - Added per_plot system notification function (send_new_plot_notification()
     in chianas drive_manager.py and updated process_plot() and verify_plot_move()
@@ -63,6 +56,17 @@ chiaplot = PlotManager.read_configs()
 # Are We Testing?
 testing = False
 
+if testing:
+    plot_dir = script_path.joinpath('test_plots/')
+    print (f'This is your plot Dir: {plot_dir}')
+    plot_size = 10000000
+    status_file = script_path.joinpath('transfer_job_running_testing')
+else:
+    plot_dir = chiaplot.plot_dir
+    plot_size = 108644374730  # Based on K32 plot size
+    status_file = script_path.joinpath('transfer_job_running')
+
+# Make sure we configured our YAML file....
 def are_we_configured():
     if not chiaplot.configured:
         log.debug('We have not been configured! Please edit the main config file')
@@ -73,23 +77,16 @@ def are_we_configured():
 
 
 # If you are running multiple harvesters/NAS, make sure to set your YAML config file
-# up correctly. 
-def multiple_harvesters_check():
-    log.debug('multiple_harvesters() Started')
+# up correctly.
+def remote_harvesters_check():
+    log.debug('remote_harvesters() Started')
     global nas_server
     global remote_mount
-    if chiaplot.multiple_harvesters:
-        nas_server = get_next_nas()
-        log.debug(f'Multiple NAS/Harvesters Found - Selected NAS/Harvester: {nas_server}')
-        with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
-            server = yaml.safe_load(f)
-            remote_mount=server['current_plot_drive']
-    else:
-        nas_server = chiaplot.default_nas
-        log.debug(f'Using Default NAS/Harvester: {nas_server}')
-        with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
-            server = yaml.safe_load(f)
-            remote_mount=server['current_plot_drive']
+    nas_server = get_next_nas()
+    log.debug(f'Remote Harvester(s) Found - Selected NAS/Harvester: {nas_server}')
+    with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
+        server = yaml.safe_load(f)
+        remote_mount=server['current_plot_drive']
 
 
 # Let's do some housekeeping
@@ -99,16 +96,6 @@ transfer your plots over to your Harvester. We utilize this to determine is ther
 network traffic flowing across it during a transfer. 
 """
 network_interface = chiaplot.network_interface
-
-if testing:
-    plot_dir = script_path.joinpath('test_plots/')
-    print (f'This is your plot Dir: {plot_dir}')
-    plot_size = 10000000
-    status_file = script_path.joinpath('transfer_job_running_testing')
-else:
-    plot_dir = chiaplot.plot_dir
-    plot_size = 108644374730  # Based on K32 plot size
-    status_file = script_path.joinpath('transfer_job_running')
 
 
 remote_checkfile = script_path.joinpath('remote_transfer_is_active')
@@ -143,11 +130,6 @@ def process_plot():
             process_control('set_status', 'start')
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
-            #try:
-            #    remote_mount = str(subprocess.check_output(['ssh', nas_server, f"grep current_plotting_drive {script_path.joinpath('plot_manager_config')} | awk {{'print $3'}}"]).decode(('utf-8'))).strip("\n")
-            #except subprocess.CalledProcessError as e:
-            #    log.warning(e.output)  # TODO Do something here...cannot go on...
-            #    quit()
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
             try:
@@ -313,17 +295,6 @@ def notify(title, message):
     else:
         pass
 
-# Setup to read and write to our config file.
-# If we are expecting a boolean back pass True/1 for bool,
-# otherwise False/0
-def read_config_data(file, section, item, bool):
-    pathname = script_path.joinpath(file)
-    config.read(pathname)
-    if bool:
-        return config.getboolean(section, item)
-    else:
-        return config.get(section, item)
-
 
 def send_email(recipient, subject, body):
     """
@@ -384,7 +355,7 @@ def check_remote_harvesters():
 def remote_harvester_report():
     """
     This reaches out to each 'alive' remote harvester and get all of
-    :return:
+    their export information.
     """
     remote_harvesters = check_remote_harvesters()
     servers = []
@@ -412,7 +383,8 @@ def get_remote_exports(host, remote_export_file):
 def get_next_nas():
     """
     Returns the server name of the server with the most space left.
-    This is where we will be sending our next plot!
+    This is where we will be sending our next plot! If you only have
+    a single harvester/NAS just returns that one.
     """
     servers = (remote_harvester_report()[0])
     next_nas = []
