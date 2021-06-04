@@ -397,7 +397,7 @@ def get_next_nas():
 
 def main():
     if verify_glances_is_running():
-        multiple_harvesters_check()
+        remote_harvesters_check()
         process_plot()
     else:
         print('Glances is Required for this script!')
