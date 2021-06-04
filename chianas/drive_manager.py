@@ -548,7 +548,7 @@ def get_plot_drive_to_use():
         returns the mountpoint of the device we want to use. Basically the same as above
         but simply returns the 'next' available drive we want to use. This also checks
          to make sure the drive selected has not been marked as "offline".
-        #TODO incorporate in get_plot_drive_with_available_space()
+        When you run out of drives, these scripts will fail.
         """
     available_drives = []
     try:
@@ -559,9 +559,32 @@ def get_plot_drive_to_use():
                     and get_drive_by_mountpoint(part.mountpoint) not in chianas.offlined_drives:
                 drive = get_drive_by_mountpoint(part.mountpoint)
                 available_drives.append((part.mountpoint, part.device, drive))
-        return (natsorted(available_drives)[0][0], natsorted(available_drives)[1][0])
+        return (natsorted(available_drives)[0])
     except IndexError:
         log.debug("ERROR: No Drives Found, Please add drives, run auto_drive.py and try again!")
+        exit()
+
+
+def get_internal_plot_drive_to_use():
+    """
+        Same as above but returns the next drive. This is the drive we will use for internal plots. We do
+        this to make sure we are not over saturating a single drive with multiple plot copies. When you run
+        out of drives, these scripts will fail.
+        """
+    available_drives = []
+    try:
+        for part in psutil.disk_partitions(all=False):
+            if part.device.startswith('/dev/sd') \
+                    and part.mountpoint.startswith('/mnt/enclosure') \
+                    and get_drive_info('space_free_plots_by_mountpoint', part.mountpoint) >= 1 \
+                    and get_drive_by_mountpoint(part.mountpoint) not in chianas.offlined_drives:
+                drive = get_drive_by_mountpoint(part.mountpoint)
+                available_drives.append((part.mountpoint, part.device, drive))
+        return (natsorted(available_drives)[1])
+    except IndexError:
+        log.debug("ERROR: No Additional Internal Drives Found, Please add drives, run auto_drive.py and try again!")
+        exit()
+
 
 
 def get_sorted_drive_list():
@@ -703,17 +726,17 @@ def update_move_local_plot():
     """
 
     log.debug("update_move_local_plot() Started")
-    if chianas.current_internal_drive == get_plot_drive_to_use()[1]:
+    if chianas.current_internal_drive == get_internal_plot_drive_to_use()[0]:
         log.debug(f'Currently Configured Internal Plot Drive: {chianas.current_internal_drive}')
-        log.debug(f'System Selected Internal Plot Drive:      {get_plot_drive_to_use()[1]}')
+        log.debug(f'System Selected Internal Plot Drive:      {get_internal_plot_drive_to_use()[0]}')
         log.debug('Configured and Selected Drives Match!')
         log.debug(f'No changes necessary to Internal Plotting Drive')
         log.debug(
             f'Plots left available on configured Internal plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_internal_drive)}')
     else:
-        notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {get_plot_drive_to_use()[1]}')
-        chianas.update_current_internal_drive(get_plot_drive_to_use()[1])
-        log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {get_plot_drive_to_use()[1]}')
+        notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
+        chianas.update_current_internal_drive(get_internal_plot_drive_to_use()[0])
+        log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
 
 
 def send_new_plot_disk_email():
@@ -1038,16 +1061,15 @@ def main():
         else:
             nas_report_export()
             send_new_plot_notification()
-            update_receive_plot()
             if chianas.local_plotter:
                 update_move_local_plot()
+            update_receive_plot()
     else:
         nas_report_export()
         send_new_plot_notification()
-        update_receive_plot()
         if chianas.local_plotter:
             update_move_local_plot()
-
+        update_receive_plot()
 
 
 if __name__ == '__main__':
