@@ -867,35 +867,33 @@ def space_report():
 def nas_report_export():
     """
     This function generates the json file with all of the server information for
-    our total farm report for those running multiple harvesters.
+    our total farm report for those running multiple harvesters as well as doing
+    health checks. Used to pass information on to our plotter as well.
     """
-    if chianas.remote_harvester_reports:
-        log.debug('nas_report_export() started')
-        plots_last_day = chianas.current_total_plots_daily
-        if plots_last_day == 0:
-            plots_last_day = 1
-        nas_server_export = dict([
-            ('server', chianas.hostname),
-            ('total_plots', int(get_all_available_system_space("used")[1])),
-            ('total_plots_farming', int(check_plots()[0])),
-            ('total_tib_farming', int(check_plots()[1])),
-            ('total_plot_drives', int(get_all_available_system_space("total")[0])),
-            ('total_plots_until_full', int(get_all_available_system_space("free")[1])),
-            ('max_plots_when_full', int(get_all_available_system_space("total")[1])),
-            ('plots_last_day', plots_last_day),
-            ('avg_plots_per_hour', round((int(chianas.current_total_plots_daily)) / 24, 1)),
-            ('avg_plotting_speed', round((int(chianas.current_total_plots_daily)) * int(plot_size_g) / 1000, 2)),
-            ('approx_days_to_fill_drives', (int(get_all_available_system_space('free')[1] / plots_last_day))),
-            ('current_plot_drive', chianas.current_plotting_drive)
-        ])
-        try:
-            with open(local_export_file, 'w') as nas_export:
-                nas_export.write(json.dumps(nas_server_export))
-        except:
-            log.debug(f'Unable to write to export file! Check \"{local_export_file}\" path above and try again!')
-        return nas_server_export
-    else:
-        pass
+    log.debug('nas_report_export() started')
+    plots_last_day = chianas.current_total_plots_daily
+    if plots_last_day == 0:
+        plots_last_day = 1
+    nas_server_export = dict([
+        ('server', chianas.hostname),
+        ('total_plots', int(get_all_available_system_space("used")[1])),
+        ('total_plots_farming', int(check_plots()[0])),
+        ('total_tib_farming', int(check_plots()[1])),
+        ('total_plot_drives', int(get_all_available_system_space("total")[0])),
+        ('total_plots_until_full', int(get_all_available_system_space("free")[1])),
+        ('max_plots_when_full', int(get_all_available_system_space("total")[1])),
+        ('plots_last_day', plots_last_day),
+        ('avg_plots_per_hour', round((int(chianas.current_total_plots_daily)) / 24, 1)),
+        ('avg_plotting_speed', round((int(chianas.current_total_plots_daily)) * int(plot_size_g) / 1000, 2)),
+        ('approx_days_to_fill_drives', (int(get_all_available_system_space('free')[1] / plots_last_day))),
+        ('current_plot_drive', chianas.current_plotting_drive)
+    ])
+    try:
+        with open(local_export_file, 'w') as nas_export:
+            nas_export.write(json.dumps(nas_server_export))
+    except:
+        log.debug(f'Unable to write to export file! Check \"{local_export_file}\" path above and try again!')
+    return nas_server_export
 
 
 def temperature_report():
