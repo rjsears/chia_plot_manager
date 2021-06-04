@@ -29,23 +29,18 @@ local_plotter:
   # '/' slash!
   plot_dir: /mnt/ssdraid/array0/
 
-# If you are running multiple remote harvesters, set this to true
+# If you are running multiple remote harvesters,
 # and enter their hostnames below.These hostnames
 # should be configured for passwordless ssh and should be configured
 # such that when you ping the hostname, it goes across the fastest
 # interface you have between these harvesters. Set to True if you
 # have multiple harvesters and want to automate sending plots to
-# the Harvester with the least number of plots.
-multiple_harvesters:
-  active: True
-  remote_harvesters:
-    - chianas01
-    - chianas02
-    - chianas03
-
-# If we are not using multiple harvesters, then set the hostname of your NAS
-# here.
-default_nas: chianas01
+# the Harvester with the least number of plots.  If you are only
+# running a single harvester, just list it's hostname here.
+remote_harvesters:
+  - chianas01
+  - chianas02
+  - chianas03
 
 # This is our high speed, internal Network interface name that we send plots over
 network_interface: eno2
