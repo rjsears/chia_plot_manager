@@ -726,17 +726,21 @@ def update_move_local_plot():
     """
 
     log.debug("update_move_local_plot() Started")
-    if chianas.current_internal_drive == get_internal_plot_drive_to_use()[0]:
-        log.debug(f'Currently Configured Internal Plot Drive: {chianas.current_internal_drive}')
-        log.debug(f'System Selected Internal Plot Drive:      {get_internal_plot_drive_to_use()[0]}')
-        log.debug('Configured and Selected Drives Match!')
-        log.debug(f'No changes necessary to Internal Plotting Drive')
-        log.debug(
-            f'Plots left available on configured Internal plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_internal_drive)}')
-    else:
-        notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
-        chianas.update_current_internal_drive(get_internal_plot_drive_to_use()[0])
-        log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
+    try:
+        if chianas.current_internal_drive == get_internal_plot_drive_to_use()[0]:
+            log.debug(f'Currently Configured Internal Plot Drive: {chianas.current_internal_drive}')
+            log.debug(f'System Selected Internal Plot Drive:      {get_internal_plot_drive_to_use()[0]}')
+            log.debug('Configured and Selected Drives Match!')
+            log.debug(f'No changes necessary to Internal Plotting Drive')
+            log.debug(
+                f'Plots left available on configured Internal plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_internal_drive)}')
+        else:
+            notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
+            chianas.update_current_internal_drive(get_internal_plot_drive_to_use()[0])
+            log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
+    except TypeError:
+        log.debug ('No Additional Drives found to be used as internal plot drives!')
+        log.debug('Please add additional drive manually or via auto_drive.py and try again!')
 
 
 def send_new_plot_disk_email():
