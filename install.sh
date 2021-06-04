@@ -172,8 +172,8 @@ clean_up_plot_directory(){
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
      echo -e "Please make sure to check your settings!!!"
     else
-      cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
-      cp $current_directory/extras/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
+     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
    fi
 }
 
