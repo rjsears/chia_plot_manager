@@ -62,7 +62,7 @@ if testing:
     plot_size = 10000000
     status_file = script_path.joinpath('transfer_job_running_testing')
 else:
-    plot_dir = chiaplot.dst_dirs
+    plot_dir = chiaplot.dst_dirs[0]
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('transfer_job_running')
 
@@ -403,8 +403,67 @@ def get_next_nas():
     return (sorted(next_nas, key=lambda i: i['total_plots_until_full'],reverse=True)[0].get('server'))
 
 
+def check_temp_drive_utilization():
+    """
+    This function checks our dst drives
+    for utilization in excess of the limits we have
+    set in our config file and sends us a notification
+    in the event we exceed this utilization.
+    """
+    log.debug('check_temp_drive_utilization() started')
+    if chiaplot.get_critical_temp_dir_usage() != {}:
+        if not chiaplot.temp_dirs_critical_alert_sent:
+            chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
+            for dirs in chiaplot.get_critical_temp_dir_usage().keys():
+                log.debug(f'WARNING: {dirs} is nearing capacity. Sending Alert!')
+                notify('WARNING: Directory Utilization Nearing Capacity',
+                       f'WARNING: {dirs} is nearing Capacity\nPlotting is in Jeopardy!\nCheck Your Drives IMMEDIATELY!')
+        else:
+            for dirs in chiaplot.get_critical_temp_dir_usage().keys():
+                log.debug(f'WARNING: {dirs} is nearing capacity. Alert has already been sent!')
+    elif chiaplot.temp_dirs_critical_alert_sent:
+        chiaplot.toggle_alert_sent('temp_dirs_critical_alert_sent')
+        notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
+    else:
+        log.debug('Temp Drive(s) check complete. ALl OK!')
+
+def check_dst_drive_utilization():
+    """
+    This function checks our dst drives
+    for utilization in excess of the limits we have
+    set in our config file and sends us a notification
+    in the event we exceed this utilization.
+    """
+    log.debug('check_dst_drive_utilization() started')
+    if chiaplot.get_critical_dst_dir_usage() != {}:
+        if not chiaplot.dst_dirs_critical_alert_sent:
+            chiaplot.toggle_alert_sent('dst_dirs_critical_alert_sent')
+            for dirs in chiaplot.get_critical_dst_dir_usage().keys():
+                log.debug(f'WARNING: {dirs} is nearing capacity. Sending Alert!')
+                notify('WARNING: Directory Utilization Nearing Capacity',
+                       f'WARNING: {dirs} is nearing Capacity\nPlotting is in Jeopardy!\nCheck Your Drives IMMEDIATELY!')
+        else:
+            for dirs in chiaplot.get_critical_dst_dir_usage().keys():
+                log.debug(f'WARNING: {dirs} is nearing capacity. Alert has already been sent!')
+    elif chiaplot.dst_dirs_critical_alert_sent:
+        chiaplot.toggle_alert_sent('dst_dirs_critical_alert_sent')
+        notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
+    else:
+        log.debug('DST Drive(s) check complete. ALl OK!')
+
+
+def system_checks():
+    """
+    These are the various system checks. Limits are set in the
+    configuration file.
+    """
+    check_temp_drive_utilization()
+    check_dst_drive_utilization()
+
+
 def main():
     if verify_glances_is_running():
+        system_checks()
         remote_harvesters_check()
         process_plot()
     else:
