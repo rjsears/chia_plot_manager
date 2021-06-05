@@ -53,19 +53,28 @@ harvester:
 local_plotter:
   active: True
 
-  # Make sure to use the actual device and not the mountpoint. This is so we
-  # can add in drive monitoring (space, life, etc). This have NOTHING to do
-  # with plotting!
+  # Make sure to use the mountpoint
   temp_dirs:
-    - /dev/nvme0n1p1
-    - /dev/nvme1n1p1
+    dirs:
+    - /mnt/nvme_drive0
+    - /mnt/nvme_drive1
+    # What critial usage % should we send an error? Do not make this too low
+    # or you will get nuisance reports.
+    critical: 95
+    critical_alert_sent: False
 
   # This is the directory that you are using for your plots. If you will be
   # utilizing the integrated 'move_local_plots.py' scripts, this is usually
   # just a single drive. The plots are then moved out of this directory to
   # their final resting place on the harvester. move_local_plots.py is
   # currently only written to support a single drive here.
-  dst_dir: not_set
+  dst_dirs:
+    dirs:
+    - /mnt/enclosure1/rear/column3/drive79
+
+    # At what % utilization do we send an error?
+    critical: 95
+    critical_alert_sent: False
 
   # This is the current internal drive we are using to stop plots moved off
   # of dst_dir above. This is not the same drive we use for storing plots
