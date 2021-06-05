@@ -13,6 +13,7 @@ import yaml
 from pathlib import Path
 import logging
 from system_logging import setup_logging
+import psutil
 
 
 user_home_dir = str(Path.home())
@@ -36,10 +37,10 @@ class DriveManager:
         exit()
     else:
         def __init__(self, configured, hostname, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
-                     notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, local_plotter, temp_dirs,
-                     dst_dir, warnings, emails, phones, twilio_from, twilio_account,
-                     twilio_token, pb_api, current_internal_drive, current_plotting_drive,
-                     current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level):
+                     notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, local_plotter, temp_dirs, temp_dirs_critical,
+                     temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent, warnings, emails, phones,
+                     twilio_from, twilio_account, twilio_token, pb_api, current_internal_drive, current_plotting_drive, total_plot_highwater_warning,
+                     total_plots_alert_sent, current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level):
             self.configured = configured
             self.hostname = hostname
             self.chia_log_file = chia_log_file
@@ -62,9 +63,15 @@ class DriveManager:
             self.pb_api = pb_api
             self.local_plotter = local_plotter
             self.temp_dirs = temp_dirs
-            self.dst_dir = dst_dir
+            self.temp_dirs_critical = temp_dirs_critical
+            self.temp_dirs_critical_alert_sent = temp_dirs_critical_alert_sent
+            self.dst_dirs = dst_dirs
+            self.dst_dirs_critical = dst_dirs_critical
+            self.dst_dirs_critical_alert_sent = dst_dirs_critical_alert_sent
             self.current_internal_drive = current_internal_drive
             self.current_plotting_drive = current_plotting_drive
+            self.total_plot_highwater_warning = total_plot_highwater_warning
+            self.total_plots_alert_sent = total_plots_alert_sent
             self.current_total_plots_midnight = current_total_plots_midnight
             self.current_total_plots_daily = current_total_plots_daily
             self.offlined_drives = offlined_drives
@@ -97,10 +104,16 @@ class DriveManager:
                     twilio_token=server['notifications']['accounts']['twilio']['token'],
                     pb_api=server['notifications']['accounts']['pushBullet']['api'],
                     local_plotter=server['local_plotter']['active'],
-                    temp_dirs=server['local_plotter']['temp_dirs'],
-                    dst_dir=server['local_plotter']['dst_dir'],
+                    temp_dirs=server['local_plotter']['temp_dirs']['dirs'],
+                    temp_dirs_critical=server['local_plotter']['temp_dirs']['critical'],
+                    temp_dirs_critical_alert_sent=server['local_plotter']['temp_dirs']['critical_alert_sent'],
+                    dst_dirs=server['local_plotter']['dst_dirs']['dirs'],
+                    dst_dirs_critical=server['local_plotter']['dst_dirs']['critical'],
+                    dst_dirs_critical_alert_sent=server['local_plotter']['dst_dirs']['critical_alert_sent'],
                     current_internal_drive=server['local_plotter']['current_internal_drive'],
                     current_plotting_drive=server['harvester']['current_plotting_drive'],
+                    total_plot_highwater_warning=server['harvester']['total_plot_highwater_warning'],
+                    total_plots_alert_sent=server['harvester']['total_plots_alert_sent'],
                     current_total_plots_midnight=server['harvester']['current_total_plots_midnight'],
                     current_total_plots_daily=server['harvester']['current_total_plots_daily'],
                     offlined_drives=server['harvester']['offlined_drives'],
@@ -176,6 +189,79 @@ class DriveManager:
                     server['harvester']['offlined_drives'].remove(drive)
                     with open(config_file, 'w') as f:
                         yaml.safe_dump(server, f)
+
+        def temp_dir_usage(self):
+            temp_dir_usage = {}
+            for dir in self.temp_dirs:
+                usage = psutil.disk_usage(dir)
+                temp_dir_usage[dir] = int(usage.percent)
+            return temp_dir_usage
+
+        def get_critical_temp_dir_usage(self):
+            paths = self.temp_dir_usage()
+            return dict((k, v) for k, v in paths.items() if v > self.temp_dirs_critical)
+
+
+        def dst_dir_usage(self):
+            dst_dir_usage = {}
+            for dir in self.dst_dirs:
+                usage = psutil.disk_usage(dir)
+                dst_dir_usage[dir] = int(usage.percent)
+            return dst_dir_usage
+
+        def get_critical_dst_dir_usage(self):
+            paths = self.dst_dir_usage()
+            return dict((k, v) for k, v in paths.items() if v > self.dst_dirs_critical)
+
+
+        def toggle_alert_sent(self, alert):
+            if alert == 'temp_dirs_critical_alert_sent':
+                if getattr(self, alert):
+                    print('Changing to False')
+                    with open (config_file) as f:
+                        server = yaml.safe_load(f)
+                        server['local_plotter']['temp_dirs']['critical_alert_sent'] = False
+                        with open('plot_manager.yaml', 'w') as f:
+                            yaml.safe_dump(server, f)
+                else:
+                    print ('Changing to True')
+                    with open(config_file) as f:
+                        server = yaml.safe_load(f)
+                        server['local_plotter']['temp_dirs']['critical_alert_sent'] = True
+                        with open(config_file, 'w') as f:
+                            yaml.safe_dump(server, f)
+            elif alert == 'dst_dirs_critical_alert_sent':
+                if getattr(self, alert):
+                    print('Changing to False')
+                    with open (config_file) as f:
+                        server = yaml.safe_load(f)
+                        server['local_plotter']['dst_dirs']['critical_alert_sent'] = False
+                        with open('plot_manager.yaml', 'w') as f:
+                            yaml.safe_dump(server, f)
+                else:
+                    print ('Changing to True')
+                    with open(config_file) as f:
+                        server = yaml.safe_load(f)
+                        server['local_plotter']['dst_dirs']['critical_alert_sent'] = True
+                        with open(config_file, 'w') as f:
+                            yaml.safe_dump(server, f)
+            elif alert == 'total_plots_alert_sent':
+                if getattr(self, alert):
+                    print('Changing to False')
+                    with open (config_file) as f:
+                        server = yaml.safe_load(f)
+                        server['harvester']['total_plots_alert_sent'] = False
+                        with open('plot_manager.yaml', 'w') as f:
+                            yaml.safe_dump(server, f)
+                else:
+                    print ('Changing to True')
+                    with open(config_file) as f:
+                        server = yaml.safe_load(f)
+                        server['harvester']['total_plots_alert_sent'] = True
+                        with open(config_file, 'w') as f:
+                            yaml.safe_dump(server, f)
+
+
 
 def main():
     print("Not intended to be run directly.")
