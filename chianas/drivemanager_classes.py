@@ -230,6 +230,7 @@ class DriveManager:
                         server['local_plotter']['temp_dirs']['critical_alert_sent'] = True
                         with open(config_file, 'w') as f:
                             yaml.safe_dump(server, f)
+
             elif alert == 'dst_dirs_critical_alert_sent':
                 if getattr(self, alert):
                     print('Changing to False')
@@ -245,13 +246,14 @@ class DriveManager:
                         server['local_plotter']['dst_dirs']['critical_alert_sent'] = True
                         with open(config_file, 'w') as f:
                             yaml.safe_dump(server, f)
+
             elif alert == 'total_plots_alert_sent':
                 if getattr(self, alert):
                     print('Changing to False')
-                    with open (config_file) as f:
+                    with open(config_file) as f:
                         server = yaml.safe_load(f)
                         server['harvester']['total_plots_alert_sent'] = False
-                        with open('plot_manager.yaml', 'w') as f:
+                        with open(config_file, 'w') as f:
                             yaml.safe_dump(server, f)
                 else:
                     print ('Changing to True')
