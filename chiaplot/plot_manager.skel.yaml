@@ -17,19 +17,26 @@ log_level: DEBUG
 local_plotter:
   active: True
 
-  # Make sure to use the actual mountpoint
+  # Make sure to use the actual mountpoint not the device.
   temp_dirs:
-    - /mnt/nvme/drive0
-    - /mnt/nvme/drive1
-    - /mnt/nvme/drive2
-    - /mnt/nvme/drive3
+    dirs:
+      - /mnt/nvme_drive0
+      - /mnt/nvme_drive1
+      - /mnt/nvme_drive2
+      - /mnt/nvme_drive3
+    # What critical usage % should we send an error? Do not make this too low
+    # or you will get nuisance reports.
+    critical: 95
+    critical_alert_sent: False
 
-  # This is the directory that you are using for your plots. The plots
-  # are then moved out of this directory to their final resting place on
-  # a harvester. Currently we only support a single drive here. This is
-  # considered the `-d` drive if you are using plotman. This MUST have the
-  # '/' slash!
-  plot_dir: /mnt/ssdraid/array0/
+  # This is the `-d` directory that you are using for your plots. Currently
+  # we only support a single drive here for monitoring.
+  dst_dirs:
+    dirs: /mnt/ssdraid/array0/
+
+    # At what % utilization do we send an error?
+    critical: 95
+    critical_alert_sent: False
 
 # If you are running multiple remote harvesters,
 # and enter their hostnames below.These hostnames
@@ -38,14 +45,14 @@ local_plotter:
 # interface you have between these harvesters. Set to True if you
 # have multiple harvesters and want to automate sending plots to
 # the Harvester with the least number of plots.  If you are only
-# running a single harvester, just list it's hostname here.
+# running a single harvester, just list its hostname here.
 remote_harvesters:
   - chianas01
   - chianas02
   - chianas03
 
 # This is our high speed, internal Network interface name that we send plots over
-network_interface: eno2
+network_interface: eno1
 
 
 # This is where we set up our notifications
@@ -66,16 +73,15 @@ notifications:
     - someoneelse@gmail.com
   # What phones numbers will received the SMS text messages? Include '+1'
   phones:
-    - '+18584103312'
-    - '+18584103387'
+    - '+18584140000'
 
   # These are your notification account settings. For email, you must configure
   # your locate MTA. Installer installs Postfix by default. Twilio (SMS) requires
   # a paid account, PushBullet is free.
   accounts:
     twilio:
-      from: '+18585551212'
-      account: your_account_here
-      token: your_token_here
+      from: '+18582640000'
+      account: your_account_id
+      token: your_account_token
     pushBullet:
-      api: your_pbi_api_here
+      api: your_pushbullet_api_token
