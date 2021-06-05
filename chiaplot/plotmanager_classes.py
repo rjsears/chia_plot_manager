@@ -37,7 +37,8 @@ class PlotManager:
     else:
         def __init__(self, configured, hostname, remote_harvesters,
                      notifications, pb, email, sms, temp_dirs, network_interface,
-                     plot_dir, warnings, emails, phones, twilio_from, twilio_account,
+                     dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent,
+                     warnings, emails, phones, twilio_from, twilio_account,
                      twilio_token, pb_api, logging, log_level):
             self.configured = configured
             self.hostname = hostname
@@ -55,7 +56,9 @@ class PlotManager:
             self.twilio_token = twilio_token
             self.pb_api = pb_api
             self.temp_dirs = temp_dirs
-            self.plot_dir = plot_dir
+            self.dst_dirs = dst_dirs
+            self.dst_dirs_critical = dst_dirs_critical
+            self.dst_dirs_critical_alert_sent = dst_dirs_critical_alert_sent
             self.logging = logging
             self.log_level = log_level
 
@@ -80,7 +83,9 @@ class PlotManager:
                     twilio_token=server['notifications']['accounts']['twilio']['token'],
                     pb_api=server['notifications']['accounts']['pushBullet']['api'],
                     temp_dirs=server['local_plotter']['temp_dirs'],
-                    plot_dir=server['local_plotter']['plot_dir'],
+                    dst_dirs=server['local_plotter']['dst_dirs']['dirs'],
+                    dst_dirs_critical=server['local_plotter']['dst_dirs']['critical'],
+                    dst_dirs_critical_alert_sent=server['local_plotter']['dst_dirs']['critical_alert_sent'],
                     logging=server['logging'],
                     log_level=server['log_level'])
 
