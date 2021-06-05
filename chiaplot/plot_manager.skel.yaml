@@ -17,10 +17,12 @@ log_level: DEBUG
 local_plotter:
   active: True
 
-  # Make sure to use the actual device and not the mountpoint
+  # Make sure to use the actual mountpoint
   temp_dirs:
-    - /dev/nvme0n1p1
-    - /dev/nvme1n1p1
+    - /mnt/nvme/drive0
+    - /mnt/nvme/drive1
+    - /mnt/nvme/drive2
+    - /mnt/nvme/drive3
 
   # This is the directory that you are using for your plots. The plots
   # are then moved out of this directory to their final resting place on
