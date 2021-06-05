@@ -186,12 +186,11 @@ def process_control(command, action):
                     log.debug(f'Status File: [{status_file}] does not exist!')
                     return
         elif command == 'check_status':
-            if os.path.isfile(status_file) and check_transfer():
-                log.debug(f'Checkfile and Network Traffic Exists, We are currently Running a Transfer, Exiting')
+            if checkIfProcessRunning('nc') and check_transfer():
+                log.debug(f'NC is running and Network Traffic Exists, We are currently Running a Transfer, Exiting')
                 return True
-            elif os.path.isfile(status_file) and not check_transfer():
-                log.debug('WARNING! - Checkfile exists but there is no network traffic! Forcing Reset')
-                os.remove(status_file)
+            elif checkIfProcessRunning('nc') and not check_transfer():
+                log.debug('WARNING! - NC is running but there is no network traffic! Forcing Reset')
                 try:
                     subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
                 except subprocess.CalledProcessError as e:
@@ -203,7 +202,7 @@ def process_control(command, action):
                     log.warning(e.output)
                 main()
             else:
-                log.debug(f'Checkfile Does Not Exist and there is no network traffic!')
+                log.debug(f'NC is not running and there is no network traffic!')
                 return False
         else:
             return
