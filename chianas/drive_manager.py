@@ -1041,6 +1041,104 @@ def check_plots():
         TiB = float(x[8])
         return plots, f'{TiB:.0f}'
 
+
+def check_temp_drive_utilization():
+    """
+    This function checks our dst drives
+    for utilization in excess of the limits we have
+    set in our config file and sends us a notification
+    in the event we exceed this utilization.
+    """
+    log.debug('check_temp_drive_utilization() started')
+    if chianas.local_plotter:
+        if chianas.get_critical_temp_dir_usage() != {}:
+            if not chianas.temp_dirs_critical_alert_sent:
+                chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
+                for dirs in chianas.get_critical_temp_dir_usage().keys():
+                    log.debug(f'WARNING: {dirs} is nearing capacity. Sending Alert!')
+                    notify('WARNING: Directory Utilization Nearing Capacity',
+                           f'WARNING: {dirs} is nearing Capacity\nPlotting is in Jeopardy!\nCheck Your Drives IMMEDIATELY!')
+            else:
+                for dirs in chianas.get_critical_temp_dir_usage().keys():
+                    log.debug(f'WARNING: {dirs} is nearing capacity. Alert has already been sent!')
+        elif chianas.temp_dirs_critical_alert_sent:
+            chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
+            notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
+        else:
+            log.debug('Temp Drive(s) check complete. ALl OK!')
+
+    else:
+        log.debug('Local Plotting is Disabled. No Drive Checks.')
+
+
+def check_dst_drive_utilization():
+    """
+    This function checks our dst drives
+    for utilization in excess of the limits we have
+    set in our config file and sends us a notification
+    in the event we exceed this utilization.
+    """
+    log.debug('check_dst_drive_utilization() started')
+    if chianas.local_plotter:
+        if chianas.get_critical_dst_dir_usage() != {}:
+            if not chianas.dst_dirs_critical_alert_sent:
+                chianas.toggle_alert_sent('dst_dirs_critical_alert_sent')
+                for dirs in chianas.get_critical_dst_dir_usage().keys():
+                    log.debug(f'WARNING: {dirs} is nearing capacity. Sending Alert!')
+                    notify('WARNING: Directory Utilization Nearing Capacity',
+                           f'WARNING: {dirs} is nearing Capacity\nPlotting is in Jeopardy!\nCheck Your Drives IMMEDIATELY!')
+            else:
+                for dirs in chianas.get_critical_dst_dir_usage().keys():
+                    log.debug(f'WARNING: {dirs} is nearing capacity. Alert has already been sent!')
+        elif chianas.dst_dirs_critical_alert_sent:
+            chianas.toggle_alert_sent('dst_dirs_critical_alert_sent')
+            notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
+        else:
+            log.debug('DST Drive(s) check complete. ALl OK!')
+    else:
+        log.debug('Local Plotting is Disabled. No Drive Checks.')
+
+def checks_plots_available():
+    log.debug('check_plots_available() started')
+    if int(get_all_available_system_space("free")[1]) < chianas.total_plot_highwater_warning:
+        if not chianas.total_plots_alert_sent:
+            chianas.toggle_alert_sent('total_plots_alert_sent')
+            log.debug(f'WARNING: Total Plots is nearing capacity. Sending Alert!')
+            notify('WARNING: Running out of Plot Space!', f'You have {get_all_available_system_space("free")[1]} plots left before you are full!\nYou will only get this Alert ONCE!')
+        else:
+            log.debug(f'WARNING: Total Plots is nearing capacity. Alert has already been sent!')
+    elif chianas.total_plots_alert_sent:
+        chianas.toggle_alert_sent('total_plots_alert_sent')
+        notify('INFORMATION: Total Plots Available',
+               'INFORMATION: Your Total Plots available is now Above the Warning Limit\nPlotting will Continue')
+    else:
+        log.debug('Plot check complete. ALl OK!')
+
+
+def checkIfProcessRunning(processName):
+    '''
+    Check if there is any running process that contains the given name processName.
+    '''
+    #Iterate over the all the running process
+    for proc in psutil.process_iter():
+        try:
+            # Check if process name contains the given name string.
+            if processName.lower() == proc.name().lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
+
+def system_checks():
+    """
+    These are the various system checks. Limits are set in the
+    configuration file.
+    """
+    check_temp_drive_utilization()
+    check_dst_drive_utilization()
+    checks_plots_available()
+
+
 def main():
     are_we_configured()
     parser = init_argparser()
@@ -1061,17 +1159,20 @@ def main():
         if args.online_hdd:
             online_offline_drive(args.online_hdd, 'online')
         else:
+            system_checks()
             nas_report_export()
             send_new_plot_notification()
             if chianas.local_plotter:
                 update_move_local_plot()
             update_receive_plot()
     else:
+        system_checks()
         nas_report_export()
         send_new_plot_notification()
         if chianas.local_plotter:
             update_move_local_plot()
         update_receive_plot()
+
 
 
 if __name__ == '__main__':
