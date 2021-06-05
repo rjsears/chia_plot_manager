@@ -62,7 +62,7 @@ if testing:
     plot_size = 10000000
     status_file = script_path.joinpath('transfer_job_running_testing')
 else:
-    plot_dir = chiaplot.plot_dir
+    plot_dir = chiaplot.dst_dirs
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('transfer_job_running')
 
@@ -107,6 +107,7 @@ level = logging._checkLevel(chiaplot.log_level)
 log = logging.getLogger(__name__)
 log.setLevel(level)
 
+
 # Look in our plot directory and get a list of plots. Do a basic
 # size check for sanity's sake.
 def get_list_of_plots():
@@ -118,6 +119,7 @@ def get_list_of_plots():
     except IndexError:
         log.debug(f'{plot_dir} is Empty: No Plots to Process. Will check again soon!')
         return False
+
 
 # If we have plots and we are NOT currently transferring another plot and
 # we are NOT testing the script, then process the next plot if there is
@@ -211,6 +213,7 @@ def process_control(command, action):
         notify(f'{nas_server} OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
         exit()
 
+
 def verify_plot_move(remote_mount, plot_path, plot_to_process):
     log.debug('verify_plot_move() Started')
     log.debug (f'Verifing: {nas_server}: {remote_mount}/{plot_to_process}')
@@ -232,6 +235,7 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
         log.debug(f'Plot Size Mismatch!')
         return False
 
+
 def check_transfer():
     try:
         with urllib.request.urlopen(f"http://localhost:61208/api/3/network/interface_name/{network_interface}") as url:
@@ -245,6 +249,7 @@ def check_transfer():
         print (e.reason)
         exit()
 
+
 def checkIfProcessRunning(processName):
     '''
     Check if there is any running process that contains the given name processName.
@@ -253,11 +258,12 @@ def checkIfProcessRunning(processName):
     for proc in psutil.process_iter():
         try:
             # Check if process name contains the given name string.
-            if processName.lower() in proc.name().lower():
+            if processName.lower() == proc.name().lower():
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
     return False
+
 
 def host_check(host):
     """
@@ -325,6 +331,7 @@ def send_push_notification(title, message):
     except Exception as e:
         log.debug(f'Pushbullet Exception: Unknown Pushbullet Error: {e}. Message not sent.')
 
+
 def send_sms_notification(body, phone_number):
     """Part of our notification system. This handles sending SMS messages."""
     try:
@@ -335,7 +342,6 @@ def send_sms_notification(body, phone_number):
         log.debug(f'Twilio Exception: {e}. Message not sent.')
     except Exception as e:
         log.debug(f'Twilio Exception: {e}. Message not sent.')
-
 
 
 def check_remote_harvesters():
@@ -350,6 +356,7 @@ def check_remote_harvesters():
         log.debug(f'WARNING: {dead_hosts} is OFFLINE!')
     alive_hosts = [host for host, alive in harvesters_check.items() if alive]
     return(alive_hosts)
+
 
 def remote_harvester_report():
     """
@@ -366,6 +373,7 @@ def remote_harvester_report():
             servers.append(harvester)
     return servers, remote_harvesters
 
+
 def get_remote_exports(host, remote_export_file):
     """
     Utilize Paramiko to grab our harvester export information files.
@@ -378,6 +386,7 @@ def get_remote_exports(host, remote_export_file):
         sftp.get(remote_export_file, remote_export_file)
     finally:
         ssh.close()
+
 
 def get_next_nas():
     """
@@ -402,6 +411,7 @@ def main():
         print('Glances is Required for this script!')
         print('Please install and restart this script.')
         exit()
+
 
 if __name__ == '__main__':
     main()
