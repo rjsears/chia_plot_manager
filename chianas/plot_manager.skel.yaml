@@ -59,7 +59,9 @@ local_plotter:
     - /mnt/nvme_drive0
     - /mnt/nvme_drive1
     # What critial usage % should we send an error? Do not make this too low
-    # or you will get nuisance reports.
+    # or you will get nuisance reports. Do not change the `critical_alert_sent`
+    # this is set automatically to trace warnings so you do not get one every
+    # minute.
     critical: 95
     critical_alert_sent: False
 
@@ -72,7 +74,10 @@ local_plotter:
     dirs:
     - /mnt/enclosure1/rear/column3/drive79
 
-    # At what % utilization do we send an error?
+    # What critial usage % should we send an error? Do not make this too low
+    # or you will get nuisance reports. DO NOT change the `critical_alert_sent`
+    # this is set automatically to trace warnings so you do not get one every
+    # minute.
     critical: 95
     critical_alert_sent: False
 
