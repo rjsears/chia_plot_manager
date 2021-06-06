@@ -98,10 +98,10 @@ class PlotManager:
         def toggle_notification(self, notification):
             if getattr(self, notification):
                 print('Changing to False')
-                with open (config_file) as f:
+                with open(config_file) as f:
                     server = yaml.safe_load(f)
                     server['notifications']['methods'][notification] = False
-                    with open('plot_manager.yaml', 'w') as f:
+                    with open(config_file, 'w') as f:
                         yaml.safe_dump(server, f)
             else:
                 print ('Changing to True')
@@ -149,10 +149,10 @@ class PlotManager:
             if alert == 'temp_dirs_critical_alert_sent':
                 if getattr(self, alert):
                     print('Changing to False')
-                    with open (config_file) as f:
+                    with open(config_file) as f:
                         server = yaml.safe_load(f)
                         server['local_plotter']['temp_dirs']['critical_alert_sent'] = False
-                        with open('plot_manager.yaml', 'w') as f:
+                        with open(config_file, 'w') as f:
                             yaml.safe_dump(server, f)
                 else:
                     print ('Changing to True')
@@ -164,19 +164,18 @@ class PlotManager:
             elif alert == 'dst_dirs_critical_alert_sent':
                 if getattr(self, alert):
                     print('Changing to False')
-                    with open (config_file) as f:
+                    with open(config_file) as f:
                         server = yaml.safe_load(f)
                         server['local_plotter']['dst_dirs']['critical_alert_sent'] = False
-                        with open('plot_manager.yaml', 'w') as f:
+                        with open(config_file, 'w') as f:
                             yaml.safe_dump(server, f)
                 else:
-                    print ('Changing to True')
+                    print('Changing to True')
                     with open(config_file) as f:
                         server = yaml.safe_load(f)
                         server['local_plotter']['dst_dirs']['critical_alert_sent'] = True
                         with open(config_file, 'w') as f:
                             yaml.safe_dump(server, f)
-
 
 def main():
     print("Not intended to be run directly.")
