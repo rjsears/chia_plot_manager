@@ -36,6 +36,8 @@ harvester:
   current_plotting_drive: /mnt/enclosure0/front/column0/drive3
   current_total_plots_midnight: 1
   current_total_plots_daily: 1
+  total_plot_highwater_warning: 300
+  total_plots_alert_sent: False
 
   # List of 'offlined' drives that we do not want plots written to
   # for any reason. In this case maybe 'drive0' and 'drive1' are our
