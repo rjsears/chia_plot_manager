@@ -71,8 +71,7 @@ local_plotter:
   # their final resting place on the harvester. move_local_plots.py is
   # currently only written to support a single drive here.
   dst_dirs:
-    dirs:
-    - /mnt/enclosure1/rear/column3/drive79
+    dirs: /mnt/enclosure1/rear/column3/drive79
 
     # What critial usage % should we send an error? Do not make this too low
     # or you will get nuisance reports. DO NOT change the `critical_alert_sent`
