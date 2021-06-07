@@ -15,9 +15,8 @@ import logging
 from system_logging import setup_logging
 import psutil
 
-
-user_home_dir = str(Path.home())
-config_file = (user_home_dir + '/.config/plot_manager/plot_manager.yaml')
+# Where is our config file?
+config_file = (str(Path.home()) + '/.config/plot_manager/plot_manager.yaml')
 
 
 # Setup Module logging. Main logging is configured in system_logging.py
