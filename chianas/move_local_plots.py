@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-05-31)"
+VERSION = "0.92 (2021-06-07)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -187,7 +187,6 @@ def check_drive_activity():
         return False
     else:
         return True
-
 
 def main():
     are_we_configured()
