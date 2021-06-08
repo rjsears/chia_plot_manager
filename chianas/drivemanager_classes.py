@@ -53,16 +53,20 @@ def config_file_update():
             copyfile(skel_config_file, (str(Path.home()) + '/.config/plot_manager/Config_Instructions.yaml'))
             copyfile(config_file, (str(Path.home()) + f'/.config/plot_manager/plot_manager.yaml.{current_military_time}'))
             temp_current_config.update(updates)
-            current_config = unflatten(temp_current_config)
+            new_config = (dict((k, v) for k, v in temp_current_config.items() if k in temp_temp_config))
+        else:
+            new_config = (dict((k, v) for k, v in temp_current_config.items() if k not in temp_temp_config))
+        if new_config != {}:
+            new_config = (dict((k, v) for k, v in temp_current_config.items() if k in temp_temp_config))
+            current_config = unflatten(new_config)
             current_config.update({'configured': False})
             with open((str(Path.home()) + '/.config/plot_manager/plot_manager.yaml'), 'w') as f:
                 yaml.safe_dump(current_config, f)
             log.debug(f'Config File: {config_file} updated. Update as necessary to run this script.')
-            exit()
         else:
             log.debug('No config file changes necessary! No changes made.')
     else:
-        log.debug('New configuration file not located.')
+        log.debug('New configuration file not found. No changes made.')
 
 
 class DriveManager:
