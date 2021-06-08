@@ -42,8 +42,6 @@ def config_file_update():
     """
     log.debug('config_file_update() Started....')
     if os.path.isfile(skel_config_file):
-        copyfile(skel_config_file, (str(Path.home()) + '/.config/plot_manager/Config_Instructions.yaml'))
-        copyfile(config_file, (str(Path.home()) + f'/.config/plot_manager/plot_manager.yaml.{current_military_time}'))
         with open(config_file, 'r') as current_config:
             current_config = yaml.safe_load(current_config)
         with open(skel_config_file, 'r') as temp_config:
@@ -52,6 +50,8 @@ def config_file_update():
         temp_temp_config = flatten(temp_config)
         updates = (dict((k, v) for k, v in temp_temp_config.items() if k not in temp_current_config))
         if updates != {}:
+            copyfile(skel_config_file, (str(Path.home()) + '/.config/plot_manager/Config_Instructions.yaml'))
+            copyfile(config_file, (str(Path.home()) + f'/.config/plot_manager/plot_manager.yaml.{current_military_time}'))
             temp_current_config.update(updates)
             current_config = unflatten(temp_current_config)
             current_config.update({'configured': False})
