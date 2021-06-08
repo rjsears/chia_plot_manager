@@ -6,7 +6,7 @@ Part of drive_manager. This is the logging module.
 For use with plot_manager V0.9
 """
 
-VERSION = "V0.92 (2021-05-31)"
+VERSION = "V0.92 (2021-06-07)"
 
 import logging.config
 import logging
@@ -118,6 +118,14 @@ log_config = {
          "backupCount": 2,
          "encoding": "utf8"
       },
+      "drivemanager_classes_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "formatter": "standard",
+         "filename": script_path.joinpath("logs/drivemanager_classes.log").as_posix(),
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
+      },
       "move_local_plots_handler": {
          "class": "logging.handlers.RotatingFileHandler",
          "formatter": "standard",
@@ -156,9 +164,32 @@ log_config = {
             "move_local_plots_handler"
          ],
          "propogate": True
+      },
+      "drivemanager_classes": {
+         "handlers": [
+            "console",
+            "info_file_handler",
+            "error_file_handler",
+            "critical_file_handler",
+            "debug_file_handler",
+            "warning_file_handler",
+            "drivemanager_classes_handler"
+         ],
+         "propogate": True
       }
    }
 }
+
+'''
+def read_logging_config(file, section, status):
+    pathname = script_path.joinpath(file)
+    config.read(pathname)
+    if status == "logging":
+        current_status = config.getboolean(section, status)
+    else:
+        current_status = config.get(section, status)
+    return current_status
+'''
 
 def main():
     print("This script is not intended to be run directly.")
