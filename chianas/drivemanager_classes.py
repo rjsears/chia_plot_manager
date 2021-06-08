@@ -38,7 +38,7 @@ log.setLevel(level)
 
 def config_file_update():
     """
-    Function to determine if we need tp update our yaml configuration file after an upgrade.
+    Function to determine if we need to update our yaml configuration file after an upgrade.
     """
     log.debug('config_file_update() Started....')
     if os.path.isfile(skel_config_file):
