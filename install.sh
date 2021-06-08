@@ -143,9 +143,6 @@ clean_up_nas_directory(){
      echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
      echo -e  "Making a backup...."
      cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
-     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
-     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
-     rm $current_directory/plot_manager.skel.yaml
      echo -e "Please make sure to check your settings!!!"
     else
       cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
@@ -170,9 +167,6 @@ clean_up_plot_directory(){
      echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
      echo -e  "Making a backup...."
      cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
-     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
-     cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
-     rm $current_directory/plot_manager.skel.yaml
      echo -e "Please make sure to check your settings!!!"
     else
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
