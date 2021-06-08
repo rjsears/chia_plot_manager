@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-06-04)"
+VERSION = "0.92 (2021-06-07)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -100,10 +100,8 @@ from system_logging import setup_logging
 from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
-import configparser
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from datetime import datetime
-import time
 import argparse
 import textwrap
 from natsort import natsorted
@@ -111,7 +109,7 @@ import mmap
 import json
 import paramiko
 import pathlib
-from drivemanager_classes import DriveManager, config_file
+from drivemanager_classes import DriveManager, config_file, config_file_update
 chianas = DriveManager.read_configs()
 script_path = pathlib.Path(__file__).parent.resolve()
 
@@ -132,9 +130,7 @@ receive_script = script_path.joinpath('receive_plot.sh')
 
 
 # Date and Time Stuff
-today = datetime.today().strftime('%A').lower()
-current_military_time = datetime.now().strftime('%H:%M:%S')
-current_timestamp = int(time.time())
+current_military_time = datetime.now().strftime('%Y%m%d%H%M%S')
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
@@ -1159,6 +1155,7 @@ def main():
         if args.online_hdd:
             online_offline_drive(args.online_hdd, 'online')
         else:
+            config_file_update()
             system_checks()
             nas_report_export()
             send_new_plot_notification()
@@ -1166,6 +1163,7 @@ def main():
                 update_move_local_plot()
             update_receive_plot()
     else:
+        config_file_update()
         system_checks()
         nas_report_export()
         send_new_plot_notification()
@@ -1173,7 +1171,6 @@ def main():
             update_move_local_plot()
         update_receive_plot()
 
-
-
+                   
 if __name__ == '__main__':
     main()
