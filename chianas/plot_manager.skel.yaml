@@ -10,8 +10,6 @@ hostname: chianas01
 logging: True
 log_level: DEBUG
 
-test: true
-
 # Where is your chia log file located? Remember to set the logging level
 # in your chia config to INFO. By default, it is set to WARNING.
 chia_log_file: not_set
