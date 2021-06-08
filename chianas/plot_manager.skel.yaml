@@ -1,4 +1,4 @@
-# v0.92 2021-05-31
+# v0.92 2021-06-07
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -31,9 +31,11 @@ remote_harvester_reports:
 
 # This is the local drive where we store inbound plots from our
 # main plotter. Also stores information about our current plots
-# on our server.
+# on our server. The total plot high water warning is the number
+# of plots left when the alert will be sent. When you have LESS
+# than this number of plots, you will get an alert.
 harvester:
-  current_plotting_drive: /mnt/enclosure0/front/column0/drive3
+  current_plotting_drive: /mnt/enclosure1/front/column1/drive36
   current_total_plots_midnight: 1
   current_total_plots_daily: 1
   total_plot_highwater_warning: 300
@@ -53,18 +55,16 @@ harvester:
 # only used for monitoring drive space for notifications. Set to True if
 # locally plotting and configure the rest of the settings.
 local_plotter:
-  active: True
+  active: False
 
   # Make sure to use the mountpoint
   temp_dirs:
     dirs:
     - /mnt/nvme_drive0
     - /mnt/nvme_drive1
-    # What critial usage % should we send an error? Do not make this too low
-    # or you will get nuisance reports. Do not change the `critical_alert_sent`
-    # this is set automatically to trace warnings so you do not get one every
-    # minute.
-    critical: 95
+    # What critical usage % should we send an error? Do not make this too low
+    # or you will get nuisance reports.
+    critical: 99
     critical_alert_sent: False
 
   # This is the directory that you are using for your plots. If you will be
@@ -73,13 +73,10 @@ local_plotter:
   # their final resting place on the harvester. move_local_plots.py is
   # currently only written to support a single drive here.
   dst_dirs:
-    dirs: 
+    dirs:
       - /mnt/enclosure1/rear/column3/drive79
 
-    # What critial usage % should we send an error? Do not make this too low
-    # or you will get nuisance reports. DO NOT change the `critical_alert_sent`
-    # this is set automatically to trace warnings so you do not get one every
-    # minute.
+    # At what % utilization do we send an error?
     critical: 95
     critical_alert_sent: False
 
@@ -87,7 +84,7 @@ local_plotter:
   # of dst_dir above. This is not the same drive we use for storing plots
   # coming from an outside plotter. We use a different drive to prevent
   # drive IO saturation.
-  current_internal_drive: /mnt/enclosure0/front/column0/drive4
+  current_internal_drive: /mnt/enclosure1/front/column3/drive59
 
 # This is where we set up our notifications
 notifications:
@@ -99,24 +96,24 @@ notifications:
   types:
     new_plot_drive: True
     daily_update: True
-    per_plot: True
+    per_plot: False
     warnings: True
   # What email addresses will get the emails?
   emails:
     - someone@gmail.com
     - someoneelse@gmail.com
+
   # What phones numbers will received the SMS text messages? Include '+1'
   phones:
-    - '+18584140000'
-    - '+18584142355'
+    - '+18584150987'
 
   # These are your notification account settings. For email, you must configure
   # your locate MTA. Installer installs Postfix by default. Twilio (SMS) requires
   # a paid account, PushBullet is free.
   accounts:
     twilio:
-      from: '+18585551212'
-      account: your_account_code_here
-      token: your_account_token_here
+      from: '+18587491119'
+      account: your_account_key
+      token: your_account_token
     pushBullet:
-      api: your_pb_api_token_here
+      api: your_account_api
