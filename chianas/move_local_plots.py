@@ -42,7 +42,7 @@ if testing:
     drive_check = script_path.joinpath('drive_stats.sh')
     drive_check_output = script_path.joinpath('drive_stats.io')
 else:
-    plot_dir = chianas.dst_dir # Where do you hold your plots before they are moved?
+    plot_dir = chianas.dst_dirs # Where do you hold your plots before they are moved?
     plot_size = 108644374730  # Based on K32 plot size
     status_file = script_path.joinpath('local_transfer_job_running')
     drive_check = script_path.joinpath('drive_stats.sh')
