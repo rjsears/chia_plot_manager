@@ -63,6 +63,7 @@ def config_file_update():
             with open((str(Path.home()) + '/.config/plot_manager/plot_manager.yaml'), 'w') as f:
                 yaml.safe_dump(current_config, f)
             log.debug(f'Config File: {config_file} updated. Update as necessary to run this script.')
+            exit()
         else:
             log.debug('No config file changes necessary! No changes made.')
     else:
