@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# Version V0.92 2021-06-07
+
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
 # the system with various tools and tings required to run the various
 # parts of chia_plot_manager.
@@ -12,8 +14,6 @@ green='\033[0;32m'
 white='\033[0;37m'
 blue='\033[0;34m'
 nc='\033[0m'
-
-# Version V0.92 2021-05-31
 
 ## Due to the nature of this script, it must be run as root or via sudo/su.
 must_run_as_root(){
@@ -145,10 +145,12 @@ clean_up_nas_directory(){
      cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     rm $current_directory/plot_manager.skel.yaml
      echo -e "Please make sure to check your settings!!!"
     else
       cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
       cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+      rm $current_directory/plot_manager.skel.yaml
    fi
 }
 
@@ -170,10 +172,12 @@ clean_up_plot_directory(){
      cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     rm $current_directory/plot_manager.skel.yaml
      echo -e "Please make sure to check your settings!!!"
     else
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
+     rm $current_directory/plot_manager.skel.yaml
    fi
 }
 
