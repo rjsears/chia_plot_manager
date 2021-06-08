@@ -1033,8 +1033,12 @@ def check_plots():
         line = m.readline()
         newline = line.decode("utf-8")
         x = newline.split()
-        plots = x[4]
-        TiB = float(x[8])
+        try:
+            plots = x[4]
+            TiB = float(x[8])
+        except IndexError:
+            plots = 0
+            TiB = 0
         return plots, f'{TiB:.0f}'
 
 
