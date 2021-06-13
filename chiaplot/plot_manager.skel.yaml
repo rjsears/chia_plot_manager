@@ -37,7 +37,7 @@ local_plotter:
 
     # At what % utilization do we send an error?
     critical: 95
-    critical_alert_sent: True
+    critical_alert_sent: False
 
 # If you are running multiple remote harvesters,
 # and enter their hostnames below.These hostnames
