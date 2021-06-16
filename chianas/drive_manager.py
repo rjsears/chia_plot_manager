@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-06-07)"
+VERSION = "0.92 (2021-06-16)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -480,7 +480,17 @@ def get_list_of_plot_drives():
 def get_path_info_by_mountpoint(mountpoint, info):
     """
     This accepts a mountpoint ('/mnt/enclosure0/rear/column2/drive32') and returns the enclosure:
-    enclosure1
+    enclosure1. This will need to be changed based on your current directory configuration. For
+    example if your mount point looked like this: "/server01/top/row1/drive4" this would look like:
+
+    if info == 'server':
+        return (mountpoint.split("/")[2])
+    elif info == 'topbottom':
+        return (mountpoint.split("/")[3])
+    elif info == 'row':
+        return (mountpoint.split("/")[4])
+    else:
+        return (f'/{mountpoint.split("/")[1]}')
     """
     if info == 'enclosure':
         return (mountpoint.split("/")[2])
