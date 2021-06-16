@@ -6,6 +6,39 @@ __author__ = 'Richard J. Sears'
 VERSION = "0.92 (2021-06-16)"
 
 """
+NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+This script is designed to run with a particular directory structure:
+
+/mnt
+     ├── enclosure0
+     │   ├── front
+     │   │   ├── column0
+     │   │   │   ├── drive2
+     │   │   │   ├── drive3
+     │   │   │   ├── drive4
+     │   │   │   └── drive5
+     ├── enclosure1
+     │   ├── rear
+     │   │   ├── column0
+     │   │   │   ├── drive6
+     │   │   │   ├── drive7
+     
+     
+Because of this, if you have a different directory structure there are
+changes that you will to make for this to work for you. For example
+if you have mountpoints that start with `/mnt/server0` instead of 
+`/mnt/enclosure0`, you will need to look for each instance of 
+`/mnt/enclosure` in this script and replace it with `/mnt/server0`
+in order for things to work properly. 
+
+In addition, you would also need to modify get_path_info_by_mountpoint()
+so that it returns the correct values as well. Eventually I will attempt
+to figure this out on the fly, but for right now this needs to be done
+to get the script working for you.
+
+
+
+
 Simple python script that helps to move my chia plots from my plotter to
 my nas. I wanted to use netcat as it was much faster on my 10GBe link than
 rsync and the servers are secure so I wrote this script to manage that
