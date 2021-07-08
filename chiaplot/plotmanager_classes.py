@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating out yaml
 config file.
 """
 
-VERSION = "V0.92 (2021-06-04)"
+VERSION = "V0.93 (2021-07-08)"
 
 import os
 import yaml
@@ -36,13 +36,14 @@ class PlotManager:
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, remote_harvesters,
+        def __init__(self, configured, hostname, pools, remote_harvesters,
                      notifications, pb, email, sms, temp_dirs, temp_dirs_critical, network_interface,
                      dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent,temp_dirs_critical_alert_sent,
                      warnings, emails, phones, twilio_from, twilio_account,
                      twilio_token, pb_api, logging, log_level):
             self.configured = configured
             self.hostname = hostname
+            self.pools = pools
             self.remote_harvesters = remote_harvesters
             self.network_interface = network_interface
             self.notifications = notifications
@@ -72,6 +73,7 @@ class PlotManager:
                 return cls(
                     configured=server['configured'],
                     hostname=server['hostname'],
+                    pools=server['pools'],
                     remote_harvesters=server['remote_harvesters'],
                     network_interface=server['network_interface'],
                     notifications=server['notifications']['active'],
