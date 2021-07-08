@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating out yaml
 config file.
 """
 
-VERSION = "V0.92 (2021-06-07)"
+VERSION = "V0.93 (2021-07-08)"
 
 import os
 import yaml
@@ -76,13 +76,14 @@ class DriveManager:
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
+        def __init__(self, configured, hostname, pools, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
                      notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, local_plotter, temp_dirs, temp_dirs_critical,
                      temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent, warnings, emails, phones,
                      twilio_from, twilio_account, twilio_token, pb_api, current_internal_drive, current_plotting_drive, total_plot_highwater_warning,
                      total_plots_alert_sent, current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level):
             self.configured = configured
             self.hostname = hostname
+            self.pools = pools
             self.chia_log_file = chia_log_file
             self.chia_config_file = chia_config_file
             self.remote_harvester_reports = remote_harvester_reports
@@ -125,6 +126,7 @@ class DriveManager:
                 return cls(
                     configured=server['configured'],
                     hostname=server['hostname'],
+                    pools=server['pools'],
                     chia_log_file=server['chia_log_file'],
                     chia_config_file=server['chia_config_file'],
                     remote_harvester_reports=server['remote_harvester_reports']['active'],
