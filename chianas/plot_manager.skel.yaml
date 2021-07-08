@@ -1,4 +1,4 @@
-# v0.92 2021-06-07
+# v0.93 2021-07-08
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -6,12 +6,13 @@ configured: False
 # Enter the hostname of this server:
 hostname: chianas01
 
-#Are we plotting for pools?
+# Are we plotting for pools?
 pools: True
 
 # Enter Logging Information
 logging: True
 log_level: DEBUG
+
 
 # Where is your chia log file located? Remember to set the logging level
 # in your chia config to INFO. By default, it is set to WARNING.
