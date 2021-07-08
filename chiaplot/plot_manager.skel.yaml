@@ -5,6 +5,9 @@ configured: False
 # Enter the hostname of this server:
 hostname: chiaplot01
 
+#Are we plotting for pools (prepends `portable.` to the plot name)
+pools: True
+
 # Enter Logging Information
 logging: True
 log_level: DEBUG
