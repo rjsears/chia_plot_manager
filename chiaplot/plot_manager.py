@@ -430,7 +430,7 @@ def check_temp_drive_utilization():
         chiaplot.toggle_alert_sent('temp_dirs_critical_alert_sent')
         notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
     else:
-        log.debug('Temp Drive(s) check complete. ALl OK!')
+        log.debug('Temp Drive(s) check complete. All OK!')
 
 def check_dst_drive_utilization():
     """
