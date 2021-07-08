@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Part of drive_manager. These classes are for reading and updating out yaml
+Part of drive_manager. These classes are for reading and updating our yaml
 config file.
 """
 
