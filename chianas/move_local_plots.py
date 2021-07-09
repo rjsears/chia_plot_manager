@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-06-07)"
+VERSION = "0.93 (2021-07-08)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -91,19 +91,23 @@ def process_plot():
         if not process_control('check_status', 0):
             plot_to_process = get_list_of_plots()
             if plot_to_process and not testing:
+                plot_source = plot_dir + '/' + plot_to_process
+                if chianas.pools:
+                    plot_destination = chianas.current_internal_drive + '/' + 'portable.' + plot_to_process
+                else:
+                    plot_destination = chianas.current_internal_drive + '/' + plot_to_process
                 process_control('set_status', 'start')
-                plot_path = plot_dir + '/' + plot_to_process
-                log.info(f'Processing Plot: {plot_path}')
+                log.info(f'Processing Plot: {plot_source}')
                 log.debug(f'Current Internal Plotting Drive is: {chianas.current_internal_drive}')
-                log.debug(f'Starting Copy of {plot_path} to {chianas.current_internal_drive}')
+                log.debug(f'Starting Copy of {plot_source} to {plot_destination}')
                 start_time = timer()
                 try:
-                    shutil.copy2(plot_path, chianas.current_internal_drive)
+                    shutil.copy2(plot_source, plot_destination)
                 except:
                     log.debug(f'ERROR: There was a problem copying: {plot_dir}!')
                     exit()
                 end_time = timer()
-                if verify_plot_move(chianas.current_internal_drive, plot_path, plot_to_process):
+                if verify_plot_move(plot_source, plot_destination):
                     log.info('Plot Sizes Match, we have a good plot move!')
                     log.info(f'Total Elapsed Time: {end_time - start_time:.2f} seconds or {(end_time - start_time)/60:.2f} Minutes')
                 else:
@@ -111,8 +115,8 @@ def process_plot():
                     process_control('set_status', 'stop')  #Set to stop so it will attempt to run again in the event we want to retry....
                     main() # Try Again - no need to do anything with the file, shutil.copy2 will overwrite an existing file.
                 process_control('set_status', 'stop')
-                os.remove(plot_path)
-                log.info(f'Removing: {plot_path}')
+                os.remove(plot_source)
+                log.info(f'Removing: {plot_source}')
             elif testing:
                 log.debug('Testing Only - Nothing will be Done!')
             else:
@@ -121,11 +125,11 @@ def process_plot():
             return
 
 
-def verify_plot_move(current_plotting_drive, plot_path, plot_to_process):
+def verify_plot_move(plot_source, plot_destination):
     log.debug('verify_plot_move() Started')
-    log.debug (f'Verifing: {current_plotting_drive}/{plot_to_process}')
-    original_plot_size = os.path.getsize(plot_path)
-    copied_plot_size = os.path.getsize(current_plotting_drive + '/' + plot_to_process)
+    log.debug (f'Verifing: {plot_source}')
+    original_plot_size = os.path.getsize(plot_source)
+    copied_plot_size = os.path.getsize(plot_destination)
     log.debug(f'Original Plot Size Reported as: {original_plot_size}')
     log.debug(f'Copied Plot Size Reported as: {copied_plot_size}')
     if original_plot_size == copied_plot_size:
@@ -189,6 +193,7 @@ def check_drive_activity():
         return True
 
 def main():
+    log.debug(f'move_local_plots.py: Version {VERSION}')
     are_we_configured()
     process_plot()
 
