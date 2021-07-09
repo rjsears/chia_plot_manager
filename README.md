@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.92 - May 31th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.93 - July 8th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -753,6 +753,13 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+
+<b>V0.93 2021-07-08</b>
+   - Added ability to identify plots as `portable` (set `pooling: True` in config file)
+     and all new plots will be pree=pended with `portable.`. Eventually I will add in 
+     the ability to overwrite old plots with new plots during new pooling plot creation.
+     This ASSUMES 1.2.0 and has nothing to do with the plotting itself, just (as always)
+     with the management of the plots. 
 
 <b>V0.9 2021-05-28</b>
    - Added full multi-harvester capabilities to ```plot_manager.py``` along
