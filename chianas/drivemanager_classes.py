@@ -76,11 +76,12 @@ class DriveManager:
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, pools, replace_non_pool_plots, fill_empty_drives_first, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
-                     notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, local_plotter, temp_dirs, temp_dirs_critical,
-                     temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent, warnings, emails, phones,
-                     twilio_from, twilio_account, twilio_token, pb_api, current_internal_drive, current_plotting_drive, total_plot_highwater_warning,
-                     total_plots_alert_sent, current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level):
+        def __init__(self, configured, hostname, pools, replace_non_pool_plots, fill_empty_drives_first, chia_log_file, chia_config_file, 
+                     remote_harvester_reports, remote_harvesters, notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, 
+                     local_plotter, temp_dirs, temp_dirs_critical, temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical, 
+                     dst_dirs_critical_alert_sent, warnings, emails, phones, twilio_from, twilio_account, twilio_token, pb_api, 
+                     current_internal_drive, current_plotting_drive, total_plot_highwater_warning, total_plots_alert_sent, 
+                     current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level):
             self.configured = configured
             self.hostname = hostname
             self.pools = pools
