@@ -756,7 +756,7 @@ strategy above, it is super easy to add more drives.
 
 <b>V0.93 2021-07-08</b>
    - Added ability to identify plots as `portable` (set `pooling: True` in config file)
-     and all new plots will be pree=pended with `portable.`. Eventually I will add in 
+     and all new plots will be prepended with `portable.`. Eventually I will add in 
      the ability to overwrite old plots with new plots during new pooling plot creation.
      This ASSUMES 1.2.0 and has nothing to do with the plotting itself, just (as always)
      with the management of the plots. 
