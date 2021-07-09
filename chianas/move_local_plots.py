@@ -94,6 +94,7 @@ def process_plot():
                 plot_source = plot_dir + '/' + plot_to_process
                 if chianas.pools:
                     plot_destination = chianas.current_internal_drive + '/' + 'portable.' + plot_to_process
+                    log.debug(f'We are Configured for Pooling.')
                 else:
                     plot_destination = chianas.current_internal_drive + '/' + plot_to_process
                 process_control('set_status', 'start')
