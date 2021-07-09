@@ -1,4 +1,4 @@
-# v0.92 2021-06-07
+# v0.93 2021-07-08
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -6,9 +6,20 @@ configured: False
 # Enter the hostname of this server:
 hostname: chianas01
 
+# Are we plotting for pools? This has nothing to do with the actual plotting of
+# plots but rather just naming of the new plots and eventually the replacing of 
+# old plots with portable plots.
+pools:
+  active: False
+  # Do we want to replace non-pool plots with new plots
+  replace_non_pool_plots: True
+  # Should we fill up empty drive space before replacing old non-pool plots?
+  fill_empty_drives_first: True
+
 # Enter Logging Information
 logging: True
 log_level: DEBUG
+
 
 # Where is your chia log file located? Remember to set the logging level
 # in your chia config to INFO. By default, it is set to WARNING.

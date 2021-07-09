@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-06-04)"
+VERSION = "0.93 (2021-07-08)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -14,6 +14,9 @@ that manages the drives themselves and decides based on various criteria where
 the incoming plots will be placed. This script simply sends those plots when
 they are ready to send.
 Updates
+  v0.93 2021-08-21
+  - Added ability to identify pool plots by prepending 'portable.' to the plot name
+    so we can manage them at a later time.
   v0.9 2021-05-28
   - Rewritten logging to support path autodetection, support for multiple
     NAS/Harvesters. Chooses Harvester with the most available plots on it
@@ -133,6 +136,8 @@ def process_plot():
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
+            if chiaplot.pools:
+                plot_to_process = 'portable.'+plot_to_process
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
             try:
                 subprocess.call(['ssh', nas_server, f'{script_path.joinpath("utilities/kill_nc.sh")}'])  # make sure all of the nc processes are dead on the receiving end
@@ -425,7 +430,7 @@ def check_temp_drive_utilization():
         chiaplot.toggle_alert_sent('temp_dirs_critical_alert_sent')
         notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
     else:
-        log.debug('Temp Drive(s) check complete. ALl OK!')
+        log.debug('Temp Drive(s) check complete. All OK!')
 
 def check_dst_drive_utilization():
     """

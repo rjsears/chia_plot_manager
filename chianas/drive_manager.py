@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-06-16)"
+VERSION = "0.93 (2021-07-08)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -47,6 +47,8 @@ other things like notifications and stuff.
 
 
  Updates
+   V0.93 2021-07-08
+   - Added in code to various parts of project to impliment pools.
  
    V0.92 2021-05-31
    - Converted to a central YAML config file
