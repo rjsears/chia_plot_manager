@@ -76,7 +76,7 @@ class DriveManager:
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, pools, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
+        def __init__(self, configured, hostname, pools, replace_non_pool_plots, fill_empty_drives_first, chia_log_file, chia_config_file, remote_harvester_reports, remote_harvesters,
                      notifications, pb, email, sms, daily_update, new_plot_drive, per_plot, local_plotter, temp_dirs, temp_dirs_critical,
                      temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent, warnings, emails, phones,
                      twilio_from, twilio_account, twilio_token, pb_api, current_internal_drive, current_plotting_drive, total_plot_highwater_warning,
@@ -84,6 +84,8 @@ class DriveManager:
             self.configured = configured
             self.hostname = hostname
             self.pools = pools
+            self.replace_non_pool_plots = replace_non_pool_plots
+            self.fill_empty_drives_first = fill_empty_drives_first
             self.chia_log_file = chia_log_file
             self.chia_config_file = chia_config_file
             self.remote_harvester_reports = remote_harvester_reports
@@ -126,7 +128,9 @@ class DriveManager:
                 return cls(
                     configured=server['configured'],
                     hostname=server['hostname'],
-                    pools=server['pools'],
+                    pools=server['pools']['active'],
+                    replace_non_pool_plots=server['pools']['replace_non_pool_plots'],
+                    fill_empty_drives_first=server['pools']['fill_empty_drives_first'],
                     chia_log_file=server['chia_log_file'],
                     chia_config_file=server['chia_config_file'],
                     remote_harvester_reports=server['remote_harvester_reports']['active'],
