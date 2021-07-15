@@ -12,6 +12,15 @@ Set the email address and hostname below and load in your root user crontab by u
 wpython.py (see below)
 
 I run this by utilizing https://github.com/rjsears/wpython
+
+INSTALL:
+- Install wpython and setup by following instructions (allows venv running of this script
+  from root cron)
+- Copy this script to /home/chia/chia-blockchain/ (or where ever you run chia from)
+- Make sure to pip(3) psutil in your chia venv
+- Verify it runs under your venv
+- Verify that it runs as root: wpython /home/chia/chia-blockchain/harvester_health_check.py
+- Set it up in your root/chia crontab
 """
 
 VERSION = "V0.93 (2021-07-15)"
