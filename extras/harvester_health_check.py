@@ -19,7 +19,7 @@ INSTALL:
 - Copy this script to /home/chia/chia-blockchain/ (or where ever you run chia from)
 - Make sure to pip(3) psutil in your chia venv
 - Verify it runs under your venv
-- Verify that it runs as root: wpython /home/chia/chia-blockchain/harvester_health_check.py
+- Verify that it runs as root: wpython.py /home/chia/chia-blockchain/harvester_health_check.py
 - Set it up in your root/chia crontab
 """
 
