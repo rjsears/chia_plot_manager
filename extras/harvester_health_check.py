@@ -8,7 +8,7 @@ attempts to (re)start it. Sends notifications when necessary via email to text.
 This ONLY checks to see if 'chia_harvester' is a zombie process, or if it is not
 running at all. All other psutil p.info(status) just pass through. 
 
-Set the email address and hostname below and load in your chia user crontab by utilizing
+Set the email address and hostname below and load in your root user crontab by utilizing
 wpython.py (see below)
 
 I run this by utilizing https://github.com/rjsears/wpython
