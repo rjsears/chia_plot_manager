@@ -20,7 +20,8 @@ INSTALL:
 - Make sure to pip(3) psutil in your chia venv
 - Verify it runs under your venv
 - Verify that it runs as root: wpython.py /home/chia/chia-blockchain/harvester_health_check.py
-- Set it up in your root/chia crontab
+- Set it up in your root/chia crontab (user that you run chia as...) and make sure that user
+  can send mail via cli test:  mail -s "Test Email" your_email@gmail.com < /dev/null
 """
 
 VERSION = "V0.93 (2021-07-15)"
