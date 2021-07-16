@@ -884,6 +884,18 @@ def space_report():
     plots_last_day = chianas.current_total_plots_daily
     if plots_last_day == 0:
         plots_last_day = 1
+    try:
+        current_plot_drive = (get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])
+    except TypeError:
+        current_plot_drive = 'N/A'
+    try:
+        current_plot_drive_temp = Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).temperature
+    except TypeError:
+        current_plot_drive_temp = 'N/A'
+    try:
+        current_plot_drive_smart_assesment = Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).assessment
+    except TypeError:
+        current_plot_drive_smart_assesment = 'N/A'
     print('')
     print(f'{blue}############################################################{nc}')
     print(f'{blue}################### {green}{chianas.hostname} Plot Report{blue} ##################{nc}' )
@@ -898,9 +910,9 @@ def space_report():
     print (f"Average Plots per Hours:                                 {yellow}{round(chianas.current_total_plots_daily / 24, 1)}{nc}")
     print (f"Average Plotting Speed Last 24 Hours (TiB/Day):         {yellow}{round((chianas.current_total_plots_daily * int(plot_size_g) / 1000), 2)}{nc} ")
     print (f"Appx Number of Days to fill all current plot drives:     {yellow} {int(get_all_available_system_space('free')[1] / plots_last_day)} {nc} ")
-    print (f"Current Plot Storage Drive:                        {yellow}{(get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])}{nc}")
-    print (f"Temperature of Current Plot Drive:                      {yellow}{Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).temperature}°C{nc}")
-    print (f"Latest Smart Drive Assessment of Plot Drive:            {yellow}{Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).assessment}{nc}")
+    print (f"Current Plot Storage Drive:                             {yellow}{current_plot_drive}{nc}")
+    print (f"Temperature of Current Plot Drive:                      {yellow}{current_plot_drive_temp}°C{nc}")
+    print (f"Latest Smart Drive Assessment of Plot Drive:            {yellow}{current_plot_drive_smart_assesment}{nc}")
     print(f'{blue}############################################################{nc}')
     print('')
     print('')
