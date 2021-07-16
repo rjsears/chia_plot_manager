@@ -8,18 +8,15 @@ attempts to (re)start it. Sends notifications when necessary via email to text.
 This ONLY checks to see if 'chia_harvester' is a zombie process, or if it is not
 running at all. All other psutil p.info(status) just pass through. 
 
-Set the email address and hostname below and load in your root user crontab by utilizing
-wpython.py (see below)
-
-I run this by utilizing https://github.com/rjsears/wpython
+Set the email address and hostname below and load in your chia user crontab by utilizing:
+*/1 * * * * cd ~chia/chia-blockchain && . ./activate && ./harvester_health_check.py >/dev/null 2>&1 && deactivate
+or
+*/1 * * * * cd ~otheruser/chia-blockchain && . ./activate && ./harvester_health_check.py >/dev/null 2>&1 && deactivate
 
 INSTALL:
-- Install wpython and setup by following instructions (allows venv running of this script
-  from root cron)
 - Copy this script to /home/chia/chia-blockchain/ (or where ever you run chia from)
 - Make sure to pip(3) psutil in your chia venv
 - Verify it runs under your venv
-- Verify that it runs as root: wpython.py /home/chia/chia-blockchain/harvester_health_check.py
 - Set it up in your root/chia crontab (user that you run chia as...) and make sure that user
   can send mail via cli test:  mail -s "Test Email" your_email@gmail.com < /dev/null
 """
@@ -33,7 +30,8 @@ import time
 
 # House Keeping
 # Where are we sending the email notification?
-notify_address = '8585551212@vtext.com'
+notify_address = '8585551212@vtext.com' # This is Verizon's email to text, set up for your phone/carrier.
+                                        # or just use regular email address.
 
 # What is our Host Name?
 host = 'ChiaNAS01'
