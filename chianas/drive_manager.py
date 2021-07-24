@@ -1122,7 +1122,7 @@ def check_temp_drive_utilization():
             chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
             notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
         else:
-            log.debug('Temp Drive(s) check complete. ALl OK!')
+            log.debug('Temp Drive(s) check complete. All OK!')
 
     else:
         log.debug('Local Plotting is Disabled. No Drive Checks.')
@@ -1169,7 +1169,7 @@ def checks_plots_available():
         notify('INFORMATION: Total Plots Available',
                'INFORMATION: Your Total Plots available is now Above the Warning Limit\nPlotting will Continue')
     else:
-        log.debug('Plot check complete. ALl OK!')
+        log.debug('Plot check complete. All OK!')
 
 
 def checkIfProcessRunning(processName):
