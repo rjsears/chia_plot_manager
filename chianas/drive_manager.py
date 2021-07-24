@@ -1151,7 +1151,7 @@ def check_dst_drive_utilization():
             chianas.toggle_alert_sent('dst_dirs_critical_alert_sent')
             notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
         else:
-            log.debug('DST Drive(s) check complete. ALl OK!')
+            log.debug('DST Drive(s) check complete. All OK!')
     else:
         log.debug('Local Plotting is Disabled. No Drive Checks.')
 
