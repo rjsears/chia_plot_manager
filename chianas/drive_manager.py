@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.93 (2021-07-08)"
+VERSION = "0.93.1 (2021-08-06)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -38,7 +38,6 @@ to get the script working for you.
 
 
 
-
 Simple python script that helps to move my chia plots from my plotter to
 my nas. I wanted to use netcat as it was much faster on my 10GBe link than
 rsync and the servers are secure so I wrote this script to manage that
@@ -47,8 +46,6 @@ other things like notifications and stuff.
 
 
  Updates
-   V0.93 2021-07-08
-   - Added in code to various parts of project to impliment pools.
  
    V0.92 2021-05-31
    - Converted to a central YAML config file
@@ -128,7 +125,7 @@ import sys
 import subprocess
 import shutil
 import psutil
-from pySMART import Device  # CAUTION - DO NOT use PyPI version, use https://github.com/truenas/py-SMART
+from pySMART import Device, DeviceList  # CAUTION - DO NOT use PyPI version, use https://github.com/truenas/py-SMART
 from psutil._common import bytes2human
 import logging
 from system_logging import setup_logging
@@ -202,6 +199,9 @@ Finally if you want to run remote harvester reports, set to True in the YAML
 config file.
 """
 local_export_file = script_path.joinpath(f'export/{chianas.hostname}_export.json')
+uuid_export_file = script_path.joinpath(f'export/{chianas.hostname}_uuid_export.json')
+global_uuid_export_file = script_path.joinpath(f'export/{chianas.hostname}_global_uuid_export.json')
+
 
 
 def remote_harvester_report():
@@ -240,6 +240,42 @@ def remote_harvester_report():
                 totals["approx_days_to_fill_drives"] += e["approx_days_to_fill_drives"]
             return totals, servers, remote_harvesters
 
+
+def uuid_search(uuid):
+    """
+    Searched all available remote harvesters for a specific UUID and returns
+    the server and mountpoint if found. Because of the code, remote harvester
+    reports must be configured and working for this to work.
+    """
+    if not chianas.remote_harvester_reports:
+        log.debug('Remote Harvester Reports are NOT Configured')
+    else:
+        remote_harvesters = check_remote_harvesters()
+        if chianas.hostname in remote_harvesters:
+            print(f'\n{red}CAUTION{nc}: Your local harvester {yellow}{chianas.hostname}{nc} is listed as one of your remote harvesters!')
+            print(f'{red}CAUTION{nc}: Unable to Run UUID Search. Please Correct!\n')
+            exit()
+        else:
+            servers = []
+            master_uuid = dict()
+            with open(uuid_export_file, 'r') as local_host:
+                harvester = json.loads(local_host.read())
+                servers.append(harvester)
+            for harvester in remote_harvesters:
+                remote_export_file = (script_path.joinpath(f'export/{harvester}_uuid_export.json').as_posix())
+                get_remote_exports(harvester, remote_export_file)
+                with open(remote_export_file, 'r') as remote_host:
+                    harvester = json.loads(remote_host.read())
+                    servers.append(harvester)
+                    master_uuid.update(harvester)
+            with open(global_uuid_export_file, 'w') as global_export_file:
+                global_export_file.write(json.dumps(master_uuid))
+            with open(global_uuid_export_file, "r") as f:
+                uuid_search = json.loads(f.read())
+            try:
+                return uuid_search[uuid]
+            except KeyError:
+                return False
 
 def check_remote_harvesters():
     """
@@ -320,6 +356,35 @@ def individual_harvester_report(servers, remote_harvesters):
         print(f'{blue}############################################################{nc}')
 
 
+def uuid_report(uuid):
+    print()
+    print(f'Please wait while we search all harvesters for {green}{uuid}{nc}')
+    uuid_search_results = uuid_search(uuid)
+    if not uuid_search_results:
+        print()
+        print(f'{blue}############################################################{nc}')
+        print(f'{blue}################### {green}UUID Search Report{blue} #####################{nc}')
+        print(f'{blue}############################################################{nc}')
+        print(f'UUID:          {green}{uuid}{nc}')
+        print(f'Status:        {red}NOT LOCATED{nc}')
+        print(f'{blue}############################################################{nc}')
+        print()
+        print()
+    else:
+        server = uuid_search_results[0]
+        mountpoint = uuid_search_results[1]
+        print()
+        print(f'{blue}############################################################{nc}')
+        print(f'{blue}################### {green}UUID Search Report{blue} #####################{nc}')
+        print(f'{blue}############################################################{nc}')
+        print(f'UUID:          {green}{uuid}{nc}')
+        print(f'Status:        {yellow}LOCATED{nc}')
+        print(f'Harvester:     {yellow}{server}{nc}')
+        print(f'Mount Point:   {yellow}{mountpoint}{nc}')
+        print(f'{blue}############################################################{nc}')
+        print()
+        print()
+
 # Define our help message
 class RawFormatter(argparse.HelpFormatter):
     def _fill_text(self, text, width, indent):
@@ -361,6 +426,9 @@ program_descripton = f'''
                                 from the last time is was run until now, hence why you should
                                 only run this once per 24 hours.{nc}
     
+    {green}-uuid {nc}or{green} --check_uuid{blue}       This checks all remote harvesters to see if the requested UUID is 
+                                present and mounted. Returns the server and mountpoint if found.{nc}
+    
     {green}-off {nc}or{green} --offline_hdd{blue}       This takes a drive as it's input (for example {yellow} drive6{blue}) and
                                 "{red}offlines{blue}" it so that no more plots will get written to it. 
                                 You must {green}--on{blue} or {green}--online_hdd{blue} the drive for it to be used
@@ -384,6 +452,7 @@ def init_argparser():
     parser.add_argument('-pr', '--plot_report', action='store_true', help='Return the total # of plots on the system and total you can add and exit')
     parser.add_argument('-fr', '--farm_report', action='store_true',help='Return the total # of plots on your entire farm and total you can add and exit')
     parser.add_argument('-ud', '--update_daily', action='store_true', help=f'Updates 24 hour plot count. {red}USE WITH CAUTION, USE WITH CRONTAB{nc}')
+    parser.add_argument('-uuid', '--check_uuid', action='store', help=f'Check to see is a specific {green}UUID{nc} is mounted on any harvester')
     parser.add_argument('-off', '--offline_hdd', action='store', help=f'Offline a specific drive. Use drive number: {green}drive6{nc}')
     if chianas.offlined_drives != []:
         parser.add_argument('-on', '--online_hdd', action='store', help=f'Online a specific drive.' , choices=chianas.offlined_drives)
@@ -468,6 +537,16 @@ def get_mountpoint_by_drive_number(drive):
         if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/enclosure') and p.mountpoint.endswith(drive):
             return [(p.mountpoint)]
 
+def get_mountpoint_by_drive_number_enclosure(enclosure, drive):
+    """
+    This accepts an enclosure (enclosure0) and  drive number (drive0) and returns the device assignment: /dev/sda1 and mountpoint:
+    /mnt/enclosure0/front/column0/drive0
+    """
+    partitions = psutil.disk_partitions(all=False)
+    for p in partitions:
+        if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/' + enclosure) and p.mountpoint.endswith(drive):
+            return [(p.mountpoint)]
+
 
 def get_device_info_by_drive_number(drive):
     """
@@ -476,6 +555,16 @@ def get_device_info_by_drive_number(drive):
     partitions = psutil.disk_partitions(all=False)
     for p in partitions:
         if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/enclosure') and p.mountpoint.endswith(drive):
+            return [(p.mountpoint, p.device)]
+
+
+def get_device_info_by_drive_number_enclosure(enclosure, drive):
+    """
+    This accepts an enclosure (enclosure2) and drive number (drive0) and returns the device assignment: /dev/sda1 and mountpoint
+    """
+    partitions = psutil.disk_partitions(all=False)
+    for p in partitions:
+        if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/'+ enclosure) and p.mountpoint.endswith(drive):
             return [(p.mountpoint, p.device)]
 
 
@@ -623,8 +712,10 @@ def get_internal_plot_drive_to_use():
                 available_drives.append((part.mountpoint, part.device, drive))
         return (natsorted(available_drives)[1])
     except IndexError:
-        log.debug("ERROR: No Additional Internal Drives Found, Please add drives, run auto_drive.py and try again!")
-        exit()
+        # If we have no more drives left, fall back to the only drive left on the system with space available
+        return (get_plot_drive_to_use())
+       # log.debug("ERROR: No Additional Internal Drives Found, Please add drives, run auto_drive.py and try again!")
+       # exit()
 
 
 
@@ -790,6 +881,10 @@ def send_new_plot_disk_email():
     plot has been created.
     """
     usage = psutil.disk_usage(get_device_by_mountpoint(get_plot_drive_to_use()[0])[0][0])
+    try:
+        days_to_fill_drives = (int(get_all_available_system_space('free')[1] / chianas.current_total_plots_daily))
+    except ZeroDivisionError:
+        days_to_fill_drives = 0
     if chianas.new_plot_drive:
         for email_address in chianas.emails:
             send_template_email(template='new_plotting_drive.html',
@@ -812,7 +907,7 @@ def send_new_plot_disk_email():
                                 total_number_of_drives=get_all_available_system_space('total')[0],
                                 total_k32_plots_until_full=get_all_available_system_space('free')[1],
                                 max_number_of_plots=get_all_available_system_space('total')[1],
-                                days_to_fill_drives=(int(get_all_available_system_space('free')[1] / chianas.current_total_plots_daily)))
+                                days_to_fill_drives=days_to_fill_drives)
     else:
         pass
 
@@ -886,15 +981,15 @@ def space_report():
         plots_last_day = 1
     try:
         current_plot_drive = (get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])
-    except TypeError:
+    except Exception as e:
         current_plot_drive = 'N/A'
     try:
         current_plot_drive_temp = Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).temperature
-    except TypeError:
+    except Exception as e:
         current_plot_drive_temp = 'N/A'
     try:
         current_plot_drive_smart_assesment = Device((get_device_by_mountpoint(chianas.current_plotting_drive)[0][1])).assessment
-    except TypeError:
+    except Exception as e:
         current_plot_drive_smart_assesment = 'N/A'
     print('')
     print(f'{blue}############################################################{nc}')
@@ -947,6 +1042,68 @@ def nas_report_export():
     except:
         log.debug(f'Unable to write to export file! Check \"{local_export_file}\" path above and try again!')
     return nas_server_export
+
+
+def old_generate_uuid_dict():
+   fstab_dict = {}
+   result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
+   for item in result.stdout.splitlines():
+       if b'enclosure' not in item: continue
+       k, v = item.decode().split()
+       fstab_dict[k] = v
+   uuids = dict([(chianas.hostname, fstab_dict)])
+   try:
+       with open(uuid_export_file, 'w') as uuid_export:
+           uuid_export.write(json.dumps(uuids))
+   except:
+       log.debug(f'Unable to write to export file! Check \"{uuid_export_file}\" path above and try again!')
+
+def old_old_generate_uuid_dict():
+   fstab_dict = {}
+   result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
+   for item in result.stdout.splitlines():
+       if b'enclosure' not in item: continue
+       uuid, mountpoint = item.decode().split()
+       fstab_dict[uuid] = mountpoint
+   uuids = dict([(chianas.hostname, fstab_dict)])
+   try:
+       with open(uuid_export_file, 'w') as uuid_export:
+           uuid_export.write(json.dumps(uuids))
+   except:
+       log.debug(f'Unable to write to export file! Check \"{uuid_export_file}\" path above and try again!')
+
+def generate_uuid_dict():
+   result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
+   fstab_dict = []
+   for item in result.stdout.splitlines():
+       if b'enclosure' not in item: continue
+       uuid, mnt = item.decode().split()
+       fstab_dict.append((uuid, (chianas.hostname, mnt)))
+   try:
+       dsks = dict()
+       dsks.update(fstab_dict)
+       with open(uuid_export_file, 'w') as uuid_export:
+           json.dump(dsks, uuid_export)
+   except Exception:
+       log.debug(f'Unable to write to export file! Check \"{uuid_export_file}\" path above and try again!')
+       raise
+
+# {'a6b32a82-23bb-4b16-90f3-fb75caaad61c': ('servername', '/mnt/enclosure0/front/column0/drive0')}
+# https://bpa.st/YY7A
+
+def new_generate_uuid_dict():
+   result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
+   db = dataset.connect('sqlite:///' + uuid_export_file)
+   table = db['fstab']
+   for item in result.stdout.splitlines():
+       if b'enclosure' not in item:
+          continue
+       k, v = item.decode().split()
+       table.insert({
+          'hostname': server.hostname,
+          'uuid': k,
+          'disk': v,
+       })
 
 
 def temperature_report():
@@ -1122,7 +1279,7 @@ def check_temp_drive_utilization():
             chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
             notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
         else:
-            log.debug('Temp Drive(s) check complete. All OK!')
+            log.debug('Temp Drive(s) check complete. ALl OK!')
 
     else:
         log.debug('Local Plotting is Disabled. No Drive Checks.')
@@ -1151,7 +1308,7 @@ def check_dst_drive_utilization():
             chianas.toggle_alert_sent('dst_dirs_critical_alert_sent')
             notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
         else:
-            log.debug('DST Drive(s) check complete. All OK!')
+            log.debug('DST Drive(s) check complete. ALl OK!')
     else:
         log.debug('Local Plotting is Disabled. No Drive Checks.')
 
@@ -1169,7 +1326,7 @@ def checks_plots_available():
         notify('INFORMATION: Total Plots Available',
                'INFORMATION: Your Total Plots available is now Above the Warning Limit\nPlotting will Continue')
     else:
-        log.debug('Plot check complete. All OK!')
+        log.debug('Plot check complete. ALl OK!')
 
 
 def checkIfProcessRunning(processName):
@@ -1195,8 +1352,8 @@ def system_checks():
     check_dst_drive_utilization()
     checks_plots_available()
 
-
 def main():
+    print(f'Welcome to drive_manager.py {blue}Version{nc}:{green}{VERSION}{nc}')
     are_we_configured()
     parser = init_argparser()
     args = parser.parse_args()
@@ -1210,6 +1367,8 @@ def main():
         update_daily_plot_counts()
     elif args.check_temps:
         temperature_report()
+    elif args.check_uuid:
+        uuid_report(args.check_uuid)
     elif args.offline_hdd:
         online_offline_drive(args.offline_hdd, 'offline')
     elif get_offlined_drives():
@@ -1219,6 +1378,7 @@ def main():
             config_file_update()
             system_checks()
             nas_report_export()
+            generate_uuid_dict()
             send_new_plot_notification()
             if chianas.local_plotter:
                 update_move_local_plot()
@@ -1227,11 +1387,14 @@ def main():
         config_file_update()
         system_checks()
         nas_report_export()
+        generate_uuid_dict()
         send_new_plot_notification()
         if chianas.local_plotter:
             update_move_local_plot()
         update_receive_plot()
 
-                   
+
 if __name__ == '__main__':
     main()
+
+
