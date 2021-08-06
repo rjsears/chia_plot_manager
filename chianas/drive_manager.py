@@ -1044,33 +1044,6 @@ def nas_report_export():
     return nas_server_export
 
 
-def old_generate_uuid_dict():
-   fstab_dict = {}
-   result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
-   for item in result.stdout.splitlines():
-       if b'enclosure' not in item: continue
-       k, v = item.decode().split()
-       fstab_dict[k] = v
-   uuids = dict([(chianas.hostname, fstab_dict)])
-   try:
-       with open(uuid_export_file, 'w') as uuid_export:
-           uuid_export.write(json.dumps(uuids))
-   except:
-       log.debug(f'Unable to write to export file! Check \"{uuid_export_file}\" path above and try again!')
-
-def old_old_generate_uuid_dict():
-   fstab_dict = {}
-   result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
-   for item in result.stdout.splitlines():
-       if b'enclosure' not in item: continue
-       uuid, mountpoint = item.decode().split()
-       fstab_dict[uuid] = mountpoint
-   uuids = dict([(chianas.hostname, fstab_dict)])
-   try:
-       with open(uuid_export_file, 'w') as uuid_export:
-           uuid_export.write(json.dumps(uuids))
-   except:
-       log.debug(f'Unable to write to export file! Check \"{uuid_export_file}\" path above and try again!')
 
 def generate_uuid_dict():
    result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
@@ -1087,9 +1060,6 @@ def generate_uuid_dict():
    except Exception:
        log.debug(f'Unable to write to export file! Check \"{uuid_export_file}\" path above and try again!')
        raise
-
-# {'a6b32a82-23bb-4b16-90f3-fb75caaad61c': ('servername', '/mnt/enclosure0/front/column0/drive0')}
-# https://bpa.st/YY7A
 
 def new_generate_uuid_dict():
    result = subprocess.run(['lsblk', '-nolabel', '-o', 'UUID,MOUNTPOINT'], capture_output=True)
