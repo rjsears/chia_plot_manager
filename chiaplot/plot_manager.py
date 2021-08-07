@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.93 (2021-07-08)"
+VERSION = "0.93 (2021-08-21)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
