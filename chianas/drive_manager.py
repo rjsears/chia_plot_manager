@@ -252,7 +252,8 @@ def remote_harvester_report():
                     servers.append(harvester)
             totals = {'total_plots': 0, 'total_plots_farming': 0, 'total_tib_farming': 0, 'total_plot_drives': 0,
                       'total_plots_until_full': 0, 'max_plots_when_full': 0, 'plots_last_day': 0, 'avg_plots_per_hour': 0,
-                      'avg_plotting_speed': 0, 'approx_days_to_fill_drives': 0}
+                      'avg_plotting_speed': 0, 'approx_days_to_fill_drives': 0, 'replace_non_pool_plots': 0,
+                      'total_number_of_old_plots': 0, 'total_number_of_portable_plots': 0}
             for e in servers:
                 totals["total_plots"] += e["total_plots"]
                 totals["total_plots_farming"] += e["total_plots_farming"]
@@ -264,6 +265,9 @@ def remote_harvester_report():
                 totals["avg_plots_per_hour"] += e["avg_plots_per_hour"]
                 totals["avg_plotting_speed"] += e["avg_plotting_speed"]
                 totals["approx_days_to_fill_drives"] += e["approx_days_to_fill_drives"]
+                totals["replace_non_pool_plots"] += e["replace_non_pool_plots"]
+                totals["total_number_of_old_plots"] += e["total_number_of_old_plots"]
+                totals["total_number_of_portable_plots"] += e["total_number_of_portable_plots"]
             return totals, servers, remote_harvesters
 
 
@@ -342,75 +346,6 @@ def get_remote_exports(host, remote_export_file):
         ssh.close()
 
 
-def farm_wide_space_report():
-    """
-    This prints out our Farm Wide Report
-    """
-    if chianas.remote_harvester_reports:
-        remote_harvester_reports = (remote_harvester_report())
-        totals = remote_harvester_reports[0]
-        days_until_full = (totals.get("total_plots_until_full") / totals.get("plots_last_day"))
-        harvesters = [chianas.hostname, *remote_harvester_reports[2]]
-        print('')
-        print(f'{blue}############################################################{nc}')
-        print(f'{blue}################### {green}Farm Wide Plot Report{blue} ##################{nc}' )
-        print(f'{blue}############################################################{nc}')
-        print(f'Harvesters: {yellow}{harvesters}{nc}')
-        print (f'Total Number of Plots on {green}Farm{nc}:                          {yellow}{totals.get("total_plots")}{nc}')
-        print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{totals.get("total_plots_farming")}{nc}')
-        print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{totals.get("total_tib_farming")}{nc}')
-        print (f'Total Number of Systemwide Plots Drives:                 {yellow}{totals.get("total_plot_drives")}{nc}')
-        print (f'Total Number of k32 Plots until full:                   {yellow}{totals.get("total_plots_until_full")}{nc}')
-        print (f'Maximum # of plots when full:                          {yellow}{totals.get("max_plots_when_full")}{nc}')
-        print (f'Plots completed in the last 24 Hours:                    {yellow}{totals.get("plots_last_day")}{nc}')
-        print (f'Average Plots per Hour:                                  {yellow}{round(totals.get("avg_plots_per_hour"))}{nc}')
-        print (f'Average Plotting Speed Last 24 Hours (TiB/Day):           {yellow}{round(totals.get("avg_plotting_speed"))}{nc}')
-        print(f'Appx Number of Days to fill all current plot drives:     {yellow} {round(days_until_full)}{nc}')
-        print(f'{blue}############################################################{nc}')
-        individual_harvester_report(remote_harvester_reports[1], remote_harvester_reports[2])
-        print()
-    else:
-        print(f'\n{red}ERROR{nc}: {yellow}Farm Wide Reports Have Not Been Configured. Please Configure and Try Again!{nc}\n')
-
-def individual_harvester_report(servers, remote_harvesters):
-    for server in servers:
-        print(f'{blue}################ {green}{server["server"]} Harvester Report{blue} ################{nc}')
-        print(f'{blue}############################################################{nc}')
-        print(f'Total number of plots on {green}{server["server"]}{nc}:                    {yellow}{server["total_plots"]}{nc}')
-        print(f'Plots completed in the last 24 hours:                  {yellow}{server["plots_last_day"]}{nc}')
-        print(f'Average Plotting Speed Last 24 Hours (Tib/Day):        {yellow}{server["avg_plotting_speed"]}{nc}')
-        print(f'Appx # of Days to fill all drives on this harvester:   {yellow}{server["approx_days_to_fill_drives"]}{nc}')
-        print(f'{blue}############################################################{nc}')
-
-
-def uuid_report(uuid):
-    print()
-    print(f'Please wait while we search all harvesters for {green}{uuid}{nc}')
-    uuid_search_results = uuid_search(uuid)
-    if not uuid_search_results:
-        print()
-        print(f'{blue}############################################################{nc}')
-        print(f'{blue}################### {green}UUID Search Report{blue} #####################{nc}')
-        print(f'{blue}############################################################{nc}')
-        print(f'UUID:          {green}{uuid}{nc}')
-        print(f'Status:        {red}NOT LOCATED{nc}')
-        print(f'{blue}############################################################{nc}')
-        print()
-        print()
-    else:
-        server = uuid_search_results[0]
-        mountpoint = uuid_search_results[1]
-        print()
-        print(f'{blue}############################################################{nc}')
-        print(f'{blue}################### {green}UUID Search Report{blue} #####################{nc}')
-        print(f'{blue}############################################################{nc}')
-        print(f'UUID:          {green}{uuid}{nc}')
-        print(f'Status:        {yellow}LOCATED{nc}')
-        print(f'Harvester:     {yellow}{server}{nc}')
-        print(f'Mount Point:   {yellow}{mountpoint}{nc}')
-        print(f'{blue}############################################################{nc}')
-        print()
-        print()
 
 # Define our help message
 class RawFormatter(argparse.HelpFormatter):
@@ -1185,13 +1120,13 @@ def space_report():
     print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{check_plots()[0]}{nc}')
     print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{check_plots()[1]}{nc}')
     print (f'Total Number of Systemwide Plots Drives:                  {yellow}{get_all_available_system_space("total")[0]}{nc}')
-    print (f'Total Number of k32 Plots until full:                   {yellow}{get_all_available_system_space("free")[1]}{nc}')
+    print (f'Total Number of k32 Plots until full:                    {yellow}{get_all_available_system_space("free")[1]}{nc}')
     print (f'Maximum # of plots when full:                           {yellow}{get_all_available_system_space("total")[1]}{nc}')
-    print (f"Plots completed in the last 24 Hours:                     {yellow}{plots_last_day}{nc}")
+    print (f"Plots completed in the last 24 Hours:                    {yellow}{plots_last_day}{nc}")
     print (f"Average Plots per Hours:                                 {yellow}{round(chianas.current_total_plots_daily / 24, 1)}{nc}")
-    print (f"Average Plotting Speed Last 24 Hours (TiB/Day):         {yellow}{round((chianas.current_total_plots_daily * int(plot_size_g) / 1000), 2)}{nc} ")
+    print (f"Average Plotting Speed Last 24 Hours (TiB/Day):        {yellow}{round((chianas.current_total_plots_daily * int(plot_size_g) / 1000), 2)}{nc} ")
     if replace_plots:
-        print (f"Days to fill/replace all current drives/plots:        {yellow} {days_to_fill} {nc} ")
+        print (f"Days to fill/replace all current drives/plots:         {yellow} {days_to_fill} {nc} ")
     else:
         print(f"Days to fill all current drives:                          {yellow} {days_to_fill} {nc} ")
     print (f"Current Plot Storage Drive:                       {yellow}{current_plot_drive}{nc}")
@@ -1200,6 +1135,88 @@ def space_report():
     print(f'{blue}############################################################{nc}')
     print('')
     print('')
+
+def farm_wide_space_report():
+    """
+    This prints out our Farm Wide Report
+    """
+    if chianas.remote_harvester_reports:
+        remote_harvester_reports = (remote_harvester_report())
+        totals = remote_harvester_reports[0]
+        days_until_full = (totals.get("total_plots_until_full") / totals.get("plots_last_day"))
+        harvesters = [chianas.hostname, *remote_harvester_reports[2]]
+        print('')
+        print(f'{blue}############################################################{nc}')
+        print(f'{blue}################### {green}Farm Wide Plot Report{blue} ##################{nc}' )
+        print(f'{blue}############################################################{nc}')
+        #print(f'Harvesters: {yellow}{harvesters}{nc}')
+        print (f'Total Number of Plots on {green}Farm{nc}:                          {yellow}{totals.get("total_plots")}{nc}')
+        print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{totals.get("total_plots_farming")}{nc}')
+        print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{totals.get("total_tib_farming")}{nc}')
+        print (f'Total Number of Systemwide Plots Drives:                 {yellow}{totals.get("total_plot_drives")}{nc}')
+        print (f'Total Number of k32 Plots until full:                   {yellow}{totals.get("total_plots_until_full")}{nc}')
+        print (f'Maximum # of plots when full:                          {yellow}{totals.get("max_plots_when_full")}{nc}')
+        print (f'Plots completed in the last 24 Hours:                    {yellow}{totals.get("plots_last_day")}{nc}')
+        print (f'Average Plots per Hour:                                  {yellow}{round(totals.get("avg_plots_per_hour"))}{nc}')
+        print (f'Average Plotting Speed Last 24 Hours (TiB/Day):           {yellow}{round(totals.get("avg_plotting_speed"))}{nc}')
+        print(f'Appx Number of Days to fill all current plot drives:     {yellow} {round(days_until_full)}{nc}')
+        print(f'{blue}############################################################{nc}')
+        individual_harvester_report(remote_harvester_reports[1], remote_harvester_reports[2])
+        print()
+    else:
+        print(f'\n{red}ERROR{nc}: {yellow}Farm Wide Reports Have Not Been Configured. Please Configure and Try Again!{nc}\n')
+
+def individual_harvester_report(servers, remote_harvesters):
+    for server in servers:
+        print(f'{blue}################ {green}{server["server"]} Harvester Report{blue} ################{nc}')
+        print(f'{blue}############################################################{nc}')
+        if server["replace_non_pool_plots"]:
+            print (f'Replace Non-Pool Plots:                         {green}Active{nc}')
+            print(f'Total Number of {red}OLD{nc} Plots on {green}{server["server"]}{nc}:                 {yellow}{server["total_number_of_old_plots"]}{nc}')
+            print(f'Total Number of {red}PORTABLE{nc} Plots on {green}{chianas.hostname}{nc}:             {yellow}{server["total_number_of_portable_plots"]}{nc}')
+            print(f'Total number of plots on {green}{server["server"]}{nc}:                    {yellow}{server["total_plots"]}{nc}')
+            print(f'Plots completed in the last 24 hours:                  {yellow}{server["plots_last_day"]}{nc}')
+            print(f'Average Plotting Speed Last 24 Hours (Tib/Day):        {yellow}{server["avg_plotting_speed"]}{nc}')
+            print(f'Appx # of Days to replace all plots on this harvester:   {yellow}{server["approx_days_to_fill_drives"]}{nc}')
+            print(f'{blue}############################################################{nc}')
+        else:
+            print(f'Replace Non-Pool Plots:                         {red}Disabled{nc}')
+        print(f'Total number of plots on {green}{server["server"]}{nc}:                    {yellow}{server["total_plots"]}{nc}')
+        print(f'Plots completed in the last 24 hours:                  {yellow}{server["plots_last_day"]}{nc}')
+        print(f'Average Plotting Speed Last 24 Hours (Tib/Day):        {yellow}{server["avg_plotting_speed"]}{nc}')
+        print(f'Appx # of Days to fill all drives on this harvester:   {yellow}{server["approx_days_to_fill_drives"]}{nc}')
+        print(f'{blue}############################################################{nc}')
+
+
+def uuid_report(uuid):
+    print()
+    print(f'Please wait while we search all harvesters for {green}{uuid}{nc}')
+    uuid_search_results = uuid_search(uuid)
+    if not uuid_search_results:
+        print()
+        print(f'{blue}############################################################{nc}')
+        print(f'{blue}################### {green}UUID Search Report{blue} #####################{nc}')
+        print(f'{blue}############################################################{nc}')
+        print(f'UUID:          {green}{uuid}{nc}')
+        print(f'Status:        {red}NOT LOCATED{nc}')
+        print(f'{blue}############################################################{nc}')
+        print()
+        print()
+    else:
+        server = uuid_search_results[0]
+        mountpoint = uuid_search_results[1]
+        print()
+        print(f'{blue}############################################################{nc}')
+        print(f'{blue}################### {green}UUID Search Report{blue} #####################{nc}')
+        print(f'{blue}############################################################{nc}')
+        print(f'UUID:          {green}{uuid}{nc}')
+        print(f'Status:        {yellow}LOCATED{nc}')
+        print(f'Harvester:     {yellow}{server}{nc}')
+        print(f'Mount Point:   {yellow}{mountpoint}{nc}')
+        print(f'{blue}############################################################{nc}')
+        print()
+        print()
+
 
 def nas_report_export():
     """
@@ -1241,7 +1258,8 @@ def nas_report_export():
         ('current_plot_drive', chianas.current_plotting_drive),
         ('replace_non_pool_plots', chianas.replace_non_pool_plots),
         ('total_number_of_old_plots', chiaplots.number_of_old_plots),
-        ('current_plot_replacement_drive', current_plot_replacement_drive)
+        ('current_plot_replacement_drive', current_plot_replacement_drive),
+        ('total_number_of_portable_plots', chiaplots.number_of_portable_plots)
     ])
     try:
         with open(local_export_file, 'w') as nas_export:
