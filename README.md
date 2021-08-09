@@ -185,7 +185,7 @@ Assuming a clean install, you can try this:
  
 If you are upgrding from a previous version, simply ```mv plot_manager plot_manager.old``` and then run the command above.
 
- Once cloned, I copy everything to the ```/root/plot_manager``` directory. My final directory structure looks like this:
+My final directory structure looks like this:
  <br>
  ```
 /root/plot_manager
@@ -217,18 +217,9 @@ While all of my actual plotting is done as the ```chia``` user, I store all of m
 
 <br><br>
 
-#### Update ```plot_manager.py```
+#### Update ```plot_manager.py``` Configuration File (generally `/root/.config/plot_manager/plot_manager.yaml`)
  
-Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However you do need to make some changes in ```plot_manager.py```. Most of these are in the beginning of the file:
-
-```testing = False``` - Pretty self explanatory <br>
-```multiple_harvesters = False``` - Default to False, set to ```True``` if you have more than one Harvester/NAS<br>
-```remote_harvesters = ['chianas01', 'chianas02', 'chianas03']``` - Enter the hostnames of your remote harvesters<br> 
- ```nas_server = ('chianas01')``` - If you are <em>NOT</em> using multiple harvesters, this will be the hostname of your only harvester/NAS<br>
- ```network_interface = 'VLAN95_AR03_1-1'``` - Entter the network name of you internal NIC here, verify with ```ip a```<br>
- ```plot_dir = '/mnt/ssdraid/array0/'``` - Your ```-d``` directory path<br>
- 
-Change the ```plot_dir``` and ```plot_size``` for both testing and not testing to suit your system and needs. 
+Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However you do need to make some changes in ```plot_manager.yaml```. Most of these are pretty easy to figure out. Take a look at the file `plot_manager_skel.yaml` for more information and for complete instruction on how to set your configuration options.
 
 
 <hr>
@@ -301,48 +292,9 @@ if p.device.startswith('/dev/sd') and p.mountpoint.startswith('/mnt/enclosure') 
 
 In this manner I will never get swap, temp, boot, home, etc. Nothing at all but my plot storage drives. In order for this to work with your setup, you would have to modify all of these lines to match your paticular configuration. 
 
-Once you have that figured out, there are just a couple of other little things that need to be set:
+Once you have that figured out, there are just a couple of other little things that need to be set and configured. All configuration items are now stored in a central yaml configuration file located at `/root/.config/plot_manager.yaml`. There are instruction also located in that directory. If you upgrade to a new version, simply run the install script and it will update your configuration file to the newest settings without changing anything you currently have set.
 
-At the top of the script you will see this:
-
-```
-# Are we testing?
-testing = False
-if testing:
-    plot_dir = script_path.joinpath('test_plots/')
-    plot_size = 10000000
-    status_file = script_path.joinpath('local_transfer_job_running_testing')
-    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
-    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
-else:
-    plot_dir = '/mnt/enclosure1/front/column3/drive55' # Where do you hold your plots before they are moved?
-    plot_size = 108644374730  # Based on K32 plot size
-    status_file = script_path.joinpath('local_transfer_job_running')
-    drive_activity_test = script_path.joinpath('check_drive_activity.sh')
-    drive_activity_log = script_path.joinpath('drive_monitor.iostat')
-```
-<br>
- You want to update ```testing = False``` and ```plot_dir```. The ```plot_dir``` is used if your local Harvester/NAS is also a plotter. This would be your chia ```-d``` directory. There are a few plot creation scripts out there but none of them (to my knowledge) check to see if your drive is full and switch to a new drive automatically. So I plot to a temp ```-d``` drive and then use ```move_local_plot.py``` to put them where I want them once they are done.
-
- When you run ```drive_manager.py``` it's job is to decide where to put your plots. It looks at everything and when it makes a decision (for both local and remote plots) it writes this information to a configuration file called ```plot_manager_config```. 
-
-Once the system determines which drive it wants to use to store plots, it stores that information in a configuration file called ```plot_manager_config``` and it looks like this:
-```
-[plotting_drives]
-current_plotting_drive = /mnt/enclosure0/front/column3/drive18
-current_internal_drive = /mnt/enclosure0/front/column3/drive19
-```
-This is important for several reasons. First this is what tells the system our current plotting drive and it is also used by the plotting server to map the correct path for file size verification after a plot is sent. The first line if where we put plots coming from our plotter over the wire. The second line is always a different drive and this is where we put our locally produced plots. We use different drives so we do not saturate a single drive with multiple copy operations.
-<br>
- Make sure these lines have something in them, otherwsie when you launch the scripts you may get an error:
- ```
-[plotting_information]
-current_total_plots_midnight = 1
-current_total_plots_daily = 1
- ```
-
-
- OK, once you have everything setup, on the <em>plotter</em> you simply run the ```plot_manager.py``` script and if everything is setup correctly you should see something like the following:
+OK, once you have everything setup, on the <em>plotter</em> you simply run the ```plot_manager.py``` script and if everything is setup correctly you should see something like the following:
 
 ```
 2021-03-19 19:20:01,543 - plot_manager:92 - process_plot: DEBUG process_plot() Started
