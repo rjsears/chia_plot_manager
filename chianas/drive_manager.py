@@ -287,6 +287,7 @@ def uuid_search(uuid):
             with open(uuid_export_file, 'r') as local_host:
                 harvester = json.loads(local_host.read())
                 servers.append(harvester)
+                master_uuid.update(harvester)
             for harvester in remote_harvesters:
                 remote_export_file = (script_path.joinpath(f'export/{harvester}_uuid_export.json').as_posix())
                 get_remote_exports(harvester, remote_export_file)
