@@ -21,7 +21,7 @@ import logging
 from system_logging import setup_logging
 import shutil
 from timeit import default_timer as timer
-from drive_manager import notify, check_space_available
+from drive_manager import notify, check_space_available, get_all_available_system_space
 import subprocess
 import pathlib
 from drivemanager_classes import DriveManager, config_file, PlotManager
