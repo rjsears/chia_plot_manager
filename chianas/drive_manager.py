@@ -1150,16 +1150,16 @@ def farm_wide_space_report():
         print(f'{blue}################### {green}Farm Wide Plot Report{blue} ##################{nc}' )
         print(f'{blue}############################################################{nc}')
         #print(f'Harvesters: {yellow}{harvesters}{nc}')
-        print (f'Total Number of Plots on {green}Farm{nc}:                          {yellow}{totals.get("total_plots")}{nc}')
-        print (f'Total Number of Plots {green}Chia{nc} is Farming:                  {yellow}{totals.get("total_plots_farming")}{nc}')
-        print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:       {yellow}{totals.get("total_tib_farming")}{nc}')
+        print (f'Total Number of Plots on {green}Farm{nc}:                         {yellow}{totals.get("total_plots")}{nc}')
+        print (f'Total Number of Plots {green}Chia{nc} is Farming:                 {yellow}{totals.get("total_plots_farming")}{nc}')
+        print (f'Total Amount of Drive Space (TiB) {green}Chia{nc} is Farming:      {yellow}{totals.get("total_tib_farming")}{nc}')
         print (f'Total Number of Systemwide Plots Drives:                 {yellow}{totals.get("total_plot_drives")}{nc}')
-        print (f'Total Number of k32 Plots until full:                   {yellow}{totals.get("total_plots_until_full")}{nc}')
+        print (f'Total Number of k32 Plots until full:                  {yellow}{totals.get("total_plots_until_full")}{nc}')
         print (f'Maximum # of plots when full:                          {yellow}{totals.get("max_plots_when_full")}{nc}')
         print (f'Plots completed in the last 24 Hours:                    {yellow}{totals.get("plots_last_day")}{nc}')
-        print (f'Average Plots per Hour:                                  {yellow}{round(totals.get("avg_plots_per_hour"))}{nc}')
+        print (f'Average Plots per Hour:                                    {yellow}{round(totals.get("avg_plots_per_hour"))}{nc}')
         print (f'Average Plotting Speed Last 24 Hours (TiB/Day):           {yellow}{round(totals.get("avg_plotting_speed"))}{nc}')
-        print(f'Appx Number of Days to fill all current plot drives:     {yellow} {round(days_until_full)}{nc}')
+        print(f'Appx Number of Days to fill/replace plots/drives:        {yellow} {round(days_until_full)}{nc}')
         print(f'{blue}############################################################{nc}')
         individual_harvester_report(remote_harvester_reports[1], remote_harvester_reports[2])
         print()
@@ -1171,21 +1171,21 @@ def individual_harvester_report(servers, remote_harvesters):
         print(f'{blue}################ {green}{server["server"]} Harvester Report{blue} ################{nc}')
         print(f'{blue}############################################################{nc}')
         if server["replace_non_pool_plots"]:
-            print (f'Replace Non-Pool Plots:                         {green}Active{nc}')
+            print (f'Replace Non-Pool Plots:                               {green}Active{nc}')
             print(f'Total Number of {red}OLD{nc} Plots on {green}{server["server"]}{nc}:                 {yellow}{server["total_number_of_old_plots"]}{nc}')
-            print(f'Total Number of {red}PORTABLE{nc} Plots on {green}{chianas.hostname}{nc}:             {yellow}{server["total_number_of_portable_plots"]}{nc}')
+            print(f'Total Number of {red}PORTABLE{nc} Plots on {green}{server["server"]}{nc}:             {yellow}{server["total_number_of_portable_plots"]}{nc}')
+            print(f'Total number of plots on {green}{server["server"]}{nc}:                     {yellow}{server["total_plots"]}{nc}')
+            print(f'Plots completed in the last 24 hours:                  {yellow}{server["plots_last_day"]}{nc}')
+            print(f'Average Plotting Speed Last 24 Hours (Tib/Day):        {yellow}{server["avg_plotting_speed"]}{nc}')
+            print(f'Appx # of Days to replace all plots on {green}{server["server"]}{nc}:      {yellow}{server["approx_days_to_fill_drives"]}{nc}')
+            print(f'{blue}############################################################{nc}')
+        else:
+            print(f'Replace Non-Pool Plots:                             {red}Disabled{nc}')
             print(f'Total number of plots on {green}{server["server"]}{nc}:                    {yellow}{server["total_plots"]}{nc}')
             print(f'Plots completed in the last 24 hours:                  {yellow}{server["plots_last_day"]}{nc}')
             print(f'Average Plotting Speed Last 24 Hours (Tib/Day):        {yellow}{server["avg_plotting_speed"]}{nc}')
-            print(f'Appx # of Days to replace all plots on this harvester:   {yellow}{server["approx_days_to_fill_drives"]}{nc}')
+            print(f'Appx # of Days to fill all drives on this harvester:   {yellow}{server["approx_days_to_fill_drives"]}{nc}')
             print(f'{blue}############################################################{nc}')
-        else:
-            print(f'Replace Non-Pool Plots:                         {red}Disabled{nc}')
-        print(f'Total number of plots on {green}{server["server"]}{nc}:                    {yellow}{server["total_plots"]}{nc}')
-        print(f'Plots completed in the last 24 hours:                  {yellow}{server["plots_last_day"]}{nc}')
-        print(f'Average Plotting Speed Last 24 Hours (Tib/Day):        {yellow}{server["avg_plotting_speed"]}{nc}')
-        print(f'Appx # of Days to fill all drives on this harvester:   {yellow}{server["approx_days_to_fill_drives"]}{nc}')
-        print(f'{blue}############################################################{nc}')
 
 
 def uuid_report(uuid):
@@ -1584,5 +1584,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
