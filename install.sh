@@ -154,6 +154,7 @@ clean_up_nas_directory(){
 clean_up_plot_directory(){
    echo -e "\n\n${green}Cleaning Up Directory Structure & Setting File Permissions.........${nc}\n"
    mv $current_directory/chiaplot/* $current_directory/
+   cp $current_directory/chianas/config_file_updater.py $current_directory
    rm -rf $current_directory/chiaplot
    rm -rf $current_directory/chianas
    rm -rf $current_directory/coin_monitor
