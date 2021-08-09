@@ -613,7 +613,6 @@ and exits.
 ############################################################
 ################### Farm Wide Plot Report ##################
 ############################################################
-Harvesters: ['chianas01', 'chianas02', 'chianas03']
 Total Number of Plots on Farm:                          7043
 Total Number of Plots Chia is Farming:                  7032
 Total Amount of Drive Space (TiB) Chia is Farming:       696
@@ -647,9 +646,12 @@ Average Plotting Speed Last 24 Hours (Tib/Day):        6.16
 Appx # of Days to fill all drives on this harvester:   26
 ############################################################
 ```
+ 
  <br>
  In plot-replacement mode, report looks like this:
  <br>
+ 
+ 
  ```
  Welcome to drive_manager.py Version: 0.94 (2021-08-08)
 
@@ -665,7 +667,7 @@ Maximum # of plots when full:                          25860
 Plots completed in the last 24 Hours:                    200
 Average Plots per Hour:                                    8
 Average Plotting Speed Last 24 Hours (TiB/Day):           20
-Appx Number of Days to fill/replace plots/drives:         111
+Appx Number of Days to fill/replace plots/drives:        111
 ############################################################
 ################ chianas01 Harvester Report ################
 ############################################################
@@ -673,39 +675,20 @@ Replace Non-Pool Plots:                               Active
 Total Number of OLD Plots on chianas01:                 8219
 Total Number of PORTABLE Plots on chianas01:             507
 Total number of plots on chianas01:                     8718
-Plots completed in the last 24 hours:                  141
+Plots completed in the last 24 hours:                    141
 Average Plotting Speed Last 24 Hours (Tib/Day):        14.24
-Appx # of Days to replace all plots on chianas01:      59
+Appx # of Days to replace all plots on chianas01:         59
 ############################################################
 ################ chianas02 Harvester Report ################
 ############################################################
 Replace Non-Pool Plots:                               Active
 Total Number of OLD Plots on chianas02:                 3705
-Total Number of PORTABLE Plots on chianas02:             3
+Total Number of PORTABLE Plots on chianas02:             400
 Total number of plots on chianas02:                     3706
-Plots completed in the last 24 hours:                  1
-Average Plotting Speed Last 24 Hours (Tib/Day):        0.0
-Appx # of Days to replace all plots on chianas02:      3705
+Plots completed in the last 24 hours:                    100
+Average Plotting Speed Last 24 Hours (Tib/Day):          4.2
+Appx # of Days to replace all plots on chianas02:         37
 ############################################################
-################ chianas03 Harvester Report ################
-############################################################
-Replace Non-Pool Plots:                               Active
-Total Number of OLD Plots on chianas03:                 3761
-Total Number of PORTABLE Plots on chianas03:             191
-Total number of plots on chianas03:                     3932
-Plots completed in the last 24 hours:                  1
-Average Plotting Speed Last 24 Hours (Tib/Day):        0.0
-Appx # of Days to replace all plots on chianas03:      3761
-############################################################
-################ chianas04 Harvester Report ################
-############################################################
-Replace Non-Pool Plots:                               Active
-Total Number of OLD Plots on chianas04:                 1971
-Total Number of PORTABLE Plots on chianas04:             304
-Total number of plots on chianas04:                     2271
-Plots completed in the last 24 hours:                  1
-Average Plotting Speed Last 24 Hours (Tib/Day):        0.0
-Appx # of Days to replace all plots on chianas04:      3007
 ```
  
 <br><br>
