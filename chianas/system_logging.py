@@ -6,7 +6,7 @@ Part of drive_manager. This is the logging module.
 For use with plot_manager V0.9
 """
 
-VERSION = "V0.92 (2021-06-07)"
+VERSION = "V0.94 (2021-08-08)"
 
 import logging.config
 import logging
@@ -133,6 +133,14 @@ log_config = {
          "maxBytes": 10485760,
          "backupCount": 2,
          "encoding": "utf8"
+      },
+      "config_file_updater_handler": {
+         "class": "logging.handlers.RotatingFileHandler",
+         "formatter": "standard",
+         "filename": script_path.joinpath("logs/config_file_updater.log").as_posix(),
+         "maxBytes": 10485760,
+         "backupCount": 2,
+         "encoding": "utf8"
       }
    },
    "root": {
@@ -162,6 +170,18 @@ log_config = {
             "debug_file_handler",
             "warning_file_handler",
             "move_local_plots_handler"
+         ],
+         "propogate": True
+      },
+      "config_file_updater": {
+         "handlers": [
+            "console",
+            "info_file_handler",
+            "error_file_handler",
+            "critical_file_handler",
+            "debug_file_handler",
+            "warning_file_handler",
+            "config_file_updater_handler"
          ],
          "propogate": True
       },
