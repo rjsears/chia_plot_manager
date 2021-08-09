@@ -1,4 +1,4 @@
-# v0.93 2021-07-08
+# v0.94 2021-08-08
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -7,7 +7,7 @@ configured: False
 hostname: chianas01
 
 # Are we plotting for pools? This has nothing to do with the actual plotting of
-# plots but rather just naming of the new plots and eventually the replacing of 
+# plots but rather just naming of the new plots and eventually the replacing of
 # old plots with portable plots.
 pools:
   active: False
@@ -15,6 +15,16 @@ pools:
   replace_non_pool_plots: True
   # Should we fill up empty drive space before replacing old non-pool plots?
   fill_empty_drives_first: True
+  # When we get below this number of plots available on the system
+  # we will switch to replacing plots. Has no effect is active: False is
+  # set above
+  empty_drives_low_water_mark: 100
+  # How many Portable Plots per day are we generating
+  current_portable_plots_daily: 0
+  # What is our Midnight portable plot count?
+  current_portable_plots_midnight: 1
+  # What drive are we currently using to replace plots?
+  current_plot_replacement_drive: /mnt/enclosure0/front/column0/drive4
 
 # Enter Logging Information
 logging: True
@@ -95,6 +105,15 @@ local_plotter:
   # coming from an outside plotter. We use a different drive to prevent
   # drive IO saturation.
   current_internal_drive: /mnt/enclosure1/front/column3/drive59
+
+  # During local moves where we are replacing plots, it is very important that
+  # we stop all local processing if we detect an error, otherwise we could delete
+  # a bunch of plots without meaning to, each time our script is run. This error is
+  # set if we encounter an error and must be MANUALLY unset to continue to process
+  # local plots if you have chosen to replace old plots:
+  local_move_error: False
+  # Once we get a local move error, did we send an alert?
+  local_move_error_alert_sent: False
 
 # This is where we set up our notifications
 notifications:

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.93 (2021-08-21)"
+VERSION = "0.94 (2021-08-08)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -14,7 +14,12 @@ that manages the drives themselves and decides based on various criteria where
 the incoming plots will be placed. This script simply sends those plots when
 they are ready to send.
 Updates
-  v0.93 2021-08-21
+  v0.94 2021-08-08
+  - Added ability to remove and replace old style plots one-at-a-time if the receiving
+    nas is configured properly. Depending on configuration the NAS that is receiving
+    the plot will show how many total old style plots as the total available plots
+    and as a result you can manage where you send your new plots better.
+  v0.93 2021-07-21
   - Added ability to identify pool plots by prepending 'portable.' to the plot name
     so we can manage them at a later time.
   v0.9 2021-05-28
@@ -85,11 +90,13 @@ def remote_harvesters_check():
     log.debug('remote_harvesters() Started')
     global nas_server
     global remote_mount
+    global replace_plots
     nas_server = get_next_nas()
     log.debug(f'Remote Harvester(s) Found - Selected NAS/Harvester: {nas_server}')
     with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
         server = yaml.safe_load(f)
         remote_mount=server['current_plot_drive']
+        replace_plots=server['replace_non_pool_plots']
 
 
 # Let's do some housekeeping
@@ -117,7 +124,7 @@ def get_list_of_plots():
     log.debug('get_list_of_plots() Started')
     try:
         plot_to_process = [plot for plot in pathlib.Path(plot_dir).glob("*.plot") if plot.stat().st_size > plot_size]
-        log.debug(f'{plot_to_process[0].name}')
+        log.debug(f'We will process this plot: {plot_to_process[0].name}')
         return (plot_to_process[0].name)
     except IndexError:
         log.debug(f'{plot_dir} is Empty: No Plots to Process. Will check again soon!')
@@ -136,6 +143,13 @@ def process_plot():
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
+            if replace_plots:
+                result = (subprocess.run(['ssh', nas_server, f'{script_path.joinpath("drive_manager.py -rp")}'],
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+                if result.returncode != 0:
+                    log.debug(f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
+                    notify('URGENT', f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
+                    quit()
             if chiaplot.pools:
                 plot_to_process = 'portable.'+plot_to_process
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
@@ -159,6 +173,7 @@ def process_plot():
             return
     else:
         return
+
 
 # This assumes passwordless SSH between this host and remote host.
 # Make changes as necessary! Checks to make sure we are not already
@@ -215,7 +230,7 @@ def process_control(command, action):
             return
     else:
         log.debug(f'WARNING: {nas_server} is OFFLINE! We Cannot Continue......')
-        notify(f'{nas_server} OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
+        notify(f'{nas_server}.loft.aero OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
         exit()
 
 
@@ -454,7 +469,7 @@ def check_dst_drive_utilization():
         chiaplot.toggle_alert_sent('dst_dirs_critical_alert_sent')
         notify('INFORMATION: Directory Utilization', 'INFORMATION: Your Temp Directory is now below High Capacity Warning\nPlotting will Continue')
     else:
-        log.debug('DST Drive(s) check complete. ALl OK!')
+        log.debug('DST Drive(s) check complete. All OK!')
 
 
 def system_checks():
@@ -467,6 +482,7 @@ def system_checks():
 
 
 def main():
+    log.debug(f'Welcome to plot_manager.py Version: {VERSION}')
     if verify_glances_is_running():
         system_checks()
         remote_harvesters_check()

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Version V0.93 2021-07-08
+# Version V0.94 2021-08-08
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
 # the system with various tools and tings required to run the various
@@ -141,9 +141,8 @@ clean_up_nas_directory(){
    mkdir -p /root/.config/plot_manager
    if test -f "/root/.config/plot_manager/plot_manager.yaml"; then
      echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
-     echo -e  "Making a backup...."
-     cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
-     echo -e "Please make sure to check your settings!!!"
+     echo -e "Launching our ${blue}Configuration File Updater${nc} to see if updates are needed.......\n"
+     $current_directory/config_file_updater.py
     else
       cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
       cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
@@ -155,6 +154,7 @@ clean_up_nas_directory(){
 clean_up_plot_directory(){
    echo -e "\n\n${green}Cleaning Up Directory Structure & Setting File Permissions.........${nc}\n"
    mv $current_directory/chiaplot/* $current_directory/
+   cp $current_directory/chianas/config_file_updater.py $current_directory
    rm -rf $current_directory/chiaplot
    rm -rf $current_directory/chianas
    rm -rf $current_directory/coin_monitor
@@ -165,9 +165,8 @@ clean_up_plot_directory(){
    mkdir -p /root/.config/plot_manager
    if test -f "/root/.config/plot_manager/plot_manager.yaml"; then
      echo -e  "/root/.config/plot_manager/plot_manager.yaml already exists....\n"
-     echo -e  "Making a backup...."
-     cp /root/.config/plot_manager/plot_manager.yaml /root/.config/plot_manager/plot_manager.yaml.backup
-     echo -e "Please make sure to check your settings!!!"
+     echo -e "Launching our ${blue}Configuration File Updater${nc} to see if updates are needed.......\n"
+     $current_directory/config_file_updater.py
     else
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/plot_manager.yaml
      cp $current_directory/plot_manager.skel.yaml /root/.config/plot_manager/INSTRUCTIONS.yaml
