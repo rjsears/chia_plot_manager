@@ -649,7 +649,7 @@ Appx # of Days to fill all drives on this harvester:   26
  
  <br>
  In plot-replacement mode, report looks like this:
- <br>
+ <br><br>
  
  
  ```
