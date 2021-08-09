@@ -165,7 +165,7 @@ import mmap
 import json
 import paramiko
 import pathlib
-from drivemanager_classes import DriveManager, PlotManager, config_file, config_file_update
+from drivemanager_classes import DriveManager, PlotManager, config_file
 chianas = DriveManager.read_configs()
 chiaplots = PlotManager.get_plot_info()
 
@@ -456,8 +456,9 @@ program_descripton = f'''
     {green}-rp {nc}or{green} --replace_plot{blue}       This is {yellow}GENERALLY{blue} run remotely by your plotter when it detects
                                 that you are configured for plot replacement, ie - you have a 
                                 lot of old plots and you are replacing them with new portable 
-                                style plots. Use {red}CAUTION{blue} running it manually! It will {nc}DELETE{blue}
-                                an old plot every time it is run.{nc}
+                                style plots. Use {red}CAUTION{blue} running it manually! It might {nc}DELETE{blue}
+                                an old plot every time it is run but should only do so if
+                                there is no space available on the selected drive.{nc}
     
     {green}-uuid {nc}or{green} --check_uuid{blue}       This checks all remote harvesters to see if the requested UUID is 
                                 present and mounted. Returns the server and mountpoint if found.{nc}
@@ -1549,14 +1550,12 @@ def main():
         if args.online_hdd:
             online_offline_drive(args.online_hdd, 'online')
         else:
-            config_file_update()
             system_checks()
             nas_report_export()
             generate_uuid_dict()
             send_new_plot_notification()
             update_receive_plot()
     else:
-        config_file_update()
         system_checks()
         nas_report_export()
         generate_uuid_dict()
@@ -1567,7 +1566,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
 
 
