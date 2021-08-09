@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.93 - July 8th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.94 - August 8th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -15,7 +15,8 @@ Multi Server Chia Plot and Drive Management Solution
  <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/rjsears/chia_plot_manager?style=plastic">
 <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/rjsears/chia_plot_manager?style=plastic">
 </h4>
-</div>
+</div><br><br>
+<b><em> Now fully supports pools and automatic removal of old plots on a one-by-one basis when replacing with new portable pool plots! Also includes a harvester-wide UUID search allowing you to locate any drive on any harvester by UUID and determine it's mountpoint! <br><br> </b></em>
 <br>
 <p align="left"><font size="3">
 Hopefully if you are reading this you know what Chia is and what a plot is. I am pretty new to Chia myself but I determined that I needed to come up with a way to manage my plots and hard drives that hold thse plots somewhat automatically since my job as a pilot keeps me gone a lot. I <em>am not</em> a programmer, so please, use this code with caution, test it yourself and provide feedback. This is a working version that is currently running and working for my setup which I will explain below. Hopefully it will be of some help to others, it is the least I can do to give back to the Chia community.
@@ -62,6 +63,7 @@ Hopefully, this might provide some inspiration for others in regard to their Chi
 
 ### <a name="overview"></a>Overview & Theory of Operation
 <div align="left">
+
 <b><em>In its simplest form, chia_plot_manager bridges the gap between creating a plot, and managing that plot after it has been created.</em></b><br><br>
 This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a singe plotting server (chisplot01) creating Chia plots. Once the plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once completed was a little more interesting. My plotting server has the capacity to plot 60 parallel plots at a time and that is where I started to have issues.<br><br>
 
@@ -81,6 +83,7 @@ Welcome to my project! I ended up with basically a client/client/client/server a
  
 Beginning with V0.9, the software now supports multiple Harvesters/NASs across the board, both from a reporting standpoint and also from the plotter standpoint. When configured in a multi-harvester mode, the plotter will query each Harvester to find out which one has the most space and send the plot to that Harvester. I have added in network checks and if a Harvester that you have configured fails the check, yu will get an immediate notification. If you are running the farm report, it will notify you on the report.
  
+Beginning in V0.94, we now fully support portable plot management as well as old style plot replacement with portable pool plots. By replacing your old plots one-at-a-time, you maximize the number of plots you are farming at all times. Also has a feature to fill all of your empty drive space first with your new pool plots before starting to replace your old plots. Includes a low water mark to help manage the process. 
  
 <b>On the Plotter side (via cron):</b>
 <ul>
@@ -89,10 +92,14 @@ Beginning with V0.9, the software now supports multiple Harvesters/NASs across t
   <li>Checks to see if we are already sending a plot to a Harvester/NAS, if so, stops</li>
   <li>When it is clear to send, picks which plot to send and netcats it to the Harvester/NAS</li>
   <li>If you have configured multi-Harvester mode, pics the best Harvester based on available plot space</li>
+  <li>If you have configured for pooling, appends "portable." to the name of the plot before sending it.</li>
+  <li>If you have configured replace_non_pool_plots on your harvester, it will ask your harvester to delete a plot to make space.</li> 
   <li>Utilizing an ssh subprocess, starts a receiving netcat on the selected Harvester/NAS</li>
   <li>After the transfer is complete, checks the exact file size of the plot on both systems as a basic verification</li>
   <li>Once files sizes are verified, deletes the sent plot</li>
   <li>Kills any lingering netcat connections on the selected Harvester/NAS</li>
+  <li>Supports any number of harvesters and prioritizes sending plots to the harvester with the most space available.</li>
+  <li>If replacing old plots with new pool plots, above utilizes number of plot spaces available based on free space + number of old plots.</li>
 </ul>
 <br>
 <b>On the Selected Harvester/NAS side (via cron):</b>
@@ -105,7 +112,9 @@ Beginning with V0.9, the software now supports multiple Harvesters/NASs across t
   <li>Sends a daily email report including # of drives, # of plots currently and # of plots total based on current drive storage</li>
   <li>Daily email also includes plot speed, total plots in last 24 hours and TiB plotting in last 24 hours</li>
   <li>Since notifications are already built in, will extend it to alert on drive temps and smartctl warnings</li>
-  <li>For local plotting on Harverster/NAS (Which I do), includes a ```move_local_plots.py``` script to manage local plot movement (via cron)
+  <li>For local plotting on Harverster/NAS (Which I do), includes a ```move_local_plots.py``` script to manage local plot movement (via cron)</li>
+  <li>If you have configured replace_non_pool_plots, completely manages replacing old plots with new plots one-by-one.</li>
+  <li>Includes a global UUID lookup against all harvesters. Return Harvester name and mountpoint if UUID is found.</li>
   <li>Eventually integrate information into Influx with a Grafana dashboard (including power monitoring via UPS)</li>
 </ul>
 <br>
@@ -152,6 +161,8 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 ### <a name="install"></a>Installation & Configuration
 
 Here is a very in-depth installation document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
+<br><br>
+<b>UPDATE: The above google doc is WAY out of date, install is much easier now with only a single configuration file to edit. I will make an update to this soon!</b>
  
 The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>IN-DEPTH</em> instructions pretty much step-by-step, take a look at the google doc I linked to above. Again, please read the document above for very in-depth instructions.
 
@@ -445,7 +456,7 @@ One word of advice - if you are using one of your drives that `drive_manager.py`
 
 ### <a name="cli"></a>Command Line Options
 
-Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
+Staring with V0.3 (April 4th, 2021) (and updated once again in V0.94) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
 
 <ul>
  <li><em>-h</em> or <em>--help</em></li>
@@ -454,6 +465,8 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
   <li><em>-pr</em> or <em>--plot_report</em></li>
  <li><em>-fr</em> or <em>--farm_report</em></li>
   <li><em>-ud</em> or <em>--update_daily</em></li>
+ <li><em>-rp</em> or <em>--replace-plot</em></li>
+ <li><em>-uuid</em> or <em>--check_uuid</em></li>
  <li><em>-off</em> or <em>--offline_hdd</em></li>
  <li><em>-on</em> or <em>--online_hdd</em></li>
 </ul>
@@ -462,7 +475,10 @@ Staring with V0.3 (April 4th, 2021) (and updated again in V0.4) I have started t
 These options print out the help message or version information and exits.
 
 ```
-******** ChiaNAS Drive Manager - 0.9 (2021-05-28) ********
+Welcome to drive_manager.py Version: 0.94 (2021-08-08)
+usage: drive_manager.py [-h] [-v] [-dr] [-ct] [-pr] [-fr] [-ud] [-rp] [-uuid CHECK_UUID] [-off OFFLINE_HDD]
+
+            ******** ChiaNAS Drive Manager - 0.94 (2021-08-08) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
@@ -486,13 +502,23 @@ There are several commandline switches you can use to get immediate reports and 
                             how many plots are currently in the farm and how many more
                             you can add based on the current drive configuration. It also
                             includes plotting speed information for the last 24 hours farm wide.
-                            **NOTE: Must be configured!
+                            **NOTE: Must be configured! 
 
 -ud or --update_daily       This updates the total number of plots the system has created
                             over the past 24 hours. Use with CAUTION!. This should be ran
                             from crontab once every 24 hours only! It updates the total
                             from the last time is was run until now, hence why you should
                             only run this once per 24 hours.
+
+-rp or --replace_plot       This is GENERALLY run remotely by your plotter when it detects
+                            that you are configured for plot replacement, ie - you have a
+                            lot of old plots and you are replacing them with new portable
+                            style plots. Use CAUTION running it manually! It might DELETE
+                            an old plot every time it is run but should only do so if 
+                            there is no space available on the selected drive.
+
+-uuid or --check_uuid       This checks all remote harvesters to see if the requested UUID is
+                            present and mounted. Returns the server and mountpoint if found.
 
 -off or --offline_hdd       This takes a drive as it's input (for example  drive6) and
                             "offlines" it so that no more plots will get written to it.
@@ -515,7 +541,11 @@ optional arguments:
   -pr, --plot_report    Return the total # of plots on the system and total you can add and exit
   -fr, --farm_report    Return the total # of plots on your entire farm and total you can add and exit
   -ud, --update_daily   Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
-  -off OFFLINE_HDD, --offline_hdd OFFLINE_HDD.  Offline a specific drive. Use drive number: drive6
+  -rp, --replace_plot   Remove a single old Plot. USE WITH CAUTION, READ DOCS FIRST. Generally called remotely by Plotter!
+  -uuid CHECK_UUID, --check_uuid CHECK_UUID
+                        Check to see is a specific UUID is mounted on any harvester
+  -off OFFLINE_HDD, --offline_hdd OFFLINE_HDD
+                        Offline a specific drive. Use drive number: drive6
                         
   ```
 <br><br>
@@ -595,6 +625,33 @@ Latest Smart Drive Assessment of Plot Drive:            PASS
 ############################################################
 ```
 
+ <br><br>
+If you are running in plot_replacement mode you will see the following instead:<br>
+
+```
+############################################################
+################### chianas01 Plot Report ##################
+############################################################
+######### *** OLD PLOT REPLACEMENT IN PROGRESS *** #########
+############################################################
+Total Number of Plots on chianas01:                     8716
+Total Number of OLD Plots on chianas01:                 8352
+Total Number of PORTABLE Plots on chianas01:             373
+Total Number of Plots Chia is Farming:                  8705
+Total Amount of Drive Space (TiB) Chia is Farming:       862
+Total Number of Systemwide Plots Drives:                  81
+Total Number of k32 Plots until full:                   115
+Maximum # of plots when full:                           8908
+Plots completed in the last 24 Hours:                     53
+Average Plots per Hours:                                 2.2
+Average Plotting Speed Last 24 Hours (TiB/Day):         5.35 
+Days to fill/replace all current drives/plots:         160.0  
+Current Plot Storage Drive:                       /dev/sday1
+Temperature of Current Plot Drive:                      35°C
+Latest Smart Drive Assessment of Plot Drive:            PASS
+############################################################
+```
+ 
 <br><br>
 <b> -fr    --farm_report</b><br>
 This options prints out a full farm daily plot report to the screen
@@ -638,6 +695,39 @@ Average Plotting Speed Last 24 Hours (Tib/Day):        6.16
 Appx # of Days to fill all drives on this harvester:   26
 ############################################################
 ```
+ 
+<br><br>
+<b> -uuid    --check_uuid</b><br>
+This options searches all configured harvesters for a specific UUID and returns
+the harvester and mountpoint where it was found:
+
+ ```
+root@chianas01:~/plot_manager# ./drive_manager.py -uuid fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
+Welcome to drive_manager.py Version: 0.94 (2021-08-08)
+
+Please wait while we search all harvesters for fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
+
+############################################################
+################### UUID Search Report #####################
+############################################################
+UUID:          fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
+Status:        LOCATED
+Harvester:     chianas08
+Mount Point:   /mnt/enclosure0/rear/column1/drive28
+############################################################
+
+ OR
+ 
+############################################################
+################### UUID Search Report #####################
+############################################################
+UUID:          fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
+Status:        NOT LOCATED
+############################################################
+ 
+ ```
+ 
+ 
  
 <br><br>
 <b>-ud --update_daily</b><br>
