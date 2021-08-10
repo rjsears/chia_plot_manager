@@ -323,10 +323,11 @@ def process_control(command, action):
                 log.debug(f'Status File: [{status_file}] does not exist!')
                 return
     elif command == 'check_status':
-        if os.path.isfile(status_file) and check_drive_activity():
+        drive_io = check_drive_activity()
+        if os.path.isfile(status_file) and drive_io:
             log.debug(f'Checkfile Exists and Disk I/O is present, We are currently Copying a Plot, Exiting')
             return True
-        elif os.path.isfile(status_file) and not check_drive_activity():
+        elif os.path.isfile(status_file) and not drive_io:
             log.debug('WARNING! - Checkfile exists but there is no Disk I/O! Forcing Reset')
             os.remove(status_file)
             return False
