@@ -433,7 +433,7 @@ def check_temp_drive_utilization():
     log.debug('check_temp_drive_utilization() started')
     if chiaplot.get_critical_temp_dir_usage() != {}:
         if not chiaplot.temp_dirs_critical_alert_sent:
-            chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
+            chiaplot.toggle_alert_sent('temp_dirs_critical_alert_sent')
             for dirs in chiaplot.get_critical_temp_dir_usage().keys():
                 log.debug(f'WARNING: {dirs} is nearing capacity. Sending Alert!')
                 notify('WARNING: Directory Utilization Nearing Capacity',
