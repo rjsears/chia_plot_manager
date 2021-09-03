@@ -230,7 +230,7 @@ def process_control(command, action):
             return
     else:
         log.debug(f'WARNING: {nas_server} is OFFLINE! We Cannot Continue......')
-        notify(f'{nas_server}.loft.aero OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
+        notify(f'{nas_server} OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
         exit()
 
 
