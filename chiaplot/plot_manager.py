@@ -47,7 +47,6 @@ import logging
 from system_logging import setup_logging
 import pathlib
 import json
-import urllib.request
 import psutil
 from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
@@ -59,7 +58,7 @@ config = configparser.ConfigParser()
 script_path = pathlib.Path(__file__).parent.resolve()
 from plotmanager_classes import PlotManager, config_file
 chiaplot = PlotManager.read_configs()
-
+import time
 
 # Are We Testing?
 testing = False
@@ -140,11 +139,11 @@ def process_plot():
     if not process_control('check_status', 0):
         plot_to_process = get_list_of_plots()
         if plot_to_process and not testing:
-            process_control('set_status', 'start')
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
             if replace_plots:
+                log.debug(f'Executing "drive_manager.py -rp" on {nas_server}.')
                 result = (subprocess.run(['ssh', nas_server, f'{script_path.joinpath("drive_manager.py -rp")}'],
                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
                 if result.returncode != 0:
@@ -152,6 +151,7 @@ def process_plot():
                     log.debug(f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
                     #notify('URGENT', f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
                     quit()
+            process_control('set_status', 'start')
             if chiaplot.pools:
                 plot_to_process = 'portable.'+plot_to_process
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
@@ -197,23 +197,26 @@ def process_control(command, action):
                         subprocess.check_output(['ssh', nas_server, 'touch %s' % f'{remote_checkfile}'])
                     except subprocess.CalledProcessError as e:
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
+                    return
                 else:
                     os.open(status_file, os.O_CREAT)
+                    log.debug(f'Remote Checkfile is: {remote_checkfile}')
                     try:
-                        log.debug(f'Remote Checkfile is: {remote_checkfile}')
                         subprocess.check_output(['ssh', nas_server, 'touch %s' % f'{remote_checkfile}'])
-
                     except subprocess.CalledProcessError as e:
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
+                    return
             if action == "stop":
                 if os.path.isfile(status_file):
                     os.remove(status_file)
+                    log.debug(f'Removing remote checkfile from {nas_server}')
                     try:
                         subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
                     except subprocess.CalledProcessError as e:
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
                 else:
                     log.debug(f'Status File: [{status_file}] does not exist!')
+                    log.debug(f'Removing remote checkfile from {nas_server}')
                     try:
                         subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
                     except subprocess.CalledProcessError as e:
@@ -224,6 +227,7 @@ def process_control(command, action):
                 return True
             elif checkIfProcessRunning('nc') and not check_transfer():
                 log.debug('WARNING! - NC is running but there is no network traffic! Forcing Reset')
+                log.debug(f'Removing remote checkfile from {nas_server}')
                 try:
                     subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
                 except subprocess.CalledProcessError as e:
