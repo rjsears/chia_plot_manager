@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating out yaml
 config file.
 """
 
-VERSION = "V0.94 (2021-08-08)"
+VERSION = "V0.95 (2021-09-03)"
 
 import os
 import yaml
@@ -40,40 +40,6 @@ level = logging._checkLevel(level)
 log = logging.getLogger('drivemanager_classes.py')
 log.setLevel(level)
 
-def config_file_update():
-    """
-    Function to determine if we need to update our yaml configuration file after an upgrade.
-    """
-    log.debug('config_file_update() Started....')
-    if os.path.isfile(skel_config_file):
-        with open(config_file, 'r') as current_config:
-            current_config = yaml.safe_load(current_config)
-        with open(skel_config_file, 'r') as temp_config:
-            temp_config = yaml.safe_load(temp_config)
-        temp_current_config = flatten(current_config)
-        temp_temp_config = flatten(temp_config)
-        updates = (dict((k, v) for k, v in temp_temp_config.items() if k not in temp_current_config))
-        if updates != {}:
-            copyfile(skel_config_file, (str(Path.home()) + '/.config/plot_manager/Config_Instructions.yaml'))
-            copyfile(config_file, (str(Path.home()) + f'/.config/plot_manager/plot_manager.yaml.{current_military_time}'))
-            temp_current_config.update(updates)
-            new_config = (dict((k, v) for k, v in temp_current_config.items() if k in temp_temp_config))
-        else:
-            new_config = (dict((k, v) for k, v in temp_current_config.items() if k not in temp_temp_config))
-        if new_config != {}:
-            new_config = (dict((k, v) for k, v in temp_current_config.items() if k in temp_temp_config))
-            current_config = unflatten(new_config)
-            current_config.update({'configured': False})
-            with open((str(Path.home()) + '/.config/plot_manager/plot_manager.yaml'), 'w') as f:
-                yaml.safe_dump(current_config, f)
-            log.debug(f'Config File: {config_file} updated. Update as necessary to run this script.')
-            exit()
-        else:
-            log.debug('No config file changes necessary! No changes made.')
-    else:
-        log.debug('New configuration file not found. No changes made.')
-
-
 class DriveManager:
     if not os.path.isfile(config_file):
         log.debug(f'Plot_Manager config file does not exist at: {config_file}')
@@ -84,8 +50,8 @@ class DriveManager:
                      remote_harvester_reports, remote_harvesters, notifications, pb, email, sms, daily_update, new_plot_drive, per_plot,
                      local_plotter, temp_dirs, temp_dirs_critical, temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical,
                      dst_dirs_critical_alert_sent, warnings, emails, phones, twilio_from, twilio_account, twilio_token, pb_api,
-                     current_internal_drive, current_plotting_drive, total_plot_highwater_warning, total_plots_alert_sent,
-                     current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level,
+                     current_internal_drive, current_plotting_drive, total_plot_highwater_warning, total_plots_alert_sent, plot_receive_interface_threshold,
+                     current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level, plot_receive_interface,
                      current_portable_plots_midnight, current_portable_plots_daily, current_plot_replacement_drive, local_move_error, local_move_error_alert_sent):
             self.configured = configured
             self.hostname = hostname
@@ -129,6 +95,8 @@ class DriveManager:
             self.offlined_drives = offlined_drives
             self.logging = logging
             self.log_level = log_level
+            self.plot_receive_interface = plot_receive_interface
+            self.plot_receive_interface_threshold = plot_receive_interface_threshold
             self.current_plot_replacement_drive = current_plot_replacement_drive
             self.local_move_error = local_move_error
             self.local_move_error_alert_sent = local_move_error_alert_sent
@@ -180,6 +148,8 @@ class DriveManager:
                     offlined_drives=server['harvester']['offlined_drives'],
                     logging=server['logging'],
                     log_level=server['log_level'],
+                    plot_receive_interface=server['plot_receive_interface'],
+                    plot_receive_interface_threshold=server['plot_receive_interface_threshold'],
                     current_plot_replacement_drive=server['pools']['current_plot_replacement_drive'],
                     local_move_error=server['local_plotter']['local_move_error'],
                     local_move_error_alert_sent=server['local_plotter']['local_move_error_alert_sent'])
