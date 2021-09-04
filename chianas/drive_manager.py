@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.94 (2021-08-08)"
+VERSION = "0.95 (2021-09-03)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -186,6 +186,9 @@ plot_size_k = 108995911228
 plot_size_g = 101.3623551
 receive_script = script_path.joinpath('receive_plot.sh')
 replace_plots_receive_script = script_path.joinpath('replace_plots_receive_plot.sh')
+remote_transfer_active_file = script_path.joinpath('remote_transfer_is_active')
+network_check = script_path.joinpath('check_network_io.sh')
+network_check_output = script_path.joinpath('network_stats.io')
 
 # Date and Time Stuff
 current_military_time = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -663,6 +666,7 @@ def get_plot_drive_to_use():
         return (natsorted(available_drives)[0])
     except IndexError:
         log.debug("ERROR: No Drives Found, Please add drives, run auto_drive.py and try again!")
+        notify('OUT OF DRIVE SPACE!', 'You have run out of drive space on your Harvester and we can no longer accept any new plots!')
         exit()
 
 
@@ -696,9 +700,6 @@ def get_internal_plot_drive_to_use():
             log.debug('this issue is you are able.')
             notify('Drive Overlap!', 'Internal and External plotting drives now overlap! Suggest fixing to prevent drive bus contention and slow transfers. If you have selected plot replacement, we will attempt to convert to replacement now.')
             return get_plot_drive_to_use()
-       # log.debug("ERROR: No Additional Internal Drives Found, Please add drives, run auto_drive.py and try again!")
-       # exit()
-
 
 
 def get_sorted_drive_list():
@@ -866,6 +867,7 @@ def update_receive_plot():
     here. See TODO: Update to use netcat native to python.
     """
     log.debug("update_receive_plot() Started")
+    remote_transfer_active = check_for_active_remote_transfer()
     if not chianas.replace_non_pool_plots: # If we are not replacing old plots with new portable plots, run the following code
         log.debug('Replace Plots has NOT been set in config, will call build script for normal operation.')
         drive = get_plot_drive_to_use()[0]
@@ -873,7 +875,7 @@ def update_receive_plot():
             log.debug(f'{receive_script} not found. Building it now...')
             build_receive_plot('normal', drive)
         else:
-            if os.path.isfile(script_path.joinpath('remote_transfer_is_active')):
+            if remote_transfer_active:
                 log.debug('Remote Transfer in Progress, will try again soon!')
                 quit() # TODO Think about what we really want to do here. If we are running a remote transfer, can we still do other things?
             else:
@@ -901,7 +903,7 @@ def update_receive_plot():
                     log.debug(f'{receive_script} not found. Building it now...')
                     build_receive_plot('normal', drive)
                 else:
-                    if os.path.isfile(script_path.joinpath('remote_transfer_is_active')):
+                    if remote_transfer_active:
                         log.debug('Remote Transfer in Progress, will try again soon!')
                         quit()  # TODO Think about what we really want to do here. If we are running a remote transfer, can we still do other things?
                     else:
@@ -912,8 +914,7 @@ def update_receive_plot():
                             log.debug(f'No changes necessary to {receive_script}')
                             log.debug(f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_plotting_drive)}')
                         else:
-                            send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
-                            # notify() function.
+                            send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the notify() function.
                             notify('Plot Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plotting_drive},  Now: {drive}')
                             build_receive_plot('normal', drive)
             else:
@@ -927,14 +928,18 @@ def update_receive_plot():
                         log.debug(f'{receive_script} not found. Building it now...')
                         build_receive_plot('portable', drive)
                     else:
-                        if chianas.current_plot_replacement_drive == drive:
-                            log.debug(f'Currently Configured Replacement Drive: {chianas.current_plot_replacement_drive}')
-                            log.debug(f'System Selected Replacement Drive:      {drive}')
-                            log.debug('Configured and Selected Drives Match!')
-                            log.debug(f'No changes necessary to {receive_script}')
+                        if remote_transfer_active:
+                            log.debug('Remote Transfer in Progress, will try again soon!')
+                            quit()  # TODO Think about what we really want to do here. If we are running a remote transfer, can we still do other things?
                         else:
-                            notify('Plot Replacement Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plot_replacement_drive},  Now: {drive}')
-                            build_receive_plot('portable', drive)
+                            if chianas.current_plot_replacement_drive == drive:
+                                log.debug(f'Currently Configured Replacement Drive: {chianas.current_plot_replacement_drive}')
+                                log.debug(f'System Selected Replacement Drive:      {drive}')
+                                log.debug('Configured and Selected Drives Match!')
+                                log.debug(f'No changes necessary to {receive_script}')
+                            else:
+                                notify('Plot Replacement Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plot_replacement_drive},  Now: {drive}')
+                                build_receive_plot('portable', drive)
                 else:
                     log.debug(f'ERROR: Replace Plots Configured, but no old plots exist!')
                     quit()
@@ -948,18 +953,47 @@ def update_receive_plot():
                     log.debug(f'{receive_script} not found. Building it now...')
                     build_receive_plot('portable', drive)
                 else:
-                    if chianas.current_plot_replacement_drive == drive:
-                        log.debug(f'Currently Configured Replacement Drive: {chianas.current_plot_replacement_drive}')
-                        log.debug(f'System Selected Replacement Drive:      {drive}')
-                        log.debug('Configured and Selected Drives Match!')
-                        log.debug(f'No changes necessary to {receive_script}')
+                    if remote_transfer_active:
+                        log.debug('Remote Transfer in Progress, will try again soon!')
+                        quit()  # TODO Think about what we really want to do here. If we are running a remote transfer, can we still do other things?
                     else:
-                       # send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the
-                                                    # notify() function. - TODO Do we need to send this here or do we need to update the function?
-                        notify('Plot Replacement Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plot_replacement_drive},  Now: {drive}')
-                        build_receive_plot('portable', drive)
+                        if chianas.current_plot_replacement_drive == drive:
+                            log.debug(f'Currently Configured Replacement Drive: {chianas.current_plot_replacement_drive}')
+                            log.debug(f'System Selected Replacement Drive:      {drive}')
+                            log.debug('Configured and Selected Drives Match!')
+                            log.debug(f'No changes necessary to {receive_script}')
+                        else:
+                            notify('Plot Replacement Drive Updated', f'Plot Drive Updated: Was: {chianas.current_plot_replacement_drive},  Now: {drive}')
+                            build_receive_plot('portable', drive)
             else:
-                log.debug(f'ERROR: Replace Plots Configured, but no old plots exist!')
+                log.debug(f'ERROR: Replace Plots Configured, but no old plots exist! Defaulting to filling our empty drives...')
+                if (get_all_available_system_space("free")[1]) > chianas.empty_drives_low_water_mark:
+                    log.debug('Found Empty Drive Space!')
+                    log.debug(f'Low Water Mark: {chianas.empty_drives_low_water_mark} and we have {get_all_available_system_space("free")[1]} available')
+                    drive = get_plot_drive_to_use()[0]
+                    if not os.path.isfile(receive_script):
+                        log.debug(f'{receive_script} not found. Building it now...')
+                        build_receive_plot('normal', drive)
+                    else:
+                        if remote_transfer_active:
+                            log.debug('Remote Transfer in Progress, will try again soon!')
+                            quit()  # TODO Think about what we really want to do here. If we are running a remote transfer, can we still do other things?
+                        else:
+                            if chianas.current_plotting_drive == drive:
+                                log.debug(f'Currently Configured Plot Drive: {chianas.current_plotting_drive}')
+                                log.debug(f'System Selected Plot Drive:      {drive}')
+                                log.debug('Configured and Selected Drives Match!')
+                                log.debug(f'No changes necessary to {receive_script}')
+                                log.debug(
+                                    f'Plots left available on configured plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_plotting_drive)}')
+                            else:
+                                send_new_plot_disk_email()  # This is the full Plot drive report. This is in addition to the generic email sent by the notify() function.
+                                notify('Plot Drive Updated',
+                                       f'Plot Drive Updated: Was: {chianas.current_plotting_drive},  Now: {drive}')
+                                build_receive_plot('normal', drive)
+                else:
+                    log.debug('We have a problem. There are no old plots to replace and we have run out of empty drive space, not sure what to do now but phone home.....')
+                    notify('No Old Plots & No Drive Space Available', 'We have a problem. There are no old plots to replace and we have run out of empty drive space, I need your help!')
                 quit()
 
 def build_receive_plot(type, drive):
@@ -980,6 +1014,57 @@ def build_receive_plot(type, drive):
     else:
         log.info(f'Updated {receive_script} and system config file with new plot drive.')
         log.info(f'Was: {chianas.current_plotting_drive},  Now: {drive}')
+
+
+def check_for_active_remote_transfer():
+    """
+    Function to check and verify if we have a remote transfer active to prevent
+    overloading drives during local and remote copies of plots.
+    """
+    log.debug('check_for_active_remote_transfer() called')
+    if os.path.isfile(remote_transfer_active_file):
+        log.debug(f'A Remote Transfer appears to be in Progress, checking for network traffic on interface: {chianas.plot_receive_interface}.')
+        if check_network_activity():
+            log.debug('Network traffic has been detected, a Remote Transfer is in progress.')
+            return True
+        else:
+            log.debug(f'Remote Transfer file present but there is no network traffic on interface: {chianas.plot_receive_interface}')
+            log.debug('Resetting Remote Transfer file now......')
+            os.remove(remote_transfer_active_file)
+            return False
+    else:
+        log.debug('Remote Transfer File does not exist, lets check for network traffic to verify....')
+        if check_network_activity():
+            log.debug('Network traffic has been detected, a Remote Transfer is in progress.')
+            return True
+        else:
+            log.debug('No Current Remote Transfers are taking place.')
+            return False
+
+def check_network_activity():
+    """
+    Here we are checking network activity on the network interface we are receiving plots on from our plotter. If there is
+    network activity, then we are most likely receiving a plot and don't want to make any changes.
+    """
+    log.debug('check_network_activity() called')
+    try:
+        subprocess.call([network_check, chianas.plot_receive_interface])
+    except subprocess.CalledProcessError as e:
+        log.warning(e.output)
+    with open(network_check_output, 'rb') as f:
+        f.seek(-2, os.SEEK_END)
+        while f.read(1) != b'\n':
+            f.seek(-2, os.SEEK_CUR)
+        last_line = f.readline().decode()
+        network_traffic_load = float((str.split(last_line)[9]))
+    if network_traffic_load >= chianas.plot_receive_interface_threshold:
+        log.debug(f'Network Activity detected on {chianas.plot_receive_interface}')
+        os.remove(network_check_output)
+        return True
+    else:
+        log.debug(f'No Network Activity detected on {chianas.plot_receive_interface}')
+        os.remove(network_check_output)
+        return False
 
 
 def send_new_plot_disk_email():
@@ -1580,7 +1665,6 @@ def main():
         send_new_plot_notification()
         update_receive_plot()
 
-
-
 if __name__ == '__main__':
     main()
+

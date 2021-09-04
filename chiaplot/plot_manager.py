@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.94 (2021-08-08)"
+VERSION = "0.95 (2021-09-03)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -47,7 +47,6 @@ import logging
 from system_logging import setup_logging
 import pathlib
 import json
-import urllib.request
 import psutil
 from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
@@ -59,7 +58,7 @@ config = configparser.ConfigParser()
 script_path = pathlib.Path(__file__).parent.resolve()
 from plotmanager_classes import PlotManager, config_file
 chiaplot = PlotManager.read_configs()
-
+import time
 
 # Are We Testing?
 testing = False
@@ -105,10 +104,11 @@ This network interface is the name (as shown by `ip a`) of the interface that yo
 transfer your plots over to your Harvester. We utilize this to determine is there is
 network traffic flowing across it during a transfer. 
 """
-network_interface = chiaplot.network_interface
-
-
+#network_interface = chiaplot.network_interface
 remote_checkfile = script_path.joinpath('remote_transfer_is_active')
+network_check = script_path.joinpath('check_network_io.sh')
+network_check_output = script_path.joinpath('network_stats.io')
+
 
 
 # Setup Module logging. Main logging is configured in system_logging.py
@@ -139,17 +139,19 @@ def process_plot():
     if not process_control('check_status', 0):
         plot_to_process = get_list_of_plots()
         if plot_to_process and not testing:
-            process_control('set_status', 'start')
             plot_path = plot_dir + plot_to_process
             log.info(f'Processing Plot: {plot_path}')
             log.debug(f'{nas_server} reports remote mount as {remote_mount}')
             if replace_plots:
+                log.debug(f'Executing "drive_manager.py -rp" on {nas_server}.')
                 result = (subprocess.run(['ssh', nas_server, f'{script_path.joinpath("drive_manager.py -rp")}'],
                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
                 if result.returncode != 0:
+                    log.debug(result.returncode)
                     log.debug(f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
-                    notify('URGENT', f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
+                    #notify('URGENT', f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
                     quit()
+            process_control('set_status', 'start')
             if chiaplot.pools:
                 plot_to_process = 'portable.'+plot_to_process
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
@@ -190,31 +192,44 @@ def process_control(command, action):
             if action == "start":
                 if os.path.isfile(status_file):
                     log.debug(f'Status File: [{status_file}] already exists!')
+                    try:
+                        log.debug(f'Remote Checkfile is: {remote_checkfile}')
+                        subprocess.check_output(['ssh', nas_server, 'touch %s' % f'{remote_checkfile}'])
+                    except subprocess.CalledProcessError as e:
+                        log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
                     return
                 else:
                     os.open(status_file, os.O_CREAT)
+                    log.debug(f'Remote Checkfile is: {remote_checkfile}')
                     try:
-                        subprocess.check_output(['ssh', nas_server, 'touch %s' % remote_checkfile])
+                        subprocess.check_output(['ssh', nas_server, 'touch %s' % f'{remote_checkfile}'])
                     except subprocess.CalledProcessError as e:
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
+                    return
             if action == "stop":
                 if os.path.isfile(status_file):
                     os.remove(status_file)
+                    log.debug(f'Removing remote checkfile from {nas_server}')
                     try:
-                        subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
+                        subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
                     except subprocess.CalledProcessError as e:
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
                 else:
                     log.debug(f'Status File: [{status_file}] does not exist!')
-                    return
+                    log.debug(f'Removing remote checkfile from {nas_server}')
+                    try:
+                        subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
+                    except subprocess.CalledProcessError as e:
+                        log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
         elif command == 'check_status':
             if checkIfProcessRunning('nc') and check_transfer():
                 log.debug(f'NC is running and Network Traffic Exists, We are currently Running a Transfer, Exiting')
                 return True
             elif checkIfProcessRunning('nc') and not check_transfer():
                 log.debug('WARNING! - NC is running but there is no network traffic! Forcing Reset')
+                log.debug(f'Removing remote checkfile from {nas_server}')
                 try:
-                    subprocess.check_output(['ssh', nas_server, 'rm %s' % remote_checkfile])
+                    subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
                 except subprocess.CalledProcessError as e:
                     log.warning(e.output)
                 try:
@@ -230,7 +245,7 @@ def process_control(command, action):
             return
     else:
         log.debug(f'WARNING: {nas_server} is OFFLINE! We Cannot Continue......')
-        notify(f'{nas_server} OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
+        notify(f'{nas_server}.{chiaplot.domain_name} OFFLINE', f'Your NAS Server: {nas_server} cannot be reached. Plots cannot move! Please Correct IMMEDIATELY!')
         exit()
 
 
@@ -246,10 +261,6 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
     local_plot_size = os.path.getsize(plot_path)
     log.debug(f'Local Plot Size Reported as: {local_plot_size}')
     if remote_plot_size == local_plot_size:
-        try:
-            subprocess.check_output(['ssh', nas_server, 'touch %s' % script_path.joinpath("new_plot_received")])
-        except subprocess.CalledProcessError as e:
-            log.warning(e.output)
         return True
     else:
         log.debug(f'Plot Size Mismatch!')
@@ -257,17 +268,29 @@ def verify_plot_move(remote_mount, plot_path, plot_to_process):
 
 
 def check_transfer():
+    """
+        Here we are checking network activity on the network interface we are sending plots to from our plotter. If there is
+        network activity, then we are most likely receiving a plot and don't want to make any changes.
+        """
+    log.debug('check_transfer() called')
     try:
-        with urllib.request.urlopen(f"http://localhost:61208/api/3/network/interface_name/{network_interface}") as url:
-            data = json.loads(url.read().decode())
-            current_transfer_speed =  (data[network_interface][0]['tx']/1000000)
-            if current_transfer_speed < 5:
-                return False
-            else:
-                return True
-    except urllib.error.URLError as e:
-        print (e.reason)
-        exit()
+        subprocess.call([network_check, chiaplot.network_interface])
+    except subprocess.CalledProcessError as e:
+        log.warning(e.output)
+    with open(network_check_output, 'rb') as f:
+        f.seek(-2, os.SEEK_END)
+        while f.read(1) != b'\n':
+            f.seek(-2, os.SEEK_CUR)
+        last_line = f.readline().decode()
+        network_traffic_load = float((str.split(last_line)[9]))
+    if network_traffic_load >= chiaplot.network_interface_threshold:
+        log.debug(f'Network Activity detected on {chiaplot.network_interface}')
+        os.remove(network_check_output)
+        return True
+    else:
+        log.debug(f'No Network Activity detected on {chiaplot.network_interface}')
+        os.remove(network_check_output)
+        return False
 
 
 def checkIfProcessRunning(processName):
@@ -293,17 +316,6 @@ def host_check(host):
         ['ping', '-W1', '-q', '-c', '2', host],
         stdout=subprocess.DEVNULL)
     return proc.returncode == 0
-
-
-def verify_glances_is_running():
-    log.debug('verify_glances_is_running() Started')
-    if not checkIfProcessRunning('glances'):
-        log.debug('WARNING - This script requires the Glances API to operate properly.')
-        log.debug('We were unable to determine if Glances is running. Please verify and try again!')
-        exit()
-    else:
-        return True
-
 
 def notify(title, message):
     """ Notify system for email, pushbullet and sms (via Twilio)"""
@@ -433,7 +445,7 @@ def check_temp_drive_utilization():
     log.debug('check_temp_drive_utilization() started')
     if chiaplot.get_critical_temp_dir_usage() != {}:
         if not chiaplot.temp_dirs_critical_alert_sent:
-            chiaplot.toggle_alert_sent('temp_dirs_critical_alert_sent')
+            chianas.toggle_alert_sent('temp_dirs_critical_alert_sent')
             for dirs in chiaplot.get_critical_temp_dir_usage().keys():
                 log.debug(f'WARNING: {dirs} is nearing capacity. Sending Alert!')
                 notify('WARNING: Directory Utilization Nearing Capacity',
@@ -472,6 +484,17 @@ def check_dst_drive_utilization():
         log.debug('DST Drive(s) check complete. All OK!')
 
 
+def exists_remote(host, path):
+    """Test if a file exists at path on a host accessible with SSH."""
+    status = subprocess.call(
+        ['ssh', host, 'test -f {}'.format(pipes.quote(path))])
+    if status == 0:
+        return True
+    if status == 1:
+        return False
+    raise Exception('SSH failed')
+
+
 def system_checks():
     """
     These are the various system checks. Limits are set in the
@@ -483,15 +506,10 @@ def system_checks():
 
 def main():
     log.debug(f'Welcome to plot_manager.py Version: {VERSION}')
-    if verify_glances_is_running():
-        system_checks()
-        remote_harvesters_check()
-        process_plot()
-    else:
-        print('Glances is Required for this script!')
-        print('Please install and restart this script.')
-        exit()
-
+    system_checks()
+    remote_harvesters_check()
+    process_plot()
 
 if __name__ == '__main__':
     main()
+

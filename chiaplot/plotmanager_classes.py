@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating our yaml
 config file.
 """
 
-VERSION = "V0.93 (2021-07-08)"
+VERSION = "V0.95 (2021-09-03)"
 
 import os
 import yaml
@@ -14,11 +14,18 @@ from pathlib import Path
 import logging
 from system_logging import setup_logging
 import psutil
+from flatten_dict import flatten
+from flatten_dict import unflatten
+from datetime import datetime
 
+script_path = Path(__file__).parent.resolve()
+#user_home_dir = str(Path.home())
+config_file = (str(Path.home()) + '/.config/plot_manager/plot_manager.yaml')
+#config_file = (user_home_dir + '/.config/plot_manager/plot_manager.yaml')
+skel_config_file = script_path.joinpath('plot_manager.skel.yaml')
 
-user_home_dir = str(Path.home())
-config_file = (user_home_dir + '/.config/plot_manager/plot_manager.yaml')
-
+# Date and Time Stuff
+current_military_time = datetime.now().strftime('%Y%m%d%H%M%S')
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
@@ -30,22 +37,59 @@ log = logging.getLogger(__name__)
 log.setLevel(level)
 
 
+def config_file_update():
+    """
+    Function to determine if we need to update our yaml configuration file after an upgrade.
+    """
+    log.debug('config_file_update() Started....')
+    if os.path.isfile(skel_config_file):
+        with open(config_file, 'r') as current_config:
+            current_config = yaml.safe_load(current_config)
+        with open(skel_config_file, 'r') as temp_config:
+            temp_config = yaml.safe_load(temp_config)
+        temp_current_config = flatten(current_config)
+        temp_temp_config = flatten(temp_config)
+        updates = (dict((k, v) for k, v in temp_temp_config.items() if k not in temp_current_config))
+        if updates != {}:
+            copyfile(skel_config_file, (str(Path.home()) + '/.config/plot_manager/Config_Instructions.yaml'))
+            copyfile(config_file, (str(Path.home()) + f'/.config/plot_manager/plot_manager.yaml.{current_military_time}'))
+            temp_current_config.update(updates)
+            new_config = (dict((k, v) for k, v in temp_current_config.items() if k in temp_temp_config))
+        else:
+            new_config = (dict((k, v) for k, v in temp_current_config.items() if k not in temp_temp_config))
+        if new_config != {}:
+            new_config = (dict((k, v) for k, v in temp_current_config.items() if k in temp_temp_config))
+            current_config = unflatten(new_config)
+            current_config.update({'configured': False})
+            with open((str(Path.home()) + '/.config/plot_manager/plot_manager.yaml'), 'w') as f:
+                yaml.safe_dump(current_config, f)
+            log.debug(f'Config File: {config_file} updated. Update as necessary to run this script.')
+            exit()
+        else:
+            log.debug('No config file changes necessary! No changes made.')
+    else:
+        log.debug('New configuration file not found. No changes made.')
+
+
+
 class PlotManager:
     if not os.path.isfile(config_file):
         log.debug(f'Plot_Manager config file does not exist at: {config_file}')
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, pools, remote_harvesters,
+        def __init__(self, configured, hostname, pools, remote_harvesters, network_interface_threshold, domain_name,
                      notifications, pb, email, sms, temp_dirs, temp_dirs_critical, network_interface,
                      dst_dirs, dst_dirs_critical, dst_dirs_critical_alert_sent,temp_dirs_critical_alert_sent,
                      warnings, emails, phones, twilio_from, twilio_account,
                      twilio_token, pb_api, logging, log_level):
             self.configured = configured
             self.hostname = hostname
+            self.domain_name = domain_name
             self.pools = pools
             self.remote_harvesters = remote_harvesters
             self.network_interface = network_interface
+            self.network_interface_threshold = network_interface_threshold
             self.notifications = notifications
             self.pb = pb
             self.email = email
@@ -73,9 +117,11 @@ class PlotManager:
                 return cls(
                     configured=server['configured'],
                     hostname=server['hostname'],
+                    domain_name=server['domain_name'],
                     pools=server['pools'],
                     remote_harvesters=server['remote_harvesters'],
                     network_interface=server['network_interface'],
+                    network_interface_threshold=server['network_interface_threshold'],
                     notifications=server['notifications']['active'],
                     pb=server['notifications']['methods']['pb'],
                     email=server['notifications']['methods']['email'],

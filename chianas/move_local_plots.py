@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.94 (2021-08-08)"
+VERSION = "0.95 (2021-09-03)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -21,7 +21,7 @@ import logging
 from system_logging import setup_logging
 import shutil
 from timeit import default_timer as timer
-from drive_manager import get_drive_info, notify, check_space_available, get_all_available_system_space, get_internal_plot_drive_to_use
+from drive_manager import notify, check_space_available, get_all_available_system_space, get_internal_plot_drive_to_use
 import subprocess
 import pathlib
 from drivemanager_classes import DriveManager, config_file, PlotManager
@@ -290,7 +290,6 @@ def process_plot():
                 return
         else:
             return
-
 
 
 def verify_plot_move(plot_source, plot_destination):
