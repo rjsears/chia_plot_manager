@@ -1,10 +1,24 @@
-# v0.94 2021-08-08
+# v0.95 2021-09-03
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
 
 # Enter the hostname of this server:
 hostname: chianas01
+
+# Enter the name (as shown by ifconfig) of the interface that you RECEIVE plots on
+# from your plotters. This is used to check for network traffic to prevent multiple
+# plots from being transferred at the same time.
+plot_receive_interface: eth0
+
+# This is a number that represents at what percentage overall utilization of the above
+# interface we will assume that a plot transfer is taking place. You should really TEST
+# this to make sure it works for your needs. If you have a dedicated interface to move
+# plots, then it can be set very low (1 to 2), however if you have a shared interface,
+# you should test while a plot transfer is running and set it to what number makes sense.
+# To test simply run the following command and look at the very last number:
+# /usr/bin/sar -n DEV 1 50 | egrep eth0
+plot_receive_interface_threshold: 2
 
 # Are we plotting for pools? This has nothing to do with the actual plotting of
 # plots but rather just naming of the new plots and eventually the replacing of
