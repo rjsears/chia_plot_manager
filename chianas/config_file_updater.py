@@ -4,7 +4,7 @@
 """
 Part of drive_manager. Checks to see if our config file needs updating and updated it for us.
 """
-VERSION = "V0.94 (2021-08-08)"
+VERSION = "V0.95 (2021-09-03)"
 
 import os
 import yaml
