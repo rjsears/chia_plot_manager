@@ -440,7 +440,7 @@ def get_next_nas():
         if nas_server['total_plots_until_full'] > 0:
             next_nas.append(nas_server)
     if not next_nas:
-        return 'ERROR'
+        return False
     else:
         return sorted(next_nas, key=lambda i: i['total_plots_until_full'], reverse=True)[0].get('server')
 
