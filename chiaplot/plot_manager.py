@@ -85,17 +85,22 @@ def are_we_configured():
 
 # If you are running multiple harvesters/NAS, make sure to set your YAML config file
 # up correctly.
+#TODO Build in notification to let us know when we run out of available space on all harvesters!
 def remote_harvesters_check():
     log.debug('remote_harvesters() Started')
     global nas_server
     global remote_mount
     global replace_plots
     nas_server = get_next_nas()
-    log.debug(f'Remote Harvester(s) Found - Selected NAS/Harvester: {nas_server}')
-    with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
-        server = yaml.safe_load(f)
-        remote_mount=server['current_plot_drive']
-        replace_plots=server['replace_non_pool_plots']
+    if not nas_server:
+        log.debug('Could not find any available Plot space on configured Harvesters. Stopping Here.')
+        quit()
+    else:
+        log.debug(f'Remote Harvester(s) Found - Selected NAS/Harvester: {nas_server}')
+        with open(script_path.joinpath(f'export/{nas_server}_export.json'), 'r') as f:
+            server = yaml.safe_load(f)
+            remote_mount=server['current_plot_drive']
+            replace_plots=server['replace_non_pool_plots']
 
 
 # Let's do some housekeeping
@@ -424,15 +429,20 @@ def get_next_nas():
     """
     Returns the server name of the server with the most space left.
     This is where we will be sending our next plot! If you only have
-    a single harvester/NAS just returns that one.
+    a single harvester/NAS just returns that one. If there are 0
+    available plots on all servers, return ERROR.
     """
     servers = (remote_harvester_report()[0])
     next_nas = []
     for server in servers:
         nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
         log.debug(nas_server)
-        next_nas.append(nas_server)
-    return (sorted(next_nas, key=lambda i: i['total_plots_until_full'],reverse=True)[0].get('server'))
+        if nas_server['total_plots_until_full'] > 0:
+            next_nas.append(nas_server)
+    if not next_nas:
+        return 'ERROR'
+    else:
+        return sorted(next_nas, key=lambda i: i['total_plots_until_full'], reverse=True)[0].get('server')
 
 
 def check_temp_drive_utilization():
