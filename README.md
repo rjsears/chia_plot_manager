@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.94 - August 8th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.95 - September 3rd, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -98,7 +98,7 @@ Beginning in V0.94, we now fully support portable plot management as well as old
   <li>After the transfer is complete, checks the exact file size of the plot on both systems as a basic verification</li>
   <li>Once files sizes are verified, deletes the sent plot</li>
   <li>Kills any lingering netcat connections on the selected Harvester/NAS</li>
-  <li>Supports any number of harvesters and prioritizes sending plots to the harvester with the most space available.</li>
+  <li>Supports any number of harvesters and prioritizes sending plots to the harvester with the most space available (Empty plot space + old plots to replace = total space available.</li>
   <li>If replacing old plots with new pool plots, above utilizes number of plot spaces available based on free space + number of old plots.</li>
 </ul>
 <br>
@@ -838,6 +838,25 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+<b>V0.95 2021-09-03</b>
+   - Replaces glances with sysstat commands to check and verify network traffic
+   - Update install script to create new network check script based on install directory
+   - Created failsafe to allow free drive space to be filled when 'replace_plots' has been
+     set to yes and there are no more old plots to replace. Now falls back to filling empty
+     drive space after that happens and will notify you when both fail.
+   - Various bug fixes and enhancements.
+
+<b>V0.94 2021-08-08</b>
+   - Automatic plot removal and replacement of older style plots with new style pooling
+     plots done on a one-by-one basis to keep as many plots farming as possible during 
+     the plot replacement process.
+   - Various bug fixes and other small enhancements
+   - Updated Farming Wide reports to report on number of portable plots vs old plots
+     and if we are replacing old plots or not on a per-server basis.
+   - Updated nas_export to include the number of old plots and if server is set to replace
+     old plots, the total number of plot space available on server is now the total of the
+     number of old plots to replace along with how many plots we can store on remaining 
+     free space.
 
 <b>V0.93 2021-07-08</b>
    - Added ability to identify plots as `portable` (set `pooling: True` in config file)
