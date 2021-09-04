@@ -1,18 +1,20 @@
 # Once you have made the necessary modifications to this file, change this to
 # True.
+
 configured: False
 
 # Enter the hostname of this server:
 hostname: chiaplot01
+domain_name: mydomain.com
 
-# Are we plotting for pools (prepends `portable.` to the plot name)
+#Are we plotting for pools (prepends `portable.` to the plot name)
 pools: True
 
 # Enter Logging Information
 logging: True
 log_level: DEBUG
 
-# I use MadMax to do my plotting, but this should work for anything. This
+# I use Plotman to do my plotting, but this should work for anything. This
 # has NOTHING to do with setting up your plotting configuration and is
 # only used for monitoring drive space for notifications. Set to True if
 # locally plotting and configure the rest of the settings.
@@ -40,7 +42,7 @@ local_plotter:
 
     # At what % utilization do we send an error?
     critical: 95
-    critical_alert_sent: False
+    critical_alert_sent: True
 
 # If you are running multiple remote harvesters,
 # and enter their hostnames below.These hostnames
@@ -55,8 +57,19 @@ remote_harvesters:
   - chianas02
   - chianas03
 
-# This is our high speed, internal Network interface name that we send plots over
-network_interface: eno1
+# Enter the name (as shown by ifconfig) of the interface that you SEND plots on
+# to your plotters. This is used to check for network traffic to prevent multiple
+# plots from being transferred at the same time.
+network_interface: eth0
+
+# This is a number that represents at what percentage overall utilization of the above
+# interface we will assume that a plot transfer is taking place. You should really TEST
+# this to make sure it works for your needs. If you have a dedicated interface to move
+# plots, then it can be set very low (1 to 2), however if you have a shared interface,
+# you should test while a plot transfer is running and set it to what number makes sense.
+# To test simply run the following command and look at the very last number:
+# /usr/bin/sar -n DEV 1 50 | egrep eth0
+network_interface_threshold: 2
 
 
 # This is where we set up our notifications
