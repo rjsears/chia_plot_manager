@@ -1,7 +1,7 @@
 <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.94 - August 8th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.95 - September 3th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -44,6 +44,8 @@ be. This is a standard YAML file, so leave the formatting as you see it or you w
 <ul>
   <li><b>configured</b> (set this to <b>true</b>) </li>
   <li><b>hostname</b> (set this to the hostname of the system - should match IP address used by all other systems to comunicate to this box)</li>
+  <li><b>plot_receive_interface</b> (set this tot he name of the interface as shown by ifconfig that you use to receive plots)</li>
+  <li><b>plot_receive_interface_threshold</b> (set this the the percentage utilization on the bove inteface that indicates that we are receiving plot) </li>
   <li><b>pools</b> (set these setting according to your configuration, see notes) </li>
   <li><b>chia_log_file</b> (full path to your chia log file (usually debug.log) (Make sure to set logging level to INFO or DEBIG in your Chia Config)</li>
   <li><b>chia_config_file</b> (same as above)</li>
@@ -57,13 +59,27 @@ be. This is a standard YAML file, so leave the formatting as you see it or you w
 
 
 ```
-# v0.94 2021-08-08
+# v0.95 2021-09-03
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
 
 # Enter the hostname of this server:
 hostname: chianas01
+
+# Enter the name (as shown by ifconfig) of the interface that you RECEIVE plots on
+# from your plotters. This is used to check for network traffic to prevent multiple
+# plots from being transferred at the same time.
+plot_receive_interface: eth0
+
+# This is a number that represents at what percentage overall utilization of the above
+# interface we will assume that a plot transfer is taking place. You should really TEST
+# this to make sure it works for your needs. If you have a dedicated interface to move
+# plots, then it can be set very low (1 to 2), however if you have a shared interface,
+# you should test while a plot transfer is running and set it to what number makes sense.
+# To test simply run the following command and look at the very last number:
+# /usr/bin/sar -n DEV 1 50 | egrep eth0
+plot_receive_interface_threshold: 2
 
 # Are we plotting for pools? This has nothing to do with the actual plotting of
 # plots but rather just naming of the new plots and eventually the replacing of
