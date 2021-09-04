@@ -887,7 +887,6 @@ EOF
 }
 
 create_send_plot_script(){
-echo -e "\nCreating ${green}$current_directory/send_plot.sh${nc}....."
   cat <<EOF >>$current_directory/send_plot.sh
 #!/bin/bash
 
@@ -995,27 +994,3 @@ case "$1" in
      exit 1
      ;;
    esac
-    get_current_directory_coin
-    nuke_snap
-    update_software_and_system
-    improve_network_performance
-    set_cpu_performance
-    update_crontab_coin
-    clean_up_coin_directory
-    final_notes
-    thank_you
-}
-
-## And we're off....
-case "$1" in
-  nas)  start_install_nas ;;
-  plot)  start_install_plot ;;
-  coin)  start_install_coin ;;
-  help)     help ;;
-  network)  improve_network_performance ;;
-  notes)    final_notes ;;
-  *) echo -e "\n${yellow}Usage${nc}: $0 [ nas | plot | coin | network | notes | help ]\n" >&2
-     exit 1
-     ;;
-   esac
-
