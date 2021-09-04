@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Version V0.94 2021-08-08
+# Version V0.95 2021-09-03
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
 # the system with various tools and tings required to run the various
@@ -213,7 +213,7 @@ nuke_snap (){
 update_software_and_system(){
   echo -e "\n\n${green}Updating System Software and Installing Required Packages.........${nc}\n"
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
-  apt install locate vim wget smartmontools tree unzip net-tools tmux glances python3-pip pv nmap sysstat postfix mailutils -y
+  apt install locate vim wget smartmontools tree unzip net-tools tmux python3-pip pv nmap sysstat postfix mailutils -y
   if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
       apt install openssh-server -y
       systemctl enable openssh
@@ -400,6 +400,15 @@ set_cpu_performance(){
         fi
 }
 
+
+create_check_network_io_script(){
+  echo -e "\nCreating ${green}$current_directory/check_network_io.sh${nc}....."
+  cat <<EOF >>$current_directory/check_network_io.sh
+#! /bin/bash
+/usr/bin/sar -n DEV 1 3 | egrep \$1 > $current_directory/network_stats.io
+EOF
+}
+
 ## Share some final notes...
 final_notes(){
   get_current_directory
@@ -440,6 +449,7 @@ start_install_nas(){
     nuke_snap
     update_software_and_system
     create_example_directory_structure
+    create_check_network_io_script
     improve_network_performance
     set_cpu_performance
     update_crontab_nas
@@ -454,6 +464,7 @@ start_install_plot(){
     get_current_directory_nas_plot
     nuke_snap
     update_software_and_system
+    create_check_network_io_script
     improve_network_performance
     set_cpu_performance
     update_crontab_plot
