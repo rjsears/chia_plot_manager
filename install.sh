@@ -410,6 +410,7 @@ EOF
 }
 
 create_send_plot_script(){
+  echo -e "\nCreating ${green}$current_directory/send_plot.sh${nc}....."
   cat <<EOF >>$current_directory/send_plot.sh
 #!/bin/bash
 
