@@ -87,7 +87,7 @@ def are_we_configured():
 # up correctly.
 #TODO Build in notification to let us know when we run out of available space on all harvesters!
 def remote_harvesters_check():
-    log.debug('remote_harvesters() Started')
+    log.debug('remote_harvesters_check() Started')
     global nas_server
     global remote_mount
     global replace_plots
@@ -227,10 +227,11 @@ def process_control(command, action):
                     except subprocess.CalledProcessError as e:
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
         elif command == 'check_status':
-            if checkIfProcessRunning('nc') and check_transfer():
+            transfer_in_progress = check_transfer()
+            if checkIfProcessRunning('nc') and transfer_in_progress:
                 log.debug(f'NC is running and Network Traffic Exists, We are currently Running a Transfer, Exiting')
                 return True
-            elif checkIfProcessRunning('nc') and not check_transfer():
+            elif checkIfProcessRunning('nc') and not transfer_in_progress:
                 log.debug('WARNING! - NC is running but there is no network traffic! Forcing Reset')
                 log.debug(f'Removing remote checkfile from {nas_server}')
                 try:
@@ -303,6 +304,7 @@ def checkIfProcessRunning(processName):
     Check if there is any running process that contains the given name processName.
     '''
     #Iterate over the all the running process
+    log.debug('checkifprocessrunning() called')
     for proc in psutil.process_iter():
         try:
             # Check if process name contains the given name string.
@@ -317,6 +319,7 @@ def host_check(host):
     """
     Check to see if a specific host is alive
     """
+    log.debug('host_check() called')
     proc = subprocess.run(
         ['ping', '-W1', '-q', '-c', '2', host],
         stdout=subprocess.DEVNULL)
@@ -385,6 +388,7 @@ def check_remote_harvesters():
     """
     This verifies that the remote_harvesters listed above are actually alive.
     """
+    log.debug('check_remote_harvesters() called')
     harvesters_check = {}
     for harvester in chiaplot.remote_harvesters:
         harvesters_check[harvester] = host_check(harvester)
@@ -400,6 +404,7 @@ def remote_harvester_report():
     This reaches out to each 'alive' remote harvester and get all of
     their export information.
     """
+    log.debug('remote_harvester_report() called')
     remote_harvesters = check_remote_harvesters()
     servers = []
     for harvester in remote_harvesters:
@@ -415,6 +420,7 @@ def get_remote_exports(host, remote_export_file):
     """
     Utilize Paramiko to grab our harvester export information files.
     """
+    log.debug('get_remote_exports called')
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
@@ -437,6 +443,7 @@ def get_next_nas():
     is no empty drive space or you have not prioritized empty drive space,
     it will return the harvester with the most OLD plots to replace.
     """
+    log.debug('get_next_nas() called')
     servers = (remote_harvester_report()[0])
     next_nas = []
     if chiaplot.remote_harvester_priority == 'fill':
@@ -556,8 +563,6 @@ def main():
     system_checks()
     remote_harvesters_check()
     process_plot()
-
-
 
 if __name__ == '__main__':
     main()
