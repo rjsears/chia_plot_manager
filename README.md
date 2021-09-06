@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.95 - September 3rd, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.96 - September 5th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -838,6 +838,12 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+<b>V0.96 2021-09-05</b>
+   - Rewrote nas_export functions to better function with replace old plot functions when determining
+     what to report to the plotters.
+   - Adding ability for plotter to prioritize between fill empty space and replace old plots
+     since each harvester could be configured differently.
+   
 <b>V0.95 2021-09-03</b>
    - Replaces glances with sysstat commands to check and verify network traffic
    - Update install script to create new network check script based on install directory
