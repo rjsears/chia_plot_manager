@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.95 (2021-09-03)"
+VERSION = "0.96 (2021-09-05)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -154,7 +154,7 @@ def process_plot():
                 if result.returncode != 0:
                     log.debug(result.returncode)
                     log.debug(f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
-                    #notify('URGENT', f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
+                    notify('URGENT', f'replace_plot() Script on {nas_server} FAILED! Fix Immediately!')
                     quit()
             process_control('set_status', 'start')
             if chiaplot.pools:
@@ -430,19 +430,56 @@ def get_next_nas():
     Returns the server name of the server with the most space left.
     This is where we will be sending our next plot! If you only have
     a single harvester/NAS just returns that one. If there are 0
-    available plots on all servers, return ERROR.
+    available plots on all servers, returns False. If you have your
+    plotter set to prioritize filling empty drive space, AND you have
+    harvesters reporting empty drive space (based on their own configuration)
+    then this will return the NAS with the most EMPTY drive space, if there
+    is no empty drive space or you have not prioritized empty drive space,
+    it will return the harvester with the most OLD plots to replace.
     """
     servers = (remote_harvester_report()[0])
     next_nas = []
-    for server in servers:
-        nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
-        log.debug(nas_server)
-        if nas_server['total_plots_until_full'] > 0:
-            next_nas.append(nas_server)
-    if not next_nas:
-        return False
-    else:
-        return sorted(next_nas, key=lambda i: i['total_plots_until_full'], reverse=True)[0].get('server')
+    if chiaplot.remote_harvester_priority == 'fill':
+        log.debug('plotter set to prioritize: FILL')
+        for server in servers:
+            nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available']}
+            log.debug(nas_server) # Should log all nas servers that it is configured to check
+            if nas_server['free_space_available']:
+                next_nas.append(nas_server)
+        if not next_nas: # If we have prioritized filling but there is no more empty drive space available fall back to replacing old plots.
+            log.debug('plotter set to prioritize: FILL, however there is no empty space available on configured harvesters.')
+            for server in servers:
+                nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
+                log.debug(nas_server) # Should log all nas servers that is is configured to check
+                if nas_server['total_plots_until_full'] > 0:
+                    next_nas.append(nas_server)
+            if not next_nas:
+                log.debug('First there was no empty space available on configured harvesters, then we could not find any old plots to replace.')
+                return False
+            else:
+                return sorted(next_nas, key=lambda i: i['total_plots_until_full'], reverse=True)[0].get('server')
+        else:
+            return sorted(next_nas, key=lambda i: i['total_empty_space_plots_until_full'], reverse=True)[0].get('server')
+    else: # Start here is we did not prioritize filling empty space first
+        log.debug('plotter set to prioritize: REPLACE')
+        for server in servers:
+            nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
+            log.debug(nas_server)
+            if nas_server['total_plots_until_full'] > 0:
+                next_nas.append(nas_server)
+        if not next_nas: # If we cannot find any servers with old plots, go here
+            for server in servers:
+                nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available']}
+                log.debug(nas_server)  # Should log all nas servers that it is configured to check
+                if nas_server['free_space_available']:
+                    next_nas.append(nas_server)
+            if not next_nas:
+                log.debug('First there was no old plots to replace and then we could not find any free space.')
+                return False
+            else:
+                return sorted(next_nas, key=lambda i: i['total_empty_space_plots_until_full'], reverse=True)[0].get('server')
+        else:
+            return sorted(next_nas, key=lambda i: i['total_plots_until_full'], reverse=True)[0].get('server')
 
 
 def check_temp_drive_utilization():
@@ -520,6 +557,7 @@ def main():
     remote_harvesters_check()
     process_plot()
 
+
+
 if __name__ == '__main__':
     main()
-
