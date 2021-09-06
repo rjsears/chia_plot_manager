@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.95 (2021-09-03)"
+VERSION = "0.96 (2021-09-05)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -744,7 +744,7 @@ def online_offline_drive(drive, onoffline):
     Function to online and offline a drive for maintenance, etc. A drive that has been
     'offlined' will not have any plots written to it.
     """
-    log.debug(f'online_offline_drive() called with [{drive}] , [{onoffline}]')
+    log.debug(f'online_offline_drive() Started with [{drive}] , [{onoffline}]')
     if get_device_info_by_drive_number(drive) == None:
         print()
         print(f'{red}WARNING{nc}: {blue}{drive}{nc} does not exist or is not mounted on this system!')
@@ -783,7 +783,7 @@ def online_offline_drive(drive, onoffline):
 
 
 def replace_plot():
-    log.debug("replace_plot() Called.....")
+    log.debug("replace_plot() Started")
     if not chianas.replace_non_pool_plots: #Let's just verify that we really want to replace our old plots...
         log.debug('Non-Pool Plot Replacement set to False, moving on......')
         update_receive_plot()
@@ -1309,24 +1309,57 @@ def nas_report_export():
     our total farm report for those running multiple harvesters as well as doing
     health checks. Used to pass information on to our plotter as well.
     """
+    log.debug('nas_report_export() started')
     chianas = DriveManager.read_configs() #reread in case of changes
     chiaplots = PlotManager.get_plot_info() #reread in case of changes
-    log.debug('nas_report_export() started')
     plots_last_day = chianas.current_total_plots_daily
     if plots_last_day == 0:
         plots_last_day = 1
-    if chianas.replace_non_pool_plots and not chianas.fill_empty_drives_first:
+    # We are REPLACING old plots, we ARE NOT filling empty drives first AND we have some old plots to replace. (Trigger 1)
+    if chianas.replace_non_pool_plots and not chianas.fill_empty_drives_first and chiaplots.number_of_old_plots > 1:
+        total_plots_until_full = ((int(get_all_available_system_space("free")[1]) - chianas.empty_drives_low_water_mark) + int(chiaplots.number_of_old_plots))
+        current_plot_replacement_drive = chiaplots.plot_drive
+        approx_days_to_fill_drives = round((int(total_plots_until_full / plots_last_day)), 0)
+        free_space_available = False
+        total_empty_space_plots_until_full = 0
+        replace_non_pool_plots = True # We want to trigger deleting a plot since we want to replace old plots first.
+        trigger = '1'
+    # We are REPLACING old plots, but we want to fill empty drive space FIRST and we have EMPTY drive space to fill. (Trigger 2)
+    elif chianas.replace_non_pool_plots and chianas.fill_empty_drives_first and (get_all_available_system_space("free")[1]) > chianas.empty_drives_low_water_mark:
         total_plots_until_full = (int(get_all_available_system_space("free")[1]) + int(chiaplots.number_of_old_plots))
         current_plot_replacement_drive = chiaplots.plot_drive
         approx_days_to_fill_drives = round((int(total_plots_until_full / plots_last_day)), 0)
-    elif chianas.replace_non_pool_plots and chianas.fill_empty_drives_first and (get_all_available_system_space("free")[1]) < chianas.empty_drives_low_water_mark:
-        total_plots_until_full = (int(get_all_available_system_space("free")[1]) + int(chiaplots.number_of_old_plots))
+        free_space_available = True
+        total_empty_space_plots_until_full = (int(get_all_available_system_space("free")[1]) - chianas.empty_drives_low_water_mark)
+        replace_non_pool_plots = False # In this case we do NOT want to trigger deleting a plot since we are going to fill the empty space first.
+        trigger = '2'
+    # We are REPLACING old plots, but we want to fill empty drive space FIRST but we have NO EMPTY drive space left to fill. (Trigger 3)
+    elif chianas.replace_non_pool_plots and chianas.fill_empty_drives_first and not (get_all_available_system_space("free")[1]) > chianas.empty_drives_low_water_mark:
+        total_plots_until_full = (int(chiaplots.number_of_old_plots))
         current_plot_replacement_drive = chiaplots.plot_drive
         approx_days_to_fill_drives = round((int(total_plots_until_full / plots_last_day)), 0)
-    else:
-        total_plots_until_full = int(get_all_available_system_space("free")[1])
+        free_space_available = False
+        total_empty_space_plots_until_full = 0
+        replace_non_pool_plots = True  # We want to trigger deleting a plot since we have no empty drive space to fill.
+        trigger = '3'
+    # We are NOT replacing old plots, and we have empty drive space left. (Trigger 4)
+    elif (get_all_available_system_space("free")[1]) > chianas.empty_drives_low_water_mark:
+        total_plots_until_full = (int(get_all_available_system_space("free")[1]) - chianas.empty_drives_low_water_mark)
         current_plot_replacement_drive = 'N/A'
-        approx_days_to_fill_drives = round((int(get_all_available_system_space('free')[1] / plots_last_day)), 0)
+        approx_days_to_fill_drives = round((int(total_plots_until_full / plots_last_day)), 0)
+        free_space_available = True
+        total_empty_space_plots_until_full = (int(get_all_available_system_space("free")[1]) - chianas.empty_drives_low_water_mark)
+        replace_non_pool_plots = False
+        trigger = '4'
+    # We are NOT replacing old plots, and we have NO empty drive space left. (Trigger 5)
+    else:
+        total_plots_until_full = (int(get_all_available_system_space("free")[1] - chianas.empty_drives_low_water_mark))
+        current_plot_replacement_drive = 'N/A'
+        approx_days_to_fill_drives = round((int(total_plots_until_full / plots_last_day)), 0)
+        free_space_available = False
+        total_empty_space_plots_until_full = (int(get_all_available_system_space("free")[1]) - chianas.empty_drives_low_water_mark)
+        replace_non_pool_plots = False
+        trigger = '5'
     nas_server_export = dict([
         ('server', chianas.hostname),
         ('total_plots', int(get_all_available_system_space("used")[1])),
@@ -1334,17 +1367,19 @@ def nas_report_export():
         ('total_tib_farming', int(check_plots()[1])),
         ('total_plot_drives', int(get_all_available_system_space("total")[0])),
         ('total_plots_until_full', total_plots_until_full),
-        ('total_empty_space_plots_until_full', int(get_all_available_system_space("free")[1])),
+        ('total_empty_space_plots_until_full', total_empty_space_plots_until_full),
+        ('free_space_available', free_space_available),
         ('max_plots_when_full', int(get_all_available_system_space("total")[1])),
         ('plots_last_day', plots_last_day),
         ('avg_plots_per_hour', round((int(chianas.current_total_plots_daily)) / 24, 1)),
         ('avg_plotting_speed', round((int(chianas.current_total_plots_daily)) * int(plot_size_g) / 1000, 2)),
         ('approx_days_to_fill_drives', approx_days_to_fill_drives),
         ('current_plot_drive', chianas.current_plotting_drive),
-        ('replace_non_pool_plots', chianas.replace_non_pool_plots),
+        ('replace_non_pool_plots', replace_non_pool_plots),
         ('total_number_of_old_plots', chiaplots.number_of_old_plots),
         ('current_plot_replacement_drive', current_plot_replacement_drive),
-        ('total_number_of_portable_plots', chiaplots.number_of_portable_plots)
+        ('total_number_of_portable_plots', chiaplots.number_of_portable_plots),
+        ('trigger', trigger)
     ])
     try:
         with open(local_export_file, 'w') as nas_export:
@@ -1667,4 +1702,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

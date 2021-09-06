@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.95 (2021-09-03)"
+VERSION = "0.96 (2021-09-05)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
