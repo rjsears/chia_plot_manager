@@ -228,11 +228,12 @@ def process_control(command, action):
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
         elif command == 'check_status':
             transfer_in_progress = check_transfer()
-            if checkIfProcessRunning('nc') and transfer_in_progress:
-                log.debug(f'NC is running and Network Traffic Exists, We are currently Running a Transfer, Exiting')
+            process_running = checkIfProcessRunning('ncat')
+            if process_running and transfer_in_progress:
+                log.debug(f'NCAT is running and Network Traffic Exists, We are currently Running a Transfer, Exiting')
                 return True
-            elif checkIfProcessRunning('nc') and not transfer_in_progress:
-                log.debug('WARNING! - NC is running but there is no network traffic! Forcing Reset')
+            elif process_running and not transfer_in_progress:
+                log.debug('WARNING! - NCAT is running but there is no network traffic! Forcing Reset')
                 log.debug(f'Removing remote checkfile from {nas_server}')
                 try:
                     subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
@@ -245,7 +246,7 @@ def process_control(command, action):
                     log.warning(e.output)
                 main()
             else:
-                log.debug(f'NC is not running and there is no network traffic!')
+                log.debug(f'NCAT is not running and there is no network traffic!')
                 return False
         else:
             return
@@ -564,5 +565,7 @@ def main():
     remote_harvesters_check()
     process_plot()
 
+
 if __name__ == '__main__':
     main()
+
