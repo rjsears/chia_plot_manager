@@ -213,7 +213,7 @@ nuke_snap (){
 update_software_and_system(){
   echo -e "\n\n${green}Updating System Software and Installing Required Packages.........${nc}\n"
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
-  apt install locate vim wget smartmontools tree unzip net-tools tmux python3-pip pv nmap sysstat postfix mailutils -y
+  apt install locate vim wget smartmontools tree unzip net-tools tmux python3-pip pv nmap ncat sysstat postfix mailutils -y
   if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
       apt install openssh-server -y
       systemctl enable openssh
@@ -410,7 +410,6 @@ EOF
 }
 
 create_send_plot_script(){
-  echo -e "\nCreating ${green}$current_directory/send_plot.sh${nc}....."
   cat <<EOF >>$current_directory/send_plot.sh
 #!/bin/bash
 
@@ -420,7 +419,7 @@ create_send_plot_script(){
 # directory location!
 
 ssh root@\$3 "nohup $current_directory/receive_plot.sh \$2 > foo.out 2> foo.err < /dev/null &"
-sudo /usr/bin/pv "\$1" | sudo /usr/bin/nc -q 5 \$3 4040
+sudo /usr/bin/pv "\$1" | sudo /usr/bin/ncat \$3
 exit
 EOF
 }
