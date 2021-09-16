@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.96 (2021-09-05)"
+VERSION = "0.97 (2021-09-16)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -14,6 +14,10 @@ that manages the drives themselves and decides based on various criteria where
 the incoming plots will be placed. This script simply sends those plots when
 they are ready to send.
 Updates
+  v0.97 2021-09-16
+  - Added ability to read status of remote transfers on harvesters and determine
+    which harvester to select based on this information. We don't want to send a
+    plot to a harvester already receiving a plot.
   v0.94 2021-08-08
   - Added ability to remove and replace old style plots one-at-a-time if the receiving
     nas is configured properly. Depending on configuration the NAS that is receiving
@@ -93,7 +97,7 @@ def remote_harvesters_check():
     global replace_plots
     nas_server = get_next_nas()
     if not nas_server:
-        log.debug('Could not find any available Plot space on configured Harvesters. Stopping Here.')
+        log.debug('Could not find any available Plot space on configured Harvesters, or all harvesters have transfers running already. Stopping Here.')
         quit()
     else:
         log.debug(f'Remote Harvester(s) Found - Selected NAS/Harvester: {nas_server}')
@@ -160,11 +164,14 @@ def process_plot():
             if chiaplot.pools:
                 plot_to_process = 'portable.'+plot_to_process
             subprocess.call([f'{script_path.joinpath("send_plot.sh")}', plot_path, plot_to_process, nas_server])
+            '''
+            # Removing this for now, not sure we need it after moving to ncat.
             try:
                 subprocess.call(['ssh', nas_server, f'{script_path.joinpath("utilities/kill_nc.sh")}'])  # make sure all of the nc processes are dead on the receiving end
                 log.debug('Remote nc kill called!')
             except subprocess.CalledProcessError as e:
                 log.warning(e.output)
+            '''
             if verify_plot_move(remote_mount, plot_path, plot_to_process):
                 log.info('Plot Sizes Match, we have a good plot move!')
             else:
@@ -239,11 +246,14 @@ def process_control(command, action):
                     subprocess.check_output(['ssh', nas_server, 'rm %s' % f'{remote_checkfile}'])
                 except subprocess.CalledProcessError as e:
                     log.warning(e.output)
+                '''
+                # Removing this for now, not sure we need it after moving to ncat.
                 try:
                     subprocess.call(['ssh', nas_server, script_path.joinpath('utilities/kill_nc.sh')])  # make sure all of the nc processes are dead on the receiving end
                     log.debug('Remote nc kill called!')
                 except subprocess.CalledProcessError as e:
                     log.warning(e.output)
+                '''
                 main()
             else:
                 log.debug(f'NCAT is not running and there is no network traffic!')
@@ -410,7 +420,7 @@ def remote_harvester_report():
     servers = []
     for harvester in remote_harvesters:
         remote_export_file = (script_path.joinpath(f'export/{harvester}_export.json').as_posix())
-        get_remote_exports(harvester, remote_export_file)
+#        get_remote_exports(harvester, remote_export_file)
         with open(remote_export_file, 'r') as remote_host:
             harvester = json.loads(remote_host.read())
             servers.append(harvester)
@@ -442,7 +452,9 @@ def get_next_nas():
     harvesters reporting empty drive space (based on their own configuration)
     then this will return the NAS with the most EMPTY drive space, if there
     is no empty drive space or you have not prioritized empty drive space,
-    it will return the harvester with the most OLD plots to replace.
+    it will return the harvester with the most OLD plots to replace. Also
+    checks to see if there is a plot currently being transferred to the
+    harvester and if so, will not add it to the ist of harvesters.
     """
     log.debug('get_next_nas() called')
     servers = (remote_harvester_report()[0])
@@ -450,19 +462,27 @@ def get_next_nas():
     if chiaplot.remote_harvester_priority == 'fill':
         log.debug('plotter set to prioritize: FILL')
         for server in servers:
-            nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available']}
+            nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available'], 'remote_transfer_active': server['remote_transfer_active']}
             log.debug(nas_server) # Should log all nas servers that it is configured to check
             if nas_server['free_space_available']:
-                next_nas.append(nas_server)
+                log.debug(f"Free Space found on {nas_server['server']}")
+                if not nas_server['remote_transfer_active']:
+                    next_nas.append(nas_server)
+                else:
+                    log.debug(f"Server: [{nas_server['server']}] has a transfer currently active, we cannot send a plot to [{nas_server['server']}] right now.")
         if not next_nas: # If we have prioritized filling but there is no more empty drive space available fall back to replacing old plots.
-            log.debug('plotter set to prioritize: FILL, however there is no empty space available on configured harvesters.')
+            log.debug('plotter set to prioritize: FILL, however there is no empty space available on configured harvesters, OR transfers are currently taking place. Checking for OLD PLOTS to replace')
             for server in servers:
-                nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
+                nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full'], 'remote_transfer_active': server['remote_transfer_active']}
                 log.debug(nas_server) # Should log all nas servers that is is configured to check
                 if nas_server['total_plots_until_full'] > 0:
-                    next_nas.append(nas_server)
+                    log.debug(f"Old Plots found on {nas_server['server']}")
+                    if not nas_server['remote_transfer_active']:
+                        next_nas.append(nas_server)
+                    else:
+                        log.debug(f"Server: [{nas_server['server']}] has a transfer currently active, we cannot send a plot to [{nas_server['server']}] right now.")
             if not next_nas:
-                log.debug('First there was no empty space available on configured harvesters, then we could not find any old plots to replace.')
+                log.debug('First there was no empty space available on configured harvesters, then we could not find any old plots to replace, or transfers are currently taking place.')
                 return False
             else:
                 return sorted(next_nas, key=lambda i: i['total_plots_until_full'], reverse=True)[0].get('server')
@@ -471,18 +491,26 @@ def get_next_nas():
     else: # Start here is we did not prioritize filling empty space first
         log.debug('plotter set to prioritize: REPLACE')
         for server in servers:
-            nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full']}
+            nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full'], 'remote_transfer_active': server['remote_transfer_active']}
             log.debug(nas_server)
             if nas_server['total_plots_until_full'] > 0:
-                next_nas.append(nas_server)
+                log.debug(f"Old Plots found on {nas_server['server']}")
+                if not nas_server['remote_transfer_active']:
+                    next_nas.append(nas_server)
+                else:
+                    log.debug(f"Server: [{nas_server['server']}] has a transfer currently active, we cannot send a plot to [{nas_server['server']}] right now.")
         if not next_nas: # If we cannot find any servers with old plots, go here
             for server in servers:
-                nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available']}
+                nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available'], 'remote_transfer_active': server['remote_transfer_active']}
                 log.debug(nas_server)  # Should log all nas servers that it is configured to check
                 if nas_server['free_space_available']:
-                    next_nas.append(nas_server)
+                    log.debug(f"Free Space found on {nas_server['server']}")
+                    if not nas_server['remote_transfer_active']:
+                        next_nas.append(nas_server)
+                    else:
+                        log.debug(f"Server: [{nas_server['server']}] has a transfer currently active, we cannot send a plot to [{nas_server['server']}] right now.")
             if not next_nas:
-                log.debug('First there was no old plots to replace and then we could not find any free space.')
+                log.debug('First there was no old plots to replace and then we could not find any free space, or all of your harvesters have transfers currently running.')
                 return False
             else:
                 return sorted(next_nas, key=lambda i: i['total_empty_space_plots_until_full'], reverse=True)[0].get('server')
@@ -564,6 +592,7 @@ def main():
     system_checks()
     remote_harvesters_check()
     process_plot()
+
 
 
 if __name__ == '__main__':
