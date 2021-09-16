@@ -420,7 +420,7 @@ def remote_harvester_report():
     servers = []
     for harvester in remote_harvesters:
         remote_export_file = (script_path.joinpath(f'export/{harvester}_export.json').as_posix())
-#        get_remote_exports(harvester, remote_export_file)
+        get_remote_exports(harvester, remote_export_file)
         with open(remote_export_file, 'r') as remote_host:
             harvester = json.loads(remote_host.read())
             servers.append(harvester)
