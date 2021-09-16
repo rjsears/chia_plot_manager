@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.96 (2021-09-05)"
+VERSION = "0.97 (2021-09-16)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -46,6 +46,10 @@ other things like notifications and stuff.
 
 
  Updates
+   v0.97 2021-09-16
+   - Added ability to see if remote transfer is active via export file to plotter(s).
+   - Implement @lru_cache to speed up execution when calling the same function more than once. 
+   
    v0.94 2021-08-08
    - Added ability to search for any UUID across any harvester and it will return 
      the harvester the UUID is located on as well as the mountpoint where it is
@@ -165,6 +169,7 @@ import mmap
 import json
 import paramiko
 import pathlib
+from functools import lru_cache
 from drivemanager_classes import DriveManager, PlotManager, config_file
 chianas = DriveManager.read_configs()
 chiaplots = PlotManager.get_plot_info()
@@ -1016,6 +1021,7 @@ def build_receive_plot(type, drive):
         log.info(f'Was: {chianas.current_plotting_drive},  Now: {drive}')
 
 
+@lru_cache(maxsize = 2) #cache the results of this function the first time is is called for use later in the script.
 def check_for_active_remote_transfer():
     """
     Function to check and verify if we have a remote transfer active to prevent
@@ -1312,6 +1318,7 @@ def nas_report_export():
     log.debug('nas_report_export() started')
     chianas = DriveManager.read_configs() #reread in case of changes
     chiaplots = PlotManager.get_plot_info() #reread in case of changes
+    remote_transfer_active = check_for_active_remote_transfer()
     plots_last_day = chianas.current_total_plots_daily
     if plots_last_day == 0:
         plots_last_day = 1
@@ -1379,6 +1386,7 @@ def nas_report_export():
         ('total_number_of_old_plots', chiaplots.number_of_old_plots),
         ('current_plot_replacement_drive', current_plot_replacement_drive),
         ('total_number_of_portable_plots', chiaplots.number_of_portable_plots),
+        ('remote_transfer_active', remote_transfer_active),
         ('trigger', trigger)
     ])
     try:
