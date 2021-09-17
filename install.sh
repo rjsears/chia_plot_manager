@@ -1,12 +1,15 @@
 #! /bin/bash
 
-# Version V0.95 2021-09-03
+# Version V0.97 2021-09-17
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
 # the system with various tools and tings required to run the various
 # parts of chia_plot_manager.
 
 # I use this to create new NAS/Plotter servers.
+
+
+CURRENTDATETIME=`date +"%Y-%m-%d %T"`
 
 red='\033[0;31m'
 yellow='\033[0;33m'
@@ -405,7 +408,30 @@ create_check_network_io_script(){
   echo -e "\nCreating ${green}$current_directory/check_network_io.sh${nc}....."
   cat <<EOF >>$current_directory/check_network_io.sh
 #! /bin/bash
-/usr/bin/sar -n DEV 1 3 | egrep \$1 > $current_directory/network_stats.io
+# Script automatically created by install script on: $CURRENTDATETIME"
+network_interface=\$1
+
+check_network_traffic(){
+echo -e "Checking for network traffic on $network_interface"
+if [[ -f /root/plot_manager/network_stats.io ]]; then
+   echo -e "\nFound old stats file, deleting...."
+   rm $current_directory/network_stats.io
+   /usr/bin/sar -n DEV 1 3 | egrep \$network_interface > $current_directory/network_stats.io
+   sleep 1
+else
+   echo -e "\nDid not find old stats file...."
+   /usr/bin/sar -n DEV 1 3 | egrep \$network_interface > $current_directory/network_stats.io
+   sleep 1
+fi
+
+if [[ -f $current_directory/network_stats.io ]]; then
+   return 0
+else
+   return 1
+fi
+}
+
+until check_network_traffic ; do : ; done
 EOF
 }
 
