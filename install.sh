@@ -412,8 +412,8 @@ create_check_network_io_script(){
 network_interface=\$1
 
 check_network_traffic(){
-echo -e "Checking for network traffic on $network_interface"
-if [[ -f /root/plot_manager/network_stats.io ]]; then
+echo -e "Checking for network traffic on \$network_interface"
+if [[ -f $current_directory/network_stats.io ]]; then
    echo -e "\nFound old stats file, deleting...."
    rm $current_directory/network_stats.io
    /usr/bin/sar -n DEV 1 3 | egrep \$network_interface > $current_directory/network_stats.io
