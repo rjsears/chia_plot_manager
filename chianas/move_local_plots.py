@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.96 (2021-09-05)"
+VERSION = "0.97 (2021-09-16)"
 
 # This script is part of my plot management set of tools. This
 # script is used to move plots from one location to another on
@@ -84,20 +84,23 @@ def update_move_local_plot():
     old style plot replacement as well as filling_local_drives_first.
     """
     log.debug("update_move_local_plot() Started")
+    internal_plot_drive_to_use = get_internal_plot_drive_to_use()[0]
+    if internal_plot_drive_to_use == '/':
+        internal_plot_drive_to_use = get_internal_plot_drive_to_use()
     if not chianas.replace_non_pool_plots:  # If we are not replacing old plots with new portable plots, run the following code
         log.debug('Replace Plots has NOT been set in config, will build update_move_local_plot script for normal operation.')
         try:
             if chianas.current_internal_drive == get_internal_plot_drive_to_use()[0]:
                 log.debug(f'Currently Configured Internal Plot Drive: {chianas.current_internal_drive}')
-                log.debug(f'System Selected Internal Plot Drive:      {get_internal_plot_drive_to_use()[0]}')
+                log.debug(f'System Selected Internal Plot Drive:      {internal_plot_drive_to_use}')
                 log.debug('Configured and Selected Drives Match!')
                 log.debug(f'No changes necessary to Internal Plotting Drive')
                 log.debug(
                     f'Plots left available on configured Internal plotting drive: {get_drive_info("space_free_plots_by_mountpoint", chianas.current_internal_drive)}')
             else:
-                notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
-                chianas.update_current_internal_drive(get_internal_plot_drive_to_use()[0])
-                log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {get_internal_plot_drive_to_use()[0]}')
+                notify('Internal Plot Drive Updated', f'Internal Plot Drive Updated: Was: {chianas.current_internal_drive},  Now: {internal_plot_drive_to_use}')
+                chianas.update_current_internal_drive(internal_plot_drive_to_use)
+                log.info(f'Updated Internal Plot Drive, Was: {chianas.current_internal_drive},  Now: {internal_plot_drive_to_use}')
         except TypeError:
             log.debug ('No Additional Drives found to be used as internal plot drives!')
             log.debug('Please add additional drive manually or via auto_drive.py and try again!')
@@ -109,7 +112,7 @@ def update_move_local_plot():
             if (get_all_available_system_space("free")[1]) > chianas.empty_drives_low_water_mark:
                 log.debug('Found Empty Drive Space!')
                 log.debug(f'Low Water Mark: {chianas.empty_drives_low_water_mark} and we have {get_all_available_system_space("free")[1]} available')
-                drive = get_internal_plot_drive_to_use()[0]
+                drive = internal_plot_drive_to_use
                 try:
                     if chianas.current_internal_drive == drive:
                         log.debug(f'Currently Configured Internal Plot Drive: {chianas.current_internal_drive}')
