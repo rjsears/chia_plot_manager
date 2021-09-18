@@ -414,12 +414,12 @@ network_interface=\$1
 check_network_traffic(){
 echo -e "Checking for network traffic on \$network_interface"
 if [[ -f $current_directory/network_stats.io ]]; then
-   echo -e "\nFound old stats file, deleting...."
+   echo -e "check_network_io.sh: Found old stats file, deleting...."
    rm $current_directory/network_stats.io
    /usr/bin/sar -n DEV 1 3 | egrep \$network_interface > $current_directory/network_stats.io
    sleep 1
 else
-   echo -e "\nDid not find old stats file...."
+   echo -e "check_network_io.sh: Did not find old stats file...."
    /usr/bin/sar -n DEV 1 3 | egrep \$network_interface > $current_directory/network_stats.io
    sleep 1
 fi
