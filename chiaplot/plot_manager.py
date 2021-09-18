@@ -593,8 +593,5 @@ def main():
     remote_harvesters_check()
     process_plot()
 
-
-
 if __name__ == '__main__':
     main()
-
