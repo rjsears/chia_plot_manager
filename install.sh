@@ -445,7 +445,7 @@ create_send_plot_script(){
 # directory location!
 
 ssh root@\$3 "nohup $current_directory/receive_plot.sh \$2 > foo.out 2> foo.err < /dev/null &"
-sudo /usr/bin/pv "\$1" | sudo /usr/bin/ncat \$3
+sudo /usr/bin/pv "\$1" | sudo /usr/bin/ncat --send-only \$3
 exit
 EOF
 }
