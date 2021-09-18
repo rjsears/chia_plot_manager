@@ -188,7 +188,7 @@ nc='\033[0m'
 
 # Let's do some housekeeping
 plot_size_k = 108995911228
-plot_size_g = 101.3623551
+plot_size_g = 102
 receive_script = script_path.joinpath('receive_plot.sh')
 replace_plots_receive_script = script_path.joinpath('replace_plots_receive_plot.sh')
 remote_transfer_active_file = script_path.joinpath('remote_transfer_is_active')
@@ -1570,7 +1570,7 @@ def send_new_plot_notification():
             notify('New Plot Received', 'New Plot Received')
         os.remove('new_plot_received')
 
-def check_plots():
+def check_plots_old(): # new chia version changed the way they report things in the debug file!
     with open(chianas.chia_log_file, 'rb', 0) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         i = m.rfind(b'Loaded')
@@ -1589,6 +1589,24 @@ def check_plots():
             TiB = 0
         return plots, f'{TiB:.0f}'
 
+def check_plots():
+    with open(chianas.chia_log_file, 'rb', 0) as f:
+        m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        i = m.rfind(b'Total')
+        try:
+            m.seek(i)
+        except ValueError as e:
+            return 0, 0
+        line = m.readline()
+        newline = line.decode("utf-8")
+        x = newline.split()
+        try:
+            plots = int(x[1])
+            TiB = float((plots * 102) / 1024)
+        except IndexError:
+            plots = 0
+            TiB = 0
+        return plots, f'{TiB:.0f}'
 
 def check_temp_drive_utilization():
     """
