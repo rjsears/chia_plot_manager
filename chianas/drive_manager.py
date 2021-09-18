@@ -1008,7 +1008,7 @@ def build_receive_plot(type, drive):
     """
     f = open(receive_script, 'w+')
     f.write('#! /bin/bash \n')
-    f.write(f'ncat -l > "{drive}/$1" < /dev/null')
+    f.write(f'ncat -l --recv-only > "{drive}/$1" < /dev/null')
     f.close()
     os.chmod(receive_script, 0o755)
     chianas.update_current_plot_replacement_drive(drive)
