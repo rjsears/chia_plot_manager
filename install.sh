@@ -412,7 +412,7 @@ create_check_network_io_script(){
 network_interface=\$1
 
 check_network_traffic(){
-echo -e "Checking for network traffic on \$network_interface"
+echo -e "check_network_io.sh: Checking for network traffic on \$network_interface"
 if [[ -f $current_directory/network_stats.io ]]; then
    echo -e "check_network_io.sh: Found old stats file, deleting...."
    rm $current_directory/network_stats.io
