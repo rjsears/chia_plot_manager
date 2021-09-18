@@ -16,7 +16,9 @@ Multi Server Chia Plot and Drive Management Solution
 <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/rjsears/chia_plot_manager?style=plastic">
 </h4>
 </div><br><br>
-<b><em> Now fully supports pools and automatic removal of old plots on a one-by-one basis when replacing with new portable pool plots! Also includes a harvester-wide UUID search allowing you to locate any drive on any harvester by UUID and determine it's mountpoint! <br><br> </b></em>
+<b><em> Now fully supports pools and automatic removal of old plots on a one-by-one basis when replacing with new portable pool plots! Also includes a harvester-wide UUID search allowing you to locate any drive on any harvester by UUID and determine it's mountpoint! <br><br> 
+ 
+You must be running Chia Version 1.2.6 or higher for the reporting to work correctly!</b></em>
 <br>
 <p align="left"><font size="3">
 Hopefully if you are reading this you know what Chia is and what a plot is. I am pretty new to Chia myself but I determined that I needed to come up with a way to manage my plots and hard drives that hold thse plots somewhat automatically since my job as a pilot keeps me gone a lot. I <em>am not</em> a programmer, so please, use this code with caution, test it yourself and provide feedback. This is a working version that is currently running and working for my setup which I will explain below. Hopefully it will be of some help to others, it is the least I can do to give back to the Chia community.
