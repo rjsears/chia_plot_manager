@@ -1037,7 +1037,12 @@ def check_for_active_remote_transfer():
             log.debug(f'Remote Transfer file present but there is no network traffic on interface: {chianas.plot_receive_interface}')
             log.debug('Resetting Remote Transfer file now......')
             os.remove(remote_transfer_active_file)
-            return False
+            log.debug(f'No Network Activity Detected, Lets check a second time to be sure.....')
+            if check_network_activity(): # Once we remove the checkfile, let's just double verify we don't have network traffic
+                log.debug('Network traffic has been detected, a Remote Transfer is in progress.')
+                return True
+            else:
+                return False
     else:
         log.debug('Remote Transfer File does not exist, lets check for network traffic to verify....')
         if check_network_activity():
@@ -1045,12 +1050,22 @@ def check_for_active_remote_transfer():
             return True
         else:
             log.debug('No Current Remote Transfers are taking place.')
-            return False
+            log.debug(f'No Network Activity Detected, Lets check a second time to be sure.....')
+            if check_network_activity(): # Let's just double verify we don't have network traffic
+                log.debug('Network traffic has been detected, a Remote Transfer is in progress.')
+                return True
+            else:
+                return False
+
 
 def check_network_activity():
     """
     Here we are checking network activity on the network interface we are receiving plots on from our plotter. If there is
-    network activity, then we are most likely receiving a plot and don't want to make any changes.
+    network activity, then we are most likely receiving a plot and don't want to make any changes. Make sure you check
+    how much activity is on your circuit during a file transfer and set this threshold in the config file so this works
+    properly. If you are getting a false return showing no transfer when there is a transfer, then you may have the setting
+    set to high in the config file. Remember that setting is based on a % of interface utilization! I use a dedicated
+    interface so I set this to 2% in my config file. YMMV
     """
     log.debug('check_network_activity() called')
     try:
