@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Version V0.97 2021-09-17
+# Version V0.98 2021-10-15
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
 # the system with various tools and tings required to run the various
