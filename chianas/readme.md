@@ -60,7 +60,7 @@ be. This is a standard YAML file, so leave the formatting as you see it or you w
 
 
 ```
-# v0.98 2021-10-05
+# v0.98 2021-10-15
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
