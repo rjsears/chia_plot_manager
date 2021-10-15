@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.97 - September 16th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.98 - October 15th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -67,9 +67,9 @@ Hopefully, this might provide some inspiration for others in regard to their Chi
 <div align="left">
 
 <b><em>In its simplest form, chia_plot_manager bridges the gap between creating a plot, and managing that plot after it has been created.</em></b><br><br>
-This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a singe plotting server (chisplot01) creating Chia plots. Once the plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once completed was a little more interesting. My plotting server has the capacity to plot 60 parallel plots at a time and that is where I started to have issues.<br><br>
+This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a multiple plotting servers (chiaplot01, chiaplot02, etc) creating Chia plots. Once a plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01, chianas02, etc) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once completed was a little more interesting. My plotting servers have the capacity to plot 150 plots a day and that is where I started to have issues.<br><br>
 
-One of those issues that I faced was the relative slow speed at which plots could be moved from the plotting server to the storage server. The long and short of it was simple - I could not continue to plot 60 at a time as I could not move them off the plotting server fast enough not to run out of insanely expensive NVMe drive space. Even with 10Gbe connections directly between the two devices, using ```mv``` or ```cp``` on an NFS mount was pretty slow, others suggested ```rsync``` which was also pretty slow due to encryption. The same held true for ```scp```. I even went so far as scrapping the ssh that came with Ubunti 20.04 and compiling and installing High Performance SSH from the Pittsburgh Supercomputing Center. While it was faster it did not come close to maxing out my dedicated 10Gbe link. What I did know is that the problem was not the network. Each machine was connected to a dedicated 10Gbe port on a Cisco Nexus 9000 on a dedicated data VLAN specifically for moving those plots. Iperf was able to saturate the 10Gbe link with zero problems. <br>
+One of those issues that I faced was the relative slow speed at which plots could be moved from the plotting server to the storage server. The long and short of it was simple - I could not continue to plot 150 plots a day per plotter as I could not move them off the plotting server fast enough not to run out of insanely expensive NVMe drive space. Even with 10Gbe connections directly between the two devices, using ```mv``` or ```cp``` on an NFS mount was pretty slow, others suggested ```rsync``` which was also pretty slow due to encryption. The same held true for ```scp```. I even went so far as scrapping the ssh that came with Ubunti 20.04 and compiling and installing High Performance SSH from the Pittsburgh Supercomputing Center. While it was faster it did not come close to maxing out my dedicated 10Gbe link. What I did know is that the problem was not the network. Each machine was connected to a dedicated 10Gbe port on a Cisco Nexus 9000 on a dedicated data VLAN specifically for moving those plots. Iperf was able to saturate the 10Gbe link with zero problems. <br>
 
 Next I wanted to make sure the problem was not related to the media I was copying the data to across the wire. I installed a pair of Intel P3700 PCIe NVMe drives in a strip RAID configuration and did a bunch of tests to and from that mountpoint locally and across the wire. As suspected, locally the drives performed like magic, across the wire, they performed at exactly the same speed as my spinners. Clearly the drive medium was also not the problem. It had to be the network. <br>
 
@@ -81,9 +81,9 @@ It is also very interesting to note that TrueNAS utilizes netcat for replication
 
 As far as plots go, most folks recommend not using some type of RAID array to protect your plots from loss. the thought process is that if you lose a single plotting drive, no big deal, toss it in the trash and put a replacement drive in and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine drive RAIDZ2 vdevs in place and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a jbod as suggested by many others. The question was how to manage getting the plots onto the drives and what to do when the drives filled up.<br>
 
-Welcome to my project! I ended up with basically a client/client/client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to the NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work.
+Welcome to my project! I ended up with basically a client/client/client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to a NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work.
  
-Beginning with V0.9, the software now supports multiple Harvesters/NASs across the board, both from a reporting standpoint and also from the plotter standpoint. When configured in a multi-harvester mode, the plotter will query each Harvester to find out which one has the most space and send the plot to that Harvester. I have added in network checks and if a Harvester that you have configured fails the check, yu will get an immediate notification. If you are running the farm report, it will notify you on the report.
+Beginning with V0.9, the software now supports multiple Harvesters/NASs across the board, both from a reporting standpoint and also from the plotter standpoint. When configured in a multi-harvester mode, the plotter will query each Harvester to find out which one has the most space and send the plot to that Harvester. I have added in network checks and if a Harvester that you have configured fails the check, you will get an immediate notification. If you are running the farm report, it will notify you on the report. If you are running version 0.98 or higher, you can check the health of your remote harvesters from any harvester properly configured by running ```./drive_manager.py -hr```.
  
 Beginning in V0.94, we now fully support portable plot management as well as old style plot replacement with portable pool plots. By replacing your old plots one-at-a-time, you maximize the number of plots you are farming at all times. Also has a feature to fill all of your empty drive space first with your new pool plots before starting to replace your old plots. Includes a low water mark to help manage the process. 
  
@@ -93,13 +93,12 @@ Beginning in V0.94, we now fully support portable plot management as well as old
   <li>Determines if the plot is complete based on the size and name of the plot (currently k32 only)</li>
   <li>Checks to see if we are already sending a plot to a Harvester/NAS, if so, stops</li>
   <li>When it is clear to send, picks which plot to send and netcats it to the Harvester/NAS</li>
-  <li>If you have configured multi-Harvester mode, pics the best Harvester based on available plot space</li>
+  <li>If you have configured multi-Harvester mode, picks the best Harvester based on available plot space and other parameters you set</li>
   <li>If you have configured for pooling, appends "portable." to the name of the plot before sending it.</li>
   <li>If you have configured replace_non_pool_plots on your harvester, it will ask your harvester to delete a plot to make space.</li> 
   <li>Utilizing an ssh subprocess, starts a receiving netcat on the selected Harvester/NAS</li>
   <li>After the transfer is complete, checks the exact file size of the plot on both systems as a basic verification</li>
   <li>Once files sizes are verified, deletes the sent plot</li>
-  <li>Kills any lingering netcat connections on the selected Harvester/NAS</li>
   <li>Supports any number of harvesters and prioritizes sending plots to the harvester with the most space available (Empty plot space + old plots to replace = total space available.</li>
   <li>If replacing old plots with new pool plots, above utilizes number of plot spaces available based on free space + number of old plots.</li>
 </ul>
@@ -155,7 +154,7 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
   <li><a href="https://github.com/truenas/py-SMART">py-SMART (0.3)</a> - Used for reading drive information</li>
   <li><a href="https://pypi.org/project/natsort/">Natsort (7.1.1)</a> - Used for natural sorting of drive numbers</li>
  <li><a href="https://github.com/sysstat/sysstat">Sysstat</a> - Used to monitor Disk and Network I/O Stats</li>
- <li><a href="http://www.paramiko.org/">Paramiko (2.7.2)</a> - Used to grab remote harvester stats</li>
+ <li><a href="https://github.com/willmcgugan/rich">RICH</a> - Used to generate reports</li>
  
  </ul>
  <hr>
@@ -164,14 +163,14 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 
 Here is a very in-depth installation document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
 <br><br>
-<b>UPDATE: The above google doc is WAY out of date, install is much easier now with only a single configuration file to edit. I will make an update to this soon!</b>
+ <b>UPDATE: The above google doc is <b>WAY</b> out of date, install is much easier now with only a single configuration file to edit. I will make an update to this soon!</b>
  
 The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>IN-DEPTH</em> instructions pretty much step-by-step, take a look at the google doc I linked to above. Again, please read the document above for very in-depth instructions.
 
 #### Network Configuration
 
 Before we get too deep into the installation and configuration of the scripts, I want to explain how ```I``` have my servers and network setup. Everything you read or see here will be based on this network diagram. If you have multiple Harvesters, they would connect the same way the first one does. Something to note, you absolutely should separate your Harvester/NAS traffic from your plotter and that of your farmer traffic to and from your Harvesters. Failure to do so can result in link saturation during plot transfers and your main node falling offline as a result.<br><br> On all of the servers I put host entries in ```/etc/hosts``` for the <em>INTERNAL</em> ip address of each of the servers. I use 10Gbe connections on the back and I want all of the plots to be moved across this network. By creating a separate network (10.200.95.x/24 in my example) without a default gateway, I can guarantee the only traffic on that network is plots being moved around and nothing else. <br><br>
-You could have an entire discussion on network performance and the install script will offer to make some changes for you to your networking parameters if you like. What I have found is that my scripts will generally saturate a 10Gbe link without issue but once you load down your plotter and Harvesters/NAS with massive CPU, memory and I/O tasks, you really don't get utilization of the full 10Gbe. At max CPU load it tends to take between 4 and 7 minutes to move a plot from my plotter to my NAS. Your network may vary. 
+You could have an entire discussion on network performance and the install script will offer to make some changes for you to your networking parameters if you like. What I have found is that my scripts will generally saturate a 10Gbe link without issue but once you load down your plotter and Harvesters/NAS with massive CPU, memory and I/O tasks, you really don't get utilization of the full 10Gbe. At max CPU load it tends to take between 4 and 7 minutes to move a plot from my plotter to my NAS. Your network may vary. This is a basic network design layout, my current network has three Plotters and seven Harvesters:
  
  <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/v0.9/images/plot_manager_network.jpg" alt="Chia Plot Manager Network"></a><br><br>
  
@@ -410,14 +409,15 @@ One word of advice - if you are using one of your drives that `drive_manager.py`
 
 ### <a name="cli"></a>Command Line Options
 
-Staring with V0.3 (April 4th, 2021) (and updated once again in V0.94) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
+Staring with V0.3 (April 4th, 2021) (and updated once again in V0.98) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
 
 <ul>
  <li><em>-h</em> or <em>--help</em></li>
   <li><em>-v</em> or <em>--version</em></li>
   <li><em>-ct</em> or <em>--check_temps</em></li>
-  <li><em>-pr</em> or <em>--plot_report</em></li>
- <li><em>-fr</em> or <em>--farm_report</em></li>
+  <li><em>-hr</em> or <em>--health_report</em></li>
+ <li><em>-pr</em> or <em>--plot_report</em> (use <em>-pre</em> to have the report emailed)</li>
+ <li><em>-fr</em> or <em>--farm_report</em> (use <em>-fre</em> to have the report emailed)</li>
   <li><em>-ud</em> or <em>--update_daily</em></li>
  <li><em>-rp</em> or <em>--replace-plot</em></li>
  <li><em>-uuid</em> or <em>--check_uuid</em></li>
@@ -429,10 +429,10 @@ Staring with V0.3 (April 4th, 2021) (and updated once again in V0.94) I have sta
 These options print out the help message or version information and exits.
 
 ```
-Welcome to drive_manager.py Version: 0.94 (2021-08-08)
-usage: drive_manager.py [-h] [-v] [-dr] [-ct] [-pr] [-fr] [-ud] [-rp] [-uuid CHECK_UUID] [-off OFFLINE_HDD]
+Welcome to drive_manager.py Version: 0.98 (2021-10-15)
+usage: drive_manager.py [-h] [-v] [-dr] [-hr] [-pre] [-fre] [-ct] [-pr] [-fr] [-ud] [-rp] [-uuid CHECK_UUID] [-off OFFLINE_HDD] [-on {drive0,drive1}]
 
-            ******** ChiaNAS Drive Manager - 0.94 (2021-08-08) ********
+            ******** ChiaNAS Drive Manager - 0.98 (2021-10-15) ********
 Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
 In this mode drive_manager will check the drive utilization and update which drive your
 Chia plots will be sent to when they arrive from your plotter. This is generally called
@@ -447,16 +447,21 @@ There are several commandline switches you can use to get immediate reports and 
 -ct or --check_temps        This will query all of your hard drives using smartctl and
                             return a list of drive temperatures to you.
 
+-hr or --health_report      This will query all of your remote harvesters and let you
+                            know that they are alive. This is a basic ping test only.
+                            Does not check harvester status (yet).
+
 -pr or --plot_report        This queries the NAS and returns a report letting you know
                             how many plots are currently on the system and how many more
                             you can add based on the current drive configuration. It also
                             includes plotting speed information for the last 24 hours.
+                            Use -pre for emailed report.
 
 -fr or --farm_report        This queries your farm and returns a report letting you know
                             how many plots are currently in the farm and how many more
                             you can add based on the current drive configuration. It also
                             includes plotting speed information for the last 24 hours farm wide.
-                            **NOTE: Must be configured! 
+                            **NOTE: Must be configured! - Use -fre for emailed report.
 
 -ud or --update_daily       This updates the total number of plots the system has created
                             over the past 24 hours. Use with CAUTION!. This should be ran
@@ -468,7 +473,7 @@ There are several commandline switches you can use to get immediate reports and 
                             that you are configured for plot replacement, ie - you have a
                             lot of old plots and you are replacing them with new portable
                             style plots. Use CAUTION running it manually! It might DELETE
-                            an old plot every time it is run but should only do so if 
+                            an old plot every time it is run but should only do so if
                             there is no space available on the selected drive.
 
 -uuid or --check_uuid       This checks all remote harvesters to see if the requested UUID is
@@ -491,6 +496,11 @@ optional arguments:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
   -dr, --daily_report   Run the ChiaPlot Daily Email Report and exit
+  -hr, --health_report  Remote Harvester Health Report
+  -pre, --plot_report_email
+                        Email Host Report and Exit
+  -fre, --farm_report_email
+                        Email Farm Report and exit
   -ct, --check_temps    Return a list of drives and their temperatures and exit
   -pr, --plot_report    Return the total # of plots on the system and total you can add and exit
   -fr, --farm_report    Return the total # of plots on your entire farm and total you can add and exit
@@ -500,6 +510,8 @@ optional arguments:
                         Check to see is a specific UUID is mounted on any harvester
   -off OFFLINE_HDD, --offline_hdd OFFLINE_HDD
                         Offline a specific drive. Use drive number: drive6
+  -on {drive0,drive1}, --online_hdd {drive0,drive1}
+                        Online a specific drive.
                         
   ```
 <br><br>
@@ -510,188 +522,123 @@ This only works if configured. If this notification is set to off, this will do 
 <br>
 <b> -ct    --check_temps</b><br>
 This options prints the serial number, device name, drive number and temperature of all devices
-desiginated as plot drives.
+desiginated as plot drives and color codes temps based on temperature setting in your config file.
 
 ```
-#################################################################
-################# chianas01 Temperature Report ##################
-#################################################################
-#    Serial#     #     Device     #     Drive     #    Temp     #
-#################################################################
-#   00000000     #   /dev/sdb1    #    drive0    #     28°C     #
-#   00000000     #   /dev/sdc1    #    drive1    #     29°C     #
-#   00000000     #   /dev/sdd1    #    drive2    #     28°C     #
-#   00000000     #   /dev/sde1    #    drive3    #     28°C     #
-#   00000000     #   /dev/sdf1    #    drive4    #     27°C     #
-#   00000000     #   /dev/sdg1    #    drive5    #     24°C     #
-#   00000000     #   /dev/sdh1    #    drive6    #     30°C     #
-#   00000000     #   /dev/sdi1    #    drive7    #     30°C     #
-#   00000000     #   /dev/sdj1    #    drive8    #     29°C     #
-#   00000000     #   /dev/sdk1    #    drive9    #     28°C     #
-#   00000000     #   /dev/sdl1    #    drive10    #     27°C     #
-#   00000000     #   /dev/sdm1    #    drive11    #     24°C     #
-#   00000000     #   /dev/sdn1    #    drive12    #     29°C     #
-#   00000000     #   /dev/sdo1    #    drive13    #     30°C     #
-#   00000000     #   /dev/sdp1    #    drive14    #     30°C     #
-#   00000000     #   /dev/sdq1    #    drive15    #     29°C     #
-#   00000000     #   /dev/sdr1    #    drive16    #     27°C     #
-#   00000000     #   /dev/sds1    #    drive17    #     25°C     #
-#   00000000     #   /dev/sdt1    #    drive18    #     28°C     #
-#   00000000     #   /dev/sdu1    #    drive19    #     30°C     #
-#   00000000     #   /dev/sdv1    #    drive20    #     29°C     #
-#   00000000     #   /dev/sdw1    #    drive21    #     29°C     #
-#   00000000     #   /dev/sdx1    #    drive22    #     28°C     #
-#   00000000     #   /dev/sdy1    #    drive23    #     25°C     #
-#   00000000     #   /dev/sdz1    #    drive24    #     32°C     #
-#   00000000     #   /dev/sdaa1    #    drive25    #     33°C     #
-#   00000000     #   /dev/sdab1    #    drive26    #     32°C     #
-#   00000000     #   /dev/sdac1    #    drive27    #     34°C     #
-#   00000000     #   /dev/sdad1    #    drive28    #     35°C     #
-#   00000000     #   /dev/sdae1    #    drive29    #     33°C     #
-#   00000000     #   /dev/sdaf1    #    drive30    #     29°C     #
-#   00000000     #   /dev/sdag1    #    drive31    #     30°C     #
-#   00000000     #   /dev/sdah1    #    drive32    #     30°C     #
-###################################################################
+                ❄  chianas01 Hard Drive Temperature Report 🔥                
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+┃ Serial Number ┃        Device        ┃        Drive         ┃ Temperature ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━┩
+│   00008AXB    │      /dev/sdau1      │        drive0        │    33°C     │
+│   000061TZ    │      /dev/sdav1      │        drive1        │    33°C     │
+│   0000FLTJ    │      /dev/sdaw1      │        drive2        │    33°C     │
+│   00000000    │      /dev/sdax1      │        drive3        │    32°C     │
+│   00000000    │      /dev/sday1      │        drive4        │    31°C     │
+│   00000000    │      /dev/sdaz1      │        drive5        │    28°C     │
+│   00000000    │      /dev/sdba1      │        drive6        │    33°C     │
+│   00000000    │      /dev/sdbb1      │        drive7        │    34°C     │
+│   00000000    │      /dev/sdbc1      │        drive8        │    34°C     │
+│   00000000    │      /dev/sdbd1      │        drive9        │    32°C     │
+│   00000000    │      /dev/sdbe1      │       drive10        │    31°C     │
+└───────────────┴──────────────────────┴──────────────────────┴─────────────┘
 ```
 
 <br><br>
 <b> -pr    --plot_report</b><br>
 This options prints out a quick version of the daily plot report to the screen
-and exits.
+and exits. Utilizing the option ```-pre``` will also email the same report. This
+can also be set in your crontab to get a copy of this new report emailed to you
+each day.
 
 ```
-############################################################
-################### chianas01 Plot Report ##################
-############################################################
-Total Number of Plots on chianas01:                     2943
-Total Number of Plots Chia is Farming:                  2943
-Total Amount of Drive Space (TiB) Chia is Farming:       291
-Total Number of Systemwide Plots Drives:                  44
-Total Number of k32 Plots until full:                   1853
-Maximum # of plots when full:                           4840
-Plots completed in the last 24 Hours:                     79
-Average Plots per Hours:                                 3.3
-Average Plotting Speed Last 24 Hours (TiB/Day):         7.98 
-Appx Number of Days to fill all current plot drives:      23  
-Current Plot Storage Drive:                        /dev/sdw1
-Temperature of Current Plot Drive:                      26°C
-Latest Smart Drive Assessment of Plot Drive:            PASS
-############################################################
-```
-
- <br><br>
-If you are running in plot_replacement mode you will see the following instead:<br>
-
-```
-############################################################
-################### chianas01 Plot Report ##################
-############################################################
-######### *** OLD PLOT REPLACEMENT IN PROGRESS *** #########
-############################################################
-Total Number of Plots on chianas01:                     8716
-Total Number of OLD Plots on chianas01:                 8352
-Total Number of PORTABLE Plots on chianas01:             373
-Total Number of Plots Chia is Farming:                  8705
-Total Amount of Drive Space (TiB) Chia is Farming:       862
-Total Number of Systemwide Plots Drives:                  81
-Total Number of k32 Plots until full:                   115
-Maximum # of plots when full:                           8908
-Plots completed in the last 24 Hours:                     53
-Average Plots per Hours:                                 2.2
-Average Plotting Speed Last 24 Hours (TiB/Day):         5.35 
-Days to fill/replace all current drives/plots:         160.0  
-Current Plot Storage Drive:                       /dev/sday1
-Temperature of Current Plot Drive:                      35°C
-Latest Smart Drive Assessment of Plot Drive:            PASS
-############################################################
+🌱  chianas01 Plot Report 🌱                       
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ October 15, 2021 @ 07:41:29                             ┃       Status ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ Replace OLD Plots in Progress?                          │         True │
+├─────────────────────────────────────────────────────────┼──────────────┤
+│ Total Number of Plots on chianas01                      │         8819 │
+│ Total Number of Plots Chia is Farming                   │         8797 │
+├─────────────────────────────────────────────────────────┼──────────────┤
+│ Total Number of OLD Plots on chianas01                  │         3856 │
+│ Total Number of PORTABLE Plots on chianas01             │         5031 │
+├─────────────────────────────────────────────────────────┼──────────────┤
+│ Total Amount of Drive Space (TiB) Chia is Farming       │          876 │
+│ Total Number of Systemwide Plots Drives                 │           81 │
+│ Total Number of k32 Plots until full                    │            6 │
+│ Maximum # of plots when full                            │         8827 │
+│ Plots completed in the last 24 Hours                    │            1 │
+│ Average Plots per Hour                                  │          0.0 │
+│ Average Plotting Speed Last 24 Hours (TiB/Day)          │          0.0 │
+│ Days to fill/replace all current drives/plots           │       3862.0 │
+│ Current Plot Storage Drive                              │   /dev/sdab1 │
+│ Temperature of Current Plot Drive                       │         30°C │
+│ Latest Smart Drive Assessment of Current Plot Drive     │         PASS │
+└─────────────────────────────────────────────────────────┴──────────────┘
 ```
  
 <br><br>
 <b> -fr    --farm_report</b><br>
 This options prints out a full farm daily plot report to the screen
-and exits.
+and exits. Utilizing the option ```-fre``` will also email the same report.
+This can also be set in your crontab to get a copy of this new report emailed
+to you each day.
  
 ```
-############################################################
-################### Farm Wide Plot Report ##################
-############################################################
-Total Number of Plots on Farm:                          7043
-Total Number of Plots Chia is Farming:                  7032
-Total Amount of Drive Space (TiB) Chia is Farming:       696
-Total Number of Systemwide Plots Drives:                 122
-Total Number of k32 Plots until full:                   6082
-Maximum # of plots when full:                          13230
-Plots completed in the last 24 Hours:                    236
-Average Plots per Hours:                                  10
-Average Plotting Speed Last 24 Hours (TiB/Day):           24
-Appx Number of Days to fill all current plot drives:      26
-############################################################
-################ chianas01 Harvester Report ################
-############################################################
-Total number of plots on chianas01:                    6624
-Plots completed in the last 24 hours:                  131
-Average Plotting Speed Last 24 Hours (Tib/Day):        13.23
-Appx # of Days to fill all drives on this harvester:   8
-############################################################
-################ chianas02 Harvester Report ################
-############################################################
-Total number of plots on chianas02:                    287
-Plots completed in the last 24 hours:                  44
-Average Plotting Speed Last 24 Hours (Tib/Day):        4.44
-Appx # of Days to fill all drives on this harvester:   77
-############################################################
-################ chianas03 Harvester Report ################
-############################################################
-Total number of plots on chianas03:                    132
-Plots completed in the last 24 hours:                  61
-Average Plotting Speed Last 24 Hours (Tib/Day):        6.16
-Appx # of Days to fill all drives on this harvester:   26
-############################################################
+                       🌻  Farm Wide Plot Report 🌱                       
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ October 15, 2021 @ 07:42:32                             ┃       Status ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ Total Number of Plots on Farm                           │        29725 │
+│ Total Number of Plots Chia is farming                   │        29679 │
+│ Total Amount of Drive Space (PiB) Chia is farming       │        2.888 │
+│ Total Number of Systemwide Plot Drives                  │          306 │
+│ Total Number of K32 Plots Until Farm is Full            │        15051 │
+│ Maximum # of plots when full                            │        32056 │
+│ Plots completed in the last 24 Hours                    │           45 │
+│ Average Plots per Hour                                  │            2 │
+│ Average Plotting Speed Last 24 Hours (TiB/Day)          │            4 │
+│ Appx Number of Days to fill/replace plots/drives        │          334 │
+└─────────────────────────────────────────────────────────┴──────────────┘
+                    🍀  chianas01 Harvester Report 🌱                     
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Harvester Data                                          ┃       Status ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ Replace OLD Plots in Progress?                          │        False │
+├─────────────────────────────────────────────────────────┼──────────────┤
+│ Total Number of Plots on chianas01                      │         8819 │
+│ Plots Completed in the Last 24 Hours                    │            1 │
+│ Average Plotting Speed Last 24 Hours (Tib/Day)          │          0.0 │
+│ Appx # of Days to replace all plots on chianas01        │         3862 │
+└─────────────────────────────────────────────────────────┴──────────────┘
+                    🍀  chianas02 Harvester Report 🌱                     
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Harvester Data                                          ┃       Status ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ Replace OLD Plots in Progress?                          │         True │
+├─────────────────────────────────────────────────────────┼──────────────┤
+│ Total Number of OLD Plots on chianas02                  │            0 │
+│ Total Number of PORTABLE Plots on chianas02             │         2841 │
+│ Total Number of Plots on chianas02                      │         2829 │
+│ Plots Completed in the Last 24 Hours                    │            1 │
+│ Average Plotting Speed Last 24 Hours (Tib/Day)          │          0.0 │
+│ Appx # of Days to replace all plots on chianas02        │            0 │
+└─────────────────────────────────────────────────────────┴──────────────┘
+                    🍀  chianas03 Harvester Report 🌱                     
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Harvester Data                                          ┃       Status ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ Replace OLD Plots in Progress?                          │         True │
+├─────────────────────────────────────────────────────────┼──────────────┤
+│ Total Number of OLD Plots on chianas03                  │         5768 │
+│ Total Number of PORTABLE Plots on chianas03             │         2204 │
+│ Total Number of Plots on chianas03                      │         7948 │
+│ Plots Completed in the Last 24 Hours                    │            1 │
+│ Average Plotting Speed Last 24 Hours (Tib/Day)          │          0.0 │
+│ Appx # of Days to replace all plots on chianas03        │         5768 │
+└─────────────────────────────────────────────────────────┴──────────────┘
 ```
  
- <br>
- In plot-replacement mode, report looks like this:
- <br><br>
- 
- 
- ```
- Welcome to drive_manager.py Version: 0.94 (2021-08-08)
-
-############################################################
-################### Farm Wide Plot Report ##################
-############################################################
-Total Number of Plots on Farm:                         22933
-Total Number of Plots Chia is Farming:                 22886
-Total Amount of Drive Space (TiB) Chia is Farming:      2265
-Total Number of Systemwide Plots Drives:                 242
-Total Number of k32 Plots until full:                  22168
-Maximum # of plots when full:                          25860
-Plots completed in the last 24 Hours:                    200
-Average Plots per Hour:                                    8
-Average Plotting Speed Last 24 Hours (TiB/Day):           20
-Appx Number of Days to fill/replace plots/drives:        111
-############################################################
-################ chianas01 Harvester Report ################
-############################################################
-Replace Non-Pool Plots:                               Active
-Total Number of OLD Plots on chianas01:                 8219
-Total Number of PORTABLE Plots on chianas01:             507
-Total number of plots on chianas01:                     8718
-Plots completed in the last 24 hours:                    141
-Average Plotting Speed Last 24 Hours (Tib/Day):        14.24
-Appx # of Days to replace all plots on chianas01:         59
-############################################################
-################ chianas02 Harvester Report ################
-############################################################
-Replace Non-Pool Plots:                               Active
-Total Number of OLD Plots on chianas02:                 3705
-Total Number of PORTABLE Plots on chianas02:             400
-Total number of plots on chianas02:                     3706
-Plots completed in the last 24 hours:                    100
-Average Plotting Speed Last 24 Hours (Tib/Day):          4.2
-Appx # of Days to replace all plots on chianas02:         37
-############################################################
-```
  
 <br><br>
 <b> -uuid    --check_uuid</b><br>
@@ -699,28 +646,26 @@ This options searches all configured harvesters for a specific UUID and returns
 the harvester and mountpoint where it was found:
 
  ```
-root@chianas01:~/plot_manager# ./drive_manager.py -uuid fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
-Welcome to drive_manager.py Version: 0.94 (2021-08-08)
+root@chianas01:~/plot_manager# ./drive_manager.py -uuid 98812a33-e5b6-40d2-a950-afc0cf9258d9
+Welcome to drive_manager.py Version: 0.98 (2021-10-15)
 
-Please wait while we search all harvesters for fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
+Please wait while we search all harvesters for 98812a33-e5b6-40d2-a950-afc0cf9258d9
 
-############################################################
-################### UUID Search Report #####################
-############################################################
-UUID:          fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
-Status:        LOCATED
-Harvester:     chianas08
-Mount Point:   /mnt/enclosure0/rear/column1/drive28
-############################################################
+                                      🌱  UUID Search Report 🌱                                      
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                 UUID                 ┃ Status  ┃ Harvester ┃             Mount Point              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 98812a33-e5b6-40d2-a950-afc0cf9258d9 │ LOCATED │ chianas03 │ /mnt/enclosure1/rear/column1/drive64 │
+└──────────────────────────────────────┴─────────┴───────────┴──────────────────────────────────────┘
 
  OR
  
-############################################################
-################### UUID Search Report #####################
-############################################################
-UUID:          fa1eb1f5-ff48-4fcd-b4d1-be2e556654ad
-Status:        NOT LOCATED
-############################################################
+   🌱  UUID Search Report 🌱                   
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
+┃                 UUID                 ┃        Status        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
+│ 98812a33-e5b6-40d2-a950-afc0cf9258d9 │    UUID NOT FOUND    │
+└──────────────────────────────────────┴──────────────────────┘
  
  ```
  
@@ -742,7 +687,7 @@ a 24 hour view of your system.
 
 
 
-### <a name="coins"></a>Coin Monitor (Only Chia Version 1.1.1 or Higher)
+### <a name="coins"></a>Coin Monitor (Only Chia Version 1.1.1 or Higher) - <b> As of Chia 1.2.6 DOES NOT WORK, need to rewrite!</b>
 
 I wanted a simple way to keep track of when I won coins and how many I had so I added `coin_monitor.py` to the mix.
 As I said, in my configuration I have three servers, my `plotter`, my `nas` and my `farmer`. Coin Monitor sits on my
@@ -790,7 +735,7 @@ Just make sure to point the script back to the correct logfile after testing!
 I have had a couple of people ask about the hardware that I used in my setup so I thought I would include it here. 
 Almost everything I purchased was used off eBay. There were minor exceptions but 95% was eBay.
 
-<h2> Plotting Server </h2>
+<h2> Plotting Servers </h2>
 
 ```
 Dell R820
@@ -812,7 +757,7 @@ Dual Power Supplies
 ```
 Supermicro 4U 36 Bay SAS3 Chassis w/X10DRi-T4+ Motherboard
 2 x E5-2690 v4 CPU
-128GB ECC
+256GB ECC
 1 x AOC-S3008L-8LE 12GB/s SAS3 Controller (IT Mode)
 2 x LSI9300-16e 12GB/s External (IT Mode)
 36 x 12TB Seagate Exos Drives
@@ -824,7 +769,7 @@ Dual Power Supplies
 <h2>NAS Expansion Chassis</h2>
 
 ```
-2 x SuperMicro 847 45-Drive Chassis
+10 x SuperMicro 847 45-Drive Chassis
 Dual Power supplies
 ```
 
@@ -840,6 +785,20 @@ strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+<b>V0.98 2021-10-15</b>
+   - Rewrote reporting utilizing Python Rich (https://github.com/willmcgugan/rich)
+   - Begin Python typing addition to functions (work in progress)
+   - Minor bug fixes
+   - Minor enhancements
+   - Added new Email reports (Host and Farm) (Trigger from CLI or Cron)
+   - Added function to email HTML based reports generated by RICH (-pre and -fre from the CLI)
+
+<b>V0.97 2021-09-16</b>
+   - Rewrote harvester export routines and functions to better see if a harvester has a transfer in progress.
+   - Redesigned ```check_network_io.sh``` script to better prevent failures of script.
+   - Implemented @lru_cache to speed up execution when calling the same function more than once.
+   - Minor bug fixes and enhancements
+
 <b>V0.96 2021-09-05</b>
    - Rewrote nas_export functions to better function with replace old plot functions when determining
      what to report to the plotters.
