@@ -427,7 +427,7 @@ Staring with V0.3 (April 4th, 2021) (and updated once again in V0.98) I have sta
 
 <b> -h --help</b>  and  <b>-v --version</b><br>
 These options print out the help message or version information and exits.<br><br>
-<a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_help_menu.png" alt="Chia Plot Manager Help"></a>
+<a name="chia_help_menu" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chianas_help_menu.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chianas_help_menu.png" alt="Chia Plot Manager Help"></a>
  <br>
  
 
@@ -440,25 +440,12 @@ This only works if configured. If this notification is set to off, this will do 
 <b> -ct    --check_temps</b><br>
 This options prints the serial number, device name, drive number and temperature of all devices
 desiginated as plot drives and color codes temps based on temperature setting in your config file.
+<br><br>
+<a name="chia_drive_temps" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_temp_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_temp_report.png" alt="Chia Plot Manager Drive Temps"></a>
+ <br>
+ 
+ 
 
-```
-                ❄  chianas01 Hard Drive Temperature Report 🔥                
-┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┓
-┃ Serial Number ┃        Device        ┃        Drive         ┃ Temperature ┃
-┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━┩
-│   00008AXB    │      /dev/sdau1      │        drive0        │    33°C     │
-│   000061TZ    │      /dev/sdav1      │        drive1        │    33°C     │
-│   0000FLTJ    │      /dev/sdaw1      │        drive2        │    33°C     │
-│   00000000    │      /dev/sdax1      │        drive3        │    32°C     │
-│   00000000    │      /dev/sday1      │        drive4        │    31°C     │
-│   00000000    │      /dev/sdaz1      │        drive5        │    28°C     │
-│   00000000    │      /dev/sdba1      │        drive6        │    33°C     │
-│   00000000    │      /dev/sdbb1      │        drive7        │    34°C     │
-│   00000000    │      /dev/sdbc1      │        drive8        │    34°C     │
-│   00000000    │      /dev/sdbd1      │        drive9        │    32°C     │
-│   00000000    │      /dev/sdbe1      │       drive10        │    31°C     │
-└───────────────┴──────────────────────┴──────────────────────┴─────────────┘
-```
  <br><br>
 <b> -hr    --health_report</b><br>
  This option runs a simple "it's alive" check against all remote harvesters configured in your
