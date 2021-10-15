@@ -3,44 +3,36 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.92 (2021-05-31)"
+VERSION = "0.98 (2021-10-08)"
 
 """
+STAND ALONE STAND ALONE STAND ALONE
 This script is part of the chia_plot_manager set of scripts.
-
+This is the STAND ALONE version of this script and will work
+without needing the rest of the repo.
 Script to help automate the addition of new hard drives
 to a Chia NAS/Harvester. Please make sure you understand
 everything that this script does before using it!
-
 This script is intended to make my life easier. It is ONLY
 designed to 1) work with unformatted drives with no existing
 partitions, and 2) utilizing the directory structure found
 in the readme.
-
 This script WILL NOT work if you are utilizing hard drives wiht
 no partitions as we would have no way to determine if the drive
 is newly added.
-
 It can be modified, of course, to do other things.
-
 1) Looks for any drive device that is on the system but does not
 end in a '1'. For example: /dev/sda1 vs. /dev/sdh - In this case
 /dev/sdh has no partition so it likely is not mounted or being
 used.
-
 2) Utilizing the directory structure that I have shared in the
 main readme, locate the next available mountpoint to use.
-
 3) Utilizing sgdisk, creates a new GPT partition on the new
 drive.
-
 4) Formats the drive with the xfs filesystem.
-
 5) Verifies that the UUID of the drive does not already exist
 in /etc/fstab and if not, adds the correct entry to /etc/fstab.
-
 6) Mounts the new drive
-
 7) Add the new mountpoint to your chia harvester configuration.
 """
 
@@ -51,10 +43,7 @@ import subprocess
 import yaml
 from natsort import natsorted
 import pathlib
-from drivemanager_classes import DriveManager, config_file
-chianas = DriveManager.read_configs()
 script_path = pathlib.Path(__file__).parent.resolve()
-
 
 # Do some housekeeping
 # Define some colors for our help message
@@ -65,12 +54,19 @@ white='\033[0;37m'
 blue='\033[0;34m'
 nc='\033[0m'
 
+# Where can we find your Chia Config File?
+chia_config_file = '/root/.chia/mainnet/config/config.yaml'
 
 #Where did we put the get_drive_uuid.sh script:
 get_drive_uuid = script_path.joinpath('get_drive_uuid.sh')
 
 # What filesystem are you using: ext4 or xfs?
 file_system = 'xfs'
+
+
+# mark any drives here that you do not want touched at all for any reason,
+# formatted or not.
+do_not_use_drives = {'/dev/sda'}
 
 
 # Let's get started.......
@@ -83,24 +79,17 @@ def get_next_mountpoint():
     dictionary but only for those directories that are not
     mounted. We then return just the first one for use as our
     next mountpoint.
-
     abspath(d) = the full path to the directory
-
     ismount(d) = Returns True if abspath(d) is a mountpoint
     otherwise returns false.
-
     (d) looks like this:
     {'/mnt/enclosure0/front/column0/drive0': True}
-
     Make sure your path already exists and that the 'path_glob'
     ends with a `/*`.
-
     Notice that the path_glob does NOT include the actual drive0,
     drive1, etc. Your glob needs to be parsed with the *.
-
     So for this glob: path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
     this would be the directory structure:
-
      /mnt
      ├── enclosure0
      │   ├── front
@@ -114,7 +103,6 @@ def get_next_mountpoint():
      │   │   ├── column0
      │   │   │   ├── drive6
      │   │   │   ├── drive7
-
     """
     try:
         path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*'
@@ -147,10 +135,12 @@ def get_new_drives():
     for drive in formatted_drives:
         drive = drive.rstrip(string.digits)
         formatted_set.add(drive)
+    formatted_and_do_not_use = set.union(formatted_set, do_not_use_drives)
     unformatted_drives = set()
     for drive in all_drives:
         drive = drive.rstrip(string.digits)
-        if drive not in formatted_set:
+        if drive not in formatted_and_do_not_use:
+            # if drive not in formatted_set:
             unformatted_drives.add(drive)
     if unformatted_drives:
         return sorted(unformatted_drives)[0]
@@ -197,7 +187,7 @@ def add_new_drive():
                     print(f'Mountpoint: {green}{mountpoint}{nc} Successfully added to your Chia Config File')
                     print(f'\n\nDrive Process Complete - Thank You and have a {red}G{yellow}R{white}E{green}A{blue}T{nc} Day!\n\n')
                 else:
-                    print(f'\nThere was an {red}ERROR{nc} adding {mountpoint} to {chianas.chia_config_file}!')
+                    print(f'\nThere was an {red}ERROR{nc} adding {mountpoint} to {chia_config_file}!')
                     print(f'You need to {yellow}MANUALLY{nc} add or verify that it has been added to your config file,')
                     print(f'otherwise plots on that drive will {red}NOT{nc} get {green}harvested{nc}!\n')
                     print(f'\n\nDrive Process Complete - Thank You and have a {red}G{yellow}R{white}E{green}A{blue}T{nc} Day!')
@@ -325,10 +315,10 @@ def can_we_run():
     Check to see if the chia configuration file noted above exists, exits if it does not.
     Check to see we are using a supported filesystem.
     """
-    if exists(chianas.chia_config_file):
+    if exists(chia_config_file):
         pass
     else:
-        print(f'\n{red}ERROR{nc} opening {green}{chianas.chia_config_file}{nc}\nPlease check your {green}filepath{nc} and try again!\n\n')
+        print(f'\n{red}ERROR{nc} opening {green}{chia_config_file}{nc}\nPlease check your {green}filepath{nc} and try again!\n\n')
         exit()
     if file_system not in {'ext4', 'xfs'}:
         print (f'\n{red}ERROR{nc}: {green}{file_system}{nc} is not a supported filesystem.\nPlease choose {green}ext4{nc} or {green}xfs{nc} and try again!\n\n')
@@ -347,7 +337,7 @@ def update_chia_config(mountpoint):
     This function adds the new mountpoint to your chia configuration file.
     """
     try:
-        with open(chianas.chia_config_file) as f:
+        with open(chia_config_file) as f:
             chia_config = yaml.safe_load(f)
             if mountpoint in f:
                 print(f'{green}Mountpoint {red}Already{nc} Exists - We will not add it again!\n\n')
@@ -355,14 +345,14 @@ def update_chia_config(mountpoint):
             else:
                 chia_config['harvester']['plot_directories'].append(mountpoint)
     except IOError:
-        print(f'{red}ERROR{nc} opening {yellow}{chianas.chia_config_file}{nc}! Please check your {yellow}filepath{nc} and try again!\n\n')
+        print(f'{red}ERROR{nc} opening {yellow}{chia_config_file}{nc}! Please check your {yellow}filepath{nc} and try again!\n\n')
         return False
     try:
-        with open(chianas.chia_config_file, 'w') as f:
+        with open(chia_config_file, 'w') as f:
             yaml.safe_dump(chia_config, f)
             return True
     except IOError:
-        print(f'{red}ERROR{nc} opening {yellow}{chianas.chia_config_file}{nc}! Please check your {yellow}filepath{nc} and try again!\n\n')
+        print(f'{red}ERROR{nc} opening {yellow}{chia_config_file}{nc}! Please check your {yellow}filepath{nc} and try again!\n\n')
         return False
 
 def sanitise_user_input(prompt, type_=None, min_=None, max_=None, range_=None):
