@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.98 (2021-10-08)"
+VERSION = "0.98 (2021-10-15)"
 
 """
 STAND ALONE STAND ALONE STAND ALONE
