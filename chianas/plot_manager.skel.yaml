@@ -1,4 +1,4 @@
-# v0.96 2021-09-05
+# v0.98 2021-10-15
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -19,6 +19,10 @@ plot_receive_interface: eth0
 # To test simply run the following command and look at the very last number:
 # /usr/bin/sar -n DEV 1 50 | egrep eth0
 plot_receive_interface_threshold: 2
+
+# Set the max hard drive temperature limit that you wish to see on your hard drives. This
+# is used to format the Drive Temperature Report: ./drive_manager.py -ct
+drive_temperature_limit: 30
 
 # Are we plotting for pools? This has nothing to do with the actual plotting of
 # plots but rather just naming of the new plots and eventually the replacing of
@@ -139,6 +143,7 @@ notifications:
   types:
     new_plot_drive: True
     daily_update: True
+    farm_update: True
     per_plot: False
     warnings: True
   # What email addresses will get the emails?

@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating out yaml
 config file.
 """
 
-VERSION = "V0.96 (2021-09-05)"
+VERSION = "V0.98 (2021-10-15)"
 
 import os
 import yaml
@@ -46,8 +46,8 @@ class DriveManager:
         log.debug("Please check file path and try again.")
         exit()
     else:
-        def __init__(self, configured, hostname, pools, replace_non_pool_plots, fill_empty_drives_first, empty_drives_low_water_mark, chia_log_file, chia_config_file,
-                     remote_harvester_reports, remote_harvesters, notifications, pb, email, sms, daily_update, new_plot_drive, per_plot,
+        def __init__(self, configured, hostname, drive_temperature_limit, pools, replace_non_pool_plots, fill_empty_drives_first, empty_drives_low_water_mark, chia_log_file, chia_config_file,
+                     remote_harvester_reports, remote_harvesters, notifications, pb, email, sms, daily_update, farm_update, new_plot_drive, per_plot,
                      local_plotter, temp_dirs, temp_dirs_critical, temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical,
                      dst_dirs_critical_alert_sent, warnings, emails, phones, twilio_from, twilio_account, twilio_token, pb_api,
                      current_internal_drive, current_plotting_drive, total_plot_highwater_warning, total_plots_alert_sent, plot_receive_interface_threshold,
@@ -55,6 +55,7 @@ class DriveManager:
                      current_portable_plots_midnight, current_portable_plots_daily, current_plot_replacement_drive, local_move_error, local_move_error_alert_sent):
             self.configured = configured
             self.hostname = hostname
+            self.drive_temperature_limit = drive_temperature_limit
             self.pools = pools
             self.replace_non_pool_plots = replace_non_pool_plots
             self.fill_empty_drives_first = fill_empty_drives_first
@@ -68,6 +69,7 @@ class DriveManager:
             self.email = email
             self.sms = sms
             self.daily_update = daily_update
+            self.farm_update = farm_update
             self.new_plot_drive = new_plot_drive
             self.per_plot = per_plot
             self.warnings = warnings
@@ -108,6 +110,7 @@ class DriveManager:
                 return cls(
                     configured=server['configured'],
                     hostname=server['hostname'],
+                    drive_temperature_limit=server['drive_temperature_limit'],
                     pools=server['pools']['active'],
                     replace_non_pool_plots=server['pools']['replace_non_pool_plots'],
                     fill_empty_drives_first=server['pools']['fill_empty_drives_first'],
@@ -121,6 +124,7 @@ class DriveManager:
                     email=server['notifications']['methods']['email'],
                     sms=server['notifications']['methods']['sms'],
                     daily_update=server['notifications']['types']['daily_update'],
+                    farm_update=server['notifications']['types']['farm_update'],
                     new_plot_drive=server['notifications']['types']['new_plot_drive'],
                     per_plot=server['notifications']['types']['per_plot'],
                     warnings=server['notifications']['types']['warnings'],

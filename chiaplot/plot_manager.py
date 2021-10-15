@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.97 (2021-09-16)"
+VERSION = "0.98 (2021-10-15)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -14,6 +14,8 @@ that manages the drives themselves and decides based on various criteria where
 the incoming plots will be placed. This script simply sends those plots when
 they are ready to send.
 Updates
+  v0.98 2021-10-15
+  - Minor updates
   v0.97 2021-09-16
   - Added ability to read status of remote transfers on harvesters and determine
     which harvester to select based on this information. We don't want to send a
@@ -109,11 +111,8 @@ def remote_harvesters_check():
 
 # Let's do some housekeeping
 """
-This network interface is the name (as shown by `ip a`) of the interface that you
-transfer your plots over to your Harvester. We utilize this to determine is there is
-network traffic flowing across it during a transfer. 
+You should not need to change these under normal circumstances.
 """
-#network_interface = chiaplot.network_interface
 remote_checkfile = script_path.joinpath('remote_transfer_is_active')
 network_check = script_path.joinpath('check_network_io.sh')
 network_check_output = script_path.joinpath('network_stats.io')
@@ -235,7 +234,7 @@ def process_control(command, action):
                         log.warning(e.output) #Nothing to add here yet as we are not using this function remotely (yet)
         elif command == 'check_status':
             transfer_in_progress = check_transfer()
-            process_running = checkIfProcessRunning('ncat')
+            process_running = check_if_process_running('ncat')
             if process_running and transfer_in_progress:
                 log.debug(f'NCAT is running and Network Traffic Exists, We are currently Running a Transfer, Exiting')
                 return True
@@ -310,16 +309,16 @@ def check_transfer():
         return False
 
 
-def checkIfProcessRunning(processName):
+def check_if_process_running(processname):
     '''
     Check if there is any running process that contains the given name processName.
     '''
     #Iterate over the all the running process
-    log.debug('checkifprocessrunning() called')
+    log.debug('check_if_process_running() called')
     for proc in psutil.process_iter():
         try:
             # Check if process name contains the given name string.
-            if processName.lower() == proc.name().lower():
+            if processname.lower() == proc.name().lower():
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
@@ -592,6 +591,7 @@ def main():
     system_checks()
     remote_harvesters_check()
     process_plot()
+
 
 if __name__ == '__main__':
     main()
