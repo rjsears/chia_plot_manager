@@ -309,7 +309,7 @@ def check_transfer():
         return False
 
 
-def check_if_process_running(processName):
+def check_if_process_running(processname):
     '''
     Check if there is any running process that contains the given name processName.
     '''
@@ -318,7 +318,7 @@ def check_if_process_running(processName):
     for proc in psutil.process_iter():
         try:
             # Check if process name contains the given name string.
-            if processName.lower() == proc.name().lower():
+            if processname.lower() == proc.name().lower():
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
