@@ -542,7 +542,10 @@ desiginated as plot drives and color codes temps based on temperature setting in
 │   00000000    │      /dev/sdbe1      │       drive10        │    31°C     │
 └───────────────┴──────────────────────┴──────────────────────┴─────────────┘
 ```
-
+ <br><br>
+<b> -hr    --health_report</b><br>
+ 
+ 
 <br><br>
 <b> -pr    --plot_report</b><br>
 This options prints out a quick version of the daily plot report to the screen
