@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating out yaml
 config file.
 """
 
-VERSION = "V0.98 (2021-10-08)"
+VERSION = "V0.98 (2021-10-15)"
 
 import os
 import yaml
