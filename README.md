@@ -441,7 +441,7 @@ This only works if configured. If this notification is set to off, this will do 
 This options prints the serial number, device name, drive number and temperature of all devices
 desiginated as plot drives and color codes temps based on temperature setting in your config file.
 <br><br>
-<a name="chia_drive_temps" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_temp_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_temp_report.png" alt="Chia Plot Manager Drive Temps"></a>
+<a name="chia_drive_temps" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_temp_report_1.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_temp_report_1.png" alt="Chia Plot Manager Drive Temps"></a>
  <br>
  
  
@@ -449,8 +449,8 @@ desiginated as plot drives and color codes temps based on temperature setting in
  <br><br>
 <b> -hr    --health_report</b><br>
  This option runs a simple "it's alive" check against all remote harvesters configured in your
- main configuration file and returns a simple report:<br>
- <a name="chia_help" https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png" alt="Chia Plot Manager Health Report"></a>
+ main configuration file and returns a simple report:<br><br>
+<a name="chia_health_report" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png" alt="Chia Plot Manager Health Report"></a>
  
 <br><br>
 <b> -pr    --plot_report</b><br>
@@ -458,33 +458,10 @@ This options prints out a quick version of the daily plot report to the screen
 and exits. Utilizing the option ```-pre``` will also email the same report. This
 can also be set in your crontab to get a copy of this new report emailed to you
 each day.
+<br><br>
+<a name="chia_plot_report" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_plot_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_plot_report.png" alt="Chia Plot Manager Plot Report"></a>
+ 
 
-```
-🌱  chianas01 Plot Report 🌱                       
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ October 15, 2021 @ 07:41:29                             ┃       Status ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ Replace OLD Plots in Progress?                          │         True │
-├─────────────────────────────────────────────────────────┼──────────────┤
-│ Total Number of Plots on chianas01                      │         8819 │
-│ Total Number of Plots Chia is Farming                   │         8797 │
-├─────────────────────────────────────────────────────────┼──────────────┤
-│ Total Number of OLD Plots on chianas01                  │         3856 │
-│ Total Number of PORTABLE Plots on chianas01             │         5031 │
-├─────────────────────────────────────────────────────────┼──────────────┤
-│ Total Amount of Drive Space (TiB) Chia is Farming       │          876 │
-│ Total Number of Systemwide Plots Drives                 │           81 │
-│ Total Number of k32 Plots until full                    │            6 │
-│ Maximum # of plots when full                            │         8827 │
-│ Plots completed in the last 24 Hours                    │            1 │
-│ Average Plots per Hour                                  │          0.0 │
-│ Average Plotting Speed Last 24 Hours (TiB/Day)          │          0.0 │
-│ Days to fill/replace all current drives/plots           │       3862.0 │
-│ Current Plot Storage Drive                              │   /dev/sdab1 │
-│ Temperature of Current Plot Drive                       │         30°C │
-│ Latest Smart Drive Assessment of Current Plot Drive     │         PASS │
-└─────────────────────────────────────────────────────────┴──────────────┘
-```
  
 <br><br>
 <b> -fr    --farm_report</b><br>
@@ -492,91 +469,21 @@ This options prints out a full farm daily plot report to the screen
 and exits. Utilizing the option ```-fre``` will also email the same report.
 This can also be set in your crontab to get a copy of this new report emailed
 to you each day.
- 
-```
-                       🌻  Farm Wide Plot Report 🌱                       
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ October 15, 2021 @ 07:42:32                             ┃       Status ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ Total Number of Plots on Farm                           │        29725 │
-│ Total Number of Plots Chia is farming                   │        29679 │
-│ Total Amount of Drive Space (PiB) Chia is farming       │        2.888 │
-│ Total Number of Systemwide Plot Drives                  │          306 │
-│ Total Number of K32 Plots Until Farm is Full            │        15051 │
-│ Maximum # of plots when full                            │        32056 │
-│ Plots completed in the last 24 Hours                    │           45 │
-│ Average Plots per Hour                                  │            2 │
-│ Average Plotting Speed Last 24 Hours (TiB/Day)          │            4 │
-│ Appx Number of Days to fill/replace plots/drives        │          334 │
-└─────────────────────────────────────────────────────────┴──────────────┘
-                    🍀  chianas01 Harvester Report 🌱                     
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ Harvester Data                                          ┃       Status ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ Replace OLD Plots in Progress?                          │        False │
-├─────────────────────────────────────────────────────────┼──────────────┤
-│ Total Number of Plots on chianas01                      │         8819 │
-│ Plots Completed in the Last 24 Hours                    │            1 │
-│ Average Plotting Speed Last 24 Hours (Tib/Day)          │          0.0 │
-│ Appx # of Days to replace all plots on chianas01        │         3862 │
-└─────────────────────────────────────────────────────────┴──────────────┘
-                    🍀  chianas02 Harvester Report 🌱                     
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ Harvester Data                                          ┃       Status ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ Replace OLD Plots in Progress?                          │         True │
-├─────────────────────────────────────────────────────────┼──────────────┤
-│ Total Number of OLD Plots on chianas02                  │            0 │
-│ Total Number of PORTABLE Plots on chianas02             │         2841 │
-│ Total Number of Plots on chianas02                      │         2829 │
-│ Plots Completed in the Last 24 Hours                    │            1 │
-│ Average Plotting Speed Last 24 Hours (Tib/Day)          │          0.0 │
-│ Appx # of Days to replace all plots on chianas02        │            0 │
-└─────────────────────────────────────────────────────────┴──────────────┘
-                    🍀  chianas03 Harvester Report 🌱                     
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ Harvester Data                                          ┃       Status ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ Replace OLD Plots in Progress?                          │         True │
-├─────────────────────────────────────────────────────────┼──────────────┤
-│ Total Number of OLD Plots on chianas03                  │         5768 │
-│ Total Number of PORTABLE Plots on chianas03             │         2204 │
-│ Total Number of Plots on chianas03                      │         7948 │
-│ Plots Completed in the Last 24 Hours                    │            1 │
-│ Average Plotting Speed Last 24 Hours (Tib/Day)          │          0.0 │
-│ Appx # of Days to replace all plots on chianas03        │         5768 │
-└─────────────────────────────────────────────────────────┴──────────────┘
-```
+<br><br>
+<a name="chia_farm_report" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_farm_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_farm_report.png" alt="Chia Plot Manager Farm Report"></a>
+
  
  
 <br><br>
 <b> -uuid    --check_uuid</b><br>
 This options searches all configured harvesters for a specific UUID and returns
 the harvester and mountpoint where it was found:
-
- ```
-root@chianas01:~/plot_manager# ./drive_manager.py -uuid 98812a33-e5b6-40d2-a950-afc0cf9258d9
-Welcome to drive_manager.py Version: 0.98 (2021-10-15)
-
-Please wait while we search all harvesters for 98812a33-e5b6-40d2-a950-afc0cf9258d9
-
-                                      🌱  UUID Search Report 🌱                                      
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                 UUID                 ┃ Status  ┃ Harvester ┃             Mount Point              ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 98812a33-e5b6-40d2-a950-afc0cf9258d9 │ LOCATED │ chianas03 │ /mnt/enclosure1/rear/column1/drive64 │
-└──────────────────────────────────────┴─────────┴───────────┴──────────────────────────────────────┘
+ <br><br>
+<a name="chia_uuid_report" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_uuid_found.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_uuid_found.png" alt="Chia Plot Manager UUID Report"></a>
 
  OR
- 
-   🌱  UUID Search Report 🌱                   
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
-┃                 UUID                 ┃        Status        ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
-│ 98812a33-e5b6-40d2-a950-afc0cf9258d9 │    UUID NOT FOUND    │
-└──────────────────────────────────────┴──────────────────────┘
- 
- ```
+<br><br>
+<a name="chia_uuid_report" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_uuid_not_found.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_uuid_not_found.png" alt="Chia Plot Manager UUID Report"></a>
  
  
  
