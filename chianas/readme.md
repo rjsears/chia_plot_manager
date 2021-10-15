@@ -1,7 +1,7 @@
 <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.97 - September 16th, 2021)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.98 - October 15th, 2021)
   </h2>
   <p align="center">
 Multi Server Chia Plot and Drive Management Solution
@@ -38,7 +38,7 @@ Once complete, test it from the command line to make sure you can receive mail. 
 main configuration file prior to running ```./drive_manager.py``` for the first time. failure to do so will result in an error message telling you to do so!
 
 Some of the entries in the configu file (shown below) you set and some are set by the system. They can be overriden if you know what you are doing, but if not, I would leave them
-be. This is a standard YAML file, so leave the formatting as you see it or you will get errors when attempting to run ```drive_manager.py```. Start be setting the following options:
+be. This is a standard YAML file, so leave the formatting as you see it or you will get errors when attempting to run ```drive_manager.py```. Start by setting the following options:
 <br>
 
 <ul>
@@ -46,6 +46,7 @@ be. This is a standard YAML file, so leave the formatting as you see it or you w
   <li><b>hostname</b> (set this to the hostname of the system - should match IP address used by all other systems to comunicate to this box)</li>
   <li><b>plot_receive_interface</b> (set this tot he name of the interface as shown by ifconfig that you use to receive plots)</li>
   <li><b>plot_receive_interface_threshold</b> (set this the the percentage utilization on the bove inteface that indicates that we are receiving plot) </li>
+  <li><b>drive_temperature_limit</b> (set this to the temperature at which your drive temp report will turn an indicate temperature red)</li>
   <li><b>pools</b> (set these setting according to your configuration, see notes) </li>
   <li><b>chia_log_file</b> (full path to your chia log file (usually debug.log) (Make sure to set logging level to INFO or DEBIG in your Chia Config)</li>
   <li><b>chia_config_file</b> (same as above)</li>
@@ -59,7 +60,7 @@ be. This is a standard YAML file, so leave the formatting as you see it or you w
 
 
 ```
-# v0.95 2021-09-03
+# v0.98 2021-10-05
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -80,6 +81,10 @@ plot_receive_interface: eth0
 # To test simply run the following command and look at the very last number:
 # /usr/bin/sar -n DEV 1 50 | egrep eth0
 plot_receive_interface_threshold: 2
+
+# Set the max hard drive temperature limit that you wish to see on your hard drives. This
+# is used to format the Drive Temperature Report: ./drive_manager.py -ct
+drive_temperature_limit: 30
 
 # Are we plotting for pools? This has nothing to do with the actual plotting of
 # plots but rather just naming of the new plots and eventually the replacing of
@@ -200,6 +205,7 @@ notifications:
   types:
     new_plot_drive: True
     daily_update: True
+    farm_update: True
     per_plot: False
     warnings: True
   # What email addresses will get the emails?
