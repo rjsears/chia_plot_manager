@@ -46,7 +46,7 @@ other things like notifications and stuff.
 
 
  Updates
-   v0.98 2021-10-08
+   v0.98 2021-10-15
    - Rewrote reporting utilizing Python Rich (https://github.com/willmcgugan/rich)
    - Begin Python typing addition to functions (work in progress)
    - Minor bug fixes
