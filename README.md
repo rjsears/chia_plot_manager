@@ -544,7 +544,9 @@ desiginated as plot drives and color codes temps based on temperature setting in
 ```
  <br><br>
 <b> -hr    --health_report</b><br>
- 
+ This option runs a simple "it's alive" check against all remote harvesters configured in your
+ main configuration file and returns a simple report:<br>
+ <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png" alt="Chia Plot Manager Health Report"></a>
  
 <br><br>
 <b> -pr    --plot_report</b><br>
