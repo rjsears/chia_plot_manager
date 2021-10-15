@@ -426,94 +426,11 @@ Staring with V0.3 (April 4th, 2021) (and updated once again in V0.98) I have sta
 </ul>
 
 <b> -h --help</b>  and  <b>-v --version</b><br>
-These options print out the help message or version information and exits.
+These options print out the help message or version information and exits.<br><br>
+<a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_help_menu.png" alt="Chia Plot Manager Help"></a>
+ <br>
+ 
 
-```
-Welcome to drive_manager.py Version: 0.98 (2021-10-15)
-usage: drive_manager.py [-h] [-v] [-dr] [-hr] [-pre] [-fre] [-ct] [-pr] [-fr] [-ud] [-rp] [-uuid CHECK_UUID] [-off OFFLINE_HDD] [-on {drive0,drive1}]
-
-            ******** ChiaNAS Drive Manager - 0.98 (2021-10-15) ********
-Running drive_manager.py with no arguments causes drive_manager to run in 'normal' mode.
-In this mode drive_manager will check the drive utilization and update which drive your
-Chia plots will be sent to when they arrive from your plotter. This is generally called
-from a cronjob on a regular basis. Please read the full information about how it works
-on my github page.
-
-There are several commandline switches you can use to get immediate reports and feedback:
-
--dr or --drive_report       Runs the Daily ChiaNAS Report (if configured), and emails
-                            it to you. This can be called from a crontab job as well.
-
--ct or --check_temps        This will query all of your hard drives using smartctl and
-                            return a list of drive temperatures to you.
-
--hr or --health_report      This will query all of your remote harvesters and let you
-                            know that they are alive. This is a basic ping test only.
-                            Does not check harvester status (yet).
-
--pr or --plot_report        This queries the NAS and returns a report letting you know
-                            how many plots are currently on the system and how many more
-                            you can add based on the current drive configuration. It also
-                            includes plotting speed information for the last 24 hours.
-                            Use -pre for emailed report.
-
--fr or --farm_report        This queries your farm and returns a report letting you know
-                            how many plots are currently in the farm and how many more
-                            you can add based on the current drive configuration. It also
-                            includes plotting speed information for the last 24 hours farm wide.
-                            **NOTE: Must be configured! - Use -fre for emailed report.
-
--ud or --update_daily       This updates the total number of plots the system has created
-                            over the past 24 hours. Use with CAUTION!. This should be ran
-                            from crontab once every 24 hours only! It updates the total
-                            from the last time is was run until now, hence why you should
-                            only run this once per 24 hours.
-
--rp or --replace_plot       This is GENERALLY run remotely by your plotter when it detects
-                            that you are configured for plot replacement, ie - you have a
-                            lot of old plots and you are replacing them with new portable
-                            style plots. Use CAUTION running it manually! It might DELETE
-                            an old plot every time it is run but should only do so if
-                            there is no space available on the selected drive.
-
--uuid or --check_uuid       This checks all remote harvesters to see if the requested UUID is
-                            present and mounted. Returns the server and mountpoint if found.
-
--off or --offline_hdd       This takes a drive as it's input (for example  drive6) and
-                            "offlines" it so that no more plots will get written to it.
-                            You must --on or --online_hdd the drive for it to be used
-                            again. Useful if the drive is failing and needs to be replaced.
-                            You cannot "offline a drive that is not mounted.
-
--on or --online_hdd         This takes a drive as it's input (for example  drive6) and
-                            "onlines" it so that plots will get written to it. This option
-                            will be UNAVAILABLE if there are no drives that have been
-                            offlined!
-
-USAGE:
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --version         show program's version number and exit
-  -dr, --daily_report   Run the ChiaPlot Daily Email Report and exit
-  -hr, --health_report  Remote Harvester Health Report
-  -pre, --plot_report_email
-                        Email Host Report and Exit
-  -fre, --farm_report_email
-                        Email Farm Report and exit
-  -ct, --check_temps    Return a list of drives and their temperatures and exit
-  -pr, --plot_report    Return the total # of plots on the system and total you can add and exit
-  -fr, --farm_report    Return the total # of plots on your entire farm and total you can add and exit
-  -ud, --update_daily   Updates 24 hour plot count. USE WITH CAUTION, USE WITH CRONTAB
-  -rp, --replace_plot   Remove a single old Plot. USE WITH CAUTION, READ DOCS FIRST. Generally called remotely by Plotter!
-  -uuid CHECK_UUID, --check_uuid CHECK_UUID
-                        Check to see is a specific UUID is mounted on any harvester
-  -off OFFLINE_HDD, --offline_hdd OFFLINE_HDD
-                        Offline a specific drive. Use drive number: drive6
-  -on {drive0,drive1}, --online_hdd {drive0,drive1}
-                        Online a specific drive.
-                        
-  ```
 <br><br>
 <b> -dr    --drive_report</b><br>
 This option outputs the HTML version of the Daily Drive Report email to the screen and also emails.
@@ -546,7 +463,7 @@ desiginated as plot drives and color codes temps based on temperature setting in
 <b> -hr    --health_report</b><br>
  This option runs a simple "it's alive" check against all remote harvesters configured in your
  main configuration file and returns a simple report:<br>
- <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png" alt="Chia Plot Manager Health Report"></a>
+ <a name="chia_help" https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_remote_harvester_health_report.png" alt="Chia Plot Manager Health Report"></a>
  
 <br><br>
 <b> -pr    --plot_report</b><br>
