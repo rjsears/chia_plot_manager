@@ -1635,29 +1635,10 @@ def send_new_plot_notification() -> None:
             notify('New Plot Received', 'New Plot Received')
         os.remove('new_plot_received')
 
-def check_plots_old() -> tuple: # new chia version changed the way they report things in the debug file!
+def check_plots() -> tuple:   # new chia version changed the way they report things in the debug file! (works with 1.8.2)
     with open(chianas.chia_log_file, 'rb', 0) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-        i = m.rfind(b'Loaded')
-        try:
-            m.seek(i)
-        except ValueError as e:
-            return 0, 0
-        line = m.readline()
-        newline = line.decode("utf-8")
-        x = newline.split()
-        try:
-            plots = x[4]
-            TiB = float(x[8])
-        except IndexError:
-            plots = 0
-            TiB = 0
-        return plots, f'{TiB:.0f}'
-
-def check_plots() -> tuple:
-    with open(chianas.chia_log_file, 'rb', 0) as f:
-        m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-        i = m.rfind(b'Total')
+        i = m.rfind(b'plots:')
         try:
             m.seek(i)
         except ValueError as e:
