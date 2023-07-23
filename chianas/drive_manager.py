@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.98 (2021-10-15)"
+VERSION = "0.99 (2023-07-22)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -46,6 +46,10 @@ other things like notifications and stuff.
 
 
  Updates
+   v0.99 2023-07-22
+   - Updated reporting to meet the new log file output of 1.8.2 to correctly read 
+    the number of plots currently being farmed.
+    
    v0.98 2021-10-15
    - Rewrote reporting utilizing Python Rich (https://github.com/willmcgugan/rich)
    - Begin Python typing addition to functions (work in progress)
