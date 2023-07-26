@@ -1,9 +1,9 @@
 #! /bin/bash
 
-# Version V0.98 2021-10-15
+# Version V0.99 2023-07-25
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
-# the system with various tools and tings required to run the various
+# the system with various tools and things required to run the various
 # parts of chia_plot_manager.
 
 # I use this to create new NAS/Plotter servers.
