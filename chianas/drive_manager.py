@@ -6,7 +6,7 @@ __author__ = 'Richard J. Sears'
 VERSION = "0.99 (2023-07-22)"
 
 """
-NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+NOTE NOTE NOTE NOTE NOTE NOTE NOTE
 This script is designed to run with a particular directory structure:
 
 /mnt
