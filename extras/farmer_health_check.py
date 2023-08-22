@@ -21,8 +21,8 @@ import os
 
 # House Keeping
 # Where are we sending the email notification?
-notify_address = 'xxxxxxxxxx@vtext.com'
-from_address = 'chianode1@yourdomain.com'
+notify_address = '8585551212@vtext.com' # Replace with your Email
+from_address = 'chianode1@yourdomain.com' # Replace with correct 'From' address
 
 # What is our Host Name?
 host = 'chianode01'
@@ -45,18 +45,17 @@ def how_installed():
         if os.path.isfile('/home/chia/chia-blockchain/venv/bin/chia'):
             response = "venv"
         else:
-            response = "not_found"
+            log.debug('A Chia Installation was not found. Exiting!')
+            exit()
     return (response)
 
 # This basically makes a call to the Chia daemon and checks to see if we are
 # actually "Farming". If not, it checks a second time and then reboots the farmer.
 
 def is_farmer_running():
-    if how_installed() == 'not_found':
-        print ('A Chia installation was not found! EXITING')
-        exit()
+    installed = how_installed()
     try:
-        if how_installed() == 'apt':
+        if installed == 'apt':
             output = subprocess.check_output(['/usr/bin/chia', 'farm', 'summary'])
         else:
             output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'farm', 'summary'])
@@ -70,7 +69,7 @@ def is_farmer_running():
                 send_email(notify_address, host, 'Farmer is NOT Running, attempting a restart!')
                 print("Farmer is DOWN")
                 time.sleep(10) # Let's check a second time before we force reboot the farmer!
-                if how_installed() == 'apt':
+                if installed == 'apt':
                     output = subprocess.check_output(['/usr/bin/chia', 'farm', 'summary'])
                 else:
                     output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'farm', 'summary'])
@@ -106,6 +105,7 @@ def send_email(recipient, subject, body):
 
 
 def main():
+    how_installed()
     is_farmer_running()
 
 if __name__ == '__main__':
