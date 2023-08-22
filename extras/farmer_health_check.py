@@ -12,7 +12,7 @@ the linux mail command.
 
 """
 
-VERSION = "V0.99 (2023-08-22)"
+VERSION = "V0.991 (2023-08-22)"
 
 import subprocess
 import time
