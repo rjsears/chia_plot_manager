@@ -3,15 +3,17 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.6 (2021-04-24)"
+VERSION = "0.991 (2023-08-22)"
 
 # Simple script to check to see if we have any new Chia coins.
-# This is NOT 100% foolproof as it just reads the log files,
-# always check your wallet for actual coin information.
+# This does assume that you installed in '/home/chia/coin_monitor'
+# Adjust as necessary if you have installed elsewhere.
+
 
 import sys
 import re
 import os
+sys.path.append('/home/chia/coin_monitor')
 import subprocess
 import logging
 from system_logging import setup_logging
@@ -21,12 +23,20 @@ from pushbullet import Pushbullet, errors as pb_errors
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 import configparser
-from jinja2 import Environment, select_autoescape, FileSystemLoader
+from jinja2 import Environment, PackageLoader, select_autoescape
 from datetime import datetime
 import time
-config = configparser.ConfigParser()
-import mmap
+import apt
 
+
+# Set config
+config = configparser.ConfigParser()
+
+# Are we utilizing pooling plots? If set to True, this will run a plotnft check
+# to see if we have additional chia and claim them if we do. Make sure to set
+# your correct plotnft wallet id.
+plotnft = True
+plotnft_wallet = 2
 
 
 # Do some housework
@@ -34,11 +44,6 @@ today = datetime.today().strftime('%A').lower()
 current_military_time = datetime.now().strftime('%H:%M:%S')
 current_timestamp = int(time.time())
 
-# Where is our Chia logfile located?
-chia_log = '/home/chia/.chia/mainnet/log/debug.log'
-
-# Where do we log our new coins so we don't duplicate them?
-new_coin_log = '/root/coin_monitor/logs/new_coins.log'
 
 # Setup Module logging. Main logging is configured in system_logging.py
 setup_logging()
@@ -51,7 +56,8 @@ log.setLevel(level)
 # If we are expecting a boolean back pass True/1 for bool,
 # otherwise False/0
 def read_config_data(file, section, item, bool):
-    pathname = '/root/coin_monitor/' + file
+    log.debug('read_config_data() Started')
+    pathname = '/home/chia/coin_monitor/' + file
     config.read(pathname)
     if bool:
         return config.getboolean(section, item)
@@ -60,47 +66,109 @@ def read_config_data(file, section, item, bool):
 
 
 def update_config_data(file, section, item, value):
-    pathname = '/root/coin_monitor/' + file
+    log.debug('update_config_data() Started')
+    pathname = '/home/chia/coin_monitor/' + file
     config.read(pathname)
     cfgfile = open(pathname, 'w')
     config.set(section, item, value)
     config.write(cfgfile)
     cfgfile.close()
 
+# First, let's try and detect how we were installed
+# Depending on how were were installed (APT vs. Git) will
+# depend on how we call chia. If you installed via Git,
+# it is assumed that you installed at '/home/chia/', if
+# this is incorrect, you need to update the paths below.
+# This works for Ubuntu so it may not work for your distro!
+
+def how_installed():
+    cache = apt.Cache()
+    cache.open()
+    response = "apt"
+    try:
+        cache['chia-blockchain'].is_installed or cache['chia-blockchain-cli'].is_installed
+    except KeyError:
+        if os.path.isfile('/home/chia/chia-blockchain/venv/bin/chia'):
+            response = "venv"
+        else:
+            log.debug('A Chia Installation was not found. Exiting!')
+            exit()
+    return (response)
+
+
+# First we need to check if we have a plotnft balance available and if we do, we need to go ahead and claim those chia.
+def check_plotnft_balance():
+    log.debug('check_plotnft_balance() Started')
+    if plotnft:
+        log.debug('plotnft configured, checking for pooling coins')
+        try:
+            if how_installed() == 'apt':
+                check_plotnft_balance_output = subprocess.check_output(['/usr/bin/chia', 'plotnft', 'show'])
+            else:
+                check_plotnft_balance_output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'plotnft', 'show'])
+            plotnft_balance = check_plotnft_balance_output.decode("utf-8")
+            for line in plotnft_balance.split('\n'):
+                parts = line.strip().split(':', 1)
+                if len(parts) == 2 and parts[0] == 'Claimable balance':
+                    value_part = parts[1].split()[0]  # Extract the numerical value part
+                    if float(value_part) > 0:
+                        log.debug(f'You have {value_part} new coins! We will claim them!')
+                        log.critical(f'You have {value_part} new coins! We will claim them!')
+                        if how_installed() == 'apt':
+                            subprocess.check_output(['/usr/bin/chia', 'plotnft', 'claim', '-i', plotnft_wallet])
+                        else:
+                            subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'plotnft', 'claim', '-i', plotnft_wallet])
+                else:
+                    log.debug('No new Pooling coins found!')
+                    break  # No need to continue processing lines
+        except subprocess.CalledProcessError as e:
+            print("Error:", e)
+    else:
+        log.debug('plotnft not configured, skipping!')
+
+
+# Next we need to see if the claim was successful by seeing if we have more coins in out wallet.
+# This may actually take a few minutes to show up after we claim them.
 def check_for_chia_coins():
     log.debug('check_for_chia_coins() Started')
-    coin_pattern = re.compile(r'\bConfirmed balance amount is')
-    with open (chia_log, 'rt') as my_chia_logfile:
-        for line in my_chia_logfile:
-            if coin_pattern.search(line) != None:
-                new_coin = []
-                new_coin.append(re.match((r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?'), line).group(0))
-                new_coin.append(re.search((r"[0-9]{8,13}"), line).group(0))
-                with open(new_coin_log, 'rb', 0) as file, mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as coin:
-                    if coin.find(bytearray(str(new_coin[0]), encoding='utf8')) != -1:
-                        log.debug(f'Found coins that were already accounted for in the log!: {new_coin}')
-                    else:
-                        log.critical(new_coin)
-        if get_current_coins() == int(read_config_data('coin_monitor_config', 'current_coins', 'coins', False)):
-            log.debug('No new coins found!')
-        else:
-            log.info(f'New Coins Found!{new_coin}')
-            update_config_data('coin_monitor_config', 'current_coins', 'coins', str(get_current_coins()))
-            notify(f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
-                f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
-            send_new_coin_email()
+    if get_total_chia_balance() == float(read_config_data('coin_monitor_config', 'current_coins', 'coins', False)):
+        log.debug('No new coins found!')
+    else:
+        log.info('New Coins Found!')
+        total_coins = str(get_total_chia_balance())
+        log.critical(f'You now have {total_coins} Chia!')
+        update_config_data('coin_monitor_config', 'current_coins', 'coins', total_coins)
+        #notify(f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins",
+        #    f"You Now have {read_config_data('coin_monitor_config', 'current_coins', 'coins', False)} Chia Coins")
+        send_new_coin_email()
 
-def get_current_coins():
-    with open(new_coin_log, 'rb') as f:
-        f.seek(-2, os.SEEK_END)
-        while f.read(1) != b'\n':
-            f.seek(-2, os.SEEK_CUR)
-        last_line = f.readline().decode()
-        current_coins =  (int((re.search((r"[0-9]{8,13}"), last_line).group(0)).strip('0')))
-        return (current_coins)
+def get_total_chia_balance():
+    log.debug('get_total_chia_balance() Started')
+    if how_installed() == 'apt':
+        check_total_chia_balance_output = subprocess.check_output(['/usr/bin/chia', 'wallet', 'show', '-w', 'standard_wallet'])
+    else:
+        check_total_chia_balance_output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'wallet', 'show', '-w', 'standard_wallet'])
+    total_chia_balance = check_total_chia_balance_output.decode("utf-8")
+    result = float(extract_total_balance(total_chia_balance))
+    if result is not None:
+        return (result)
+    else:
+        log.debug("Total Balance not found in the output")
 
+def extract_total_balance(output):
+    log.debug('extract_total_balance() Started')
+    pattern = r"-Total Balance:\s+([\d.]+)"
+    match = re.search(pattern, output)
+    if match:
+        total_balance = float(match.group(1))
+        return total_balance
+    else:
+        return None
+
+
+# Here we check to see if we are configured to send a "per new coin" email and if so, we send that email.
 def send_new_coin_email():
-    log.debug('Started send_new_coin_email()')
+    log.debug('send_new_coin_email() Started')
     if read_config_data('coin_monitor_config', 'notifications', 'per_coin_email', True):
         for email_address in system_info.new_coin_email:
             send_template_email(template='new_coin.html',
@@ -109,8 +177,9 @@ def send_new_coin_email():
                                 current_time=current_military_time,
                                 current_chia_coins=read_config_data('coin_monitor_config', 'current_coins', 'coins', False))
     else:
-        log.debug('per_coin_email set to False, no email sent')
         pass
+
+
 
 
 def send_email(recipient, subject, body):
@@ -122,7 +191,6 @@ def send_email(recipient, subject, body):
     https://nedbatchelder.com/text/unipain.html
     https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-20-04
     """
-    log.debug(f'send_email() called with Recipient: {recipient} and Subject: {subject}')
     try:
         subprocess.run(['mail', '-s', subject, recipient], input=body, encoding='utf-8')
         log.debug(f"Email Notification Sent: Subject: {subject}, Recipient: {recipient}, Message: {body}")
@@ -157,6 +225,7 @@ def send_sms_notification(body, phone_number):
     except Exception as e:
         log.debug(f'Twilio Exception: {e}. Message not sent.')
 
+
 def notify(title, message):
     """ Notify system for email, pushbullet and sms (via Twilio)"""
     log.debug(f'notify() called with Title: {title} and Message: {message}')
@@ -176,9 +245,8 @@ def notify(title, message):
 # Thank You - https://frankcorso.dev/email-html-templates-jinja-python.html
 def send_template_email(template, recipient, subject, **kwargs):
     """Sends an email using a jinja template."""
-    log.debug(f'send_template_email() called with Template: {template}, Recipient: {recipient} and Subject: {subject}')
     env = Environment(
-        loader=FileSystemLoader('%s/templates/' % os.path.dirname(__file__)),
+        loader=PackageLoader('coin_monitor', 'templates'),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(template)
@@ -186,6 +254,8 @@ def send_template_email(template, recipient, subject, **kwargs):
 
 
 def main():
+    how_installed()
+    check_plotnft_balance()
     check_for_chia_coins()
 
 
