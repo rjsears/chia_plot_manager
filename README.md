@@ -121,11 +121,11 @@ Beginning in V0.94, we now fully support portable plot management as well as old
 <br>
 <b>On the Farmer (via cron):</b>
 <ul>
-  <li>Checks the chia logs (~chia/.chia/mainnet/log/debug.log) for activity</li>
+  <li>Checks to make sure Chia is farming (farmer_health_check.py) Reboots if necessary.</li>
   <li>Looks for new coins</li>
-  <li>Once found updates a local file showing how many Chia you have</li>
-  <li>Emails, texts, etc when you get a new coin with the current amount you have</li>
-  <li>Does NOT use the block explorer so verify!</li>
+  <li>Once found, updates a local file showing how many Chia you have</li>
+  <li>Emails, texts, etc. when you get a new coin with the current amount you have</li>
+  <li>Does NOT use the block explorer, so verify!</li>
 </ul>
 <br>
 <b>Command Line Options on the NAS</b>
