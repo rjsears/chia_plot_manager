@@ -519,7 +519,7 @@ This is stand-alone and can be combined with or without my plot_manager scripts.
 
 Installation is pretty straightforward. Copy it into your preferred directory and then edit `coin_monitor.py` and make
 sure that you set plotnft to True or False and if True, set plotnft_wallet to the correct wallet id:<br><br>
-`plotnft = True` 
+`plotnft = True` <br>
 `plotnft_wallet = 2`
 
 I try to autodetect how you installed Chia (via APT on Ubuntu or Git), if it fails or you installed a different way
