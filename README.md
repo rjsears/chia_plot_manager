@@ -4,7 +4,7 @@
   Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.991 - August 22nd, 2023)
   </h2>
   <p align="center">
-Multi Server Chia Plot and Drive Management Solution
+Multi-Server Chia Plot, Drive Management Solution & Coin Monitor
   </p>
 <h4 align="center">Be sure to  :star:  my repo so you can keep up to date on any updates and progress!</h4>
 <br>
@@ -16,12 +16,12 @@ Multi Server Chia Plot and Drive Management Solution
 <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/rjsears/chia_plot_manager?style=plastic">
 </h4>
 </div><br><br>
-<b><em> Now fully supports pools and automatic removal of old plots on a one-by-one basis when replacing with new portable pool plots! Also includes a harvester-wide UUID search allowing you to locate any drive on any harvester by UUID and determine it's mountpoint! <br><br> 
+<b><em> Now fully supports pools and automatic removal of old plots on a one-by-one basis when replacing them with new portable pool plots! Also includes a harvester-wide UUID search allowing you to locate any drive on any harvester by UUID and determine its mountpoint! <br><br> 
  
-You must be running Chia Version 1.8.2 or higher for the reporting to work correctly!</b></em>
+Tested and works on Chia Version 1.8.2</b></em>
 <br>
 <p align="left"><font size="3">
-Hopefully if you are reading this you know what Chia is and what a plot is. I am pretty new to Chia myself but I determined that I needed to come up with a way to manage my plots and hard drives that hold thse plots somewhat automatically since my job as a pilot keeps me gone a lot. I <em>am not</em> a programmer, so please, use this code with caution, test it yourself and provide feedback. This is a working version that is currently running and working for my setup which I will explain below. Hopefully it will be of some help to others, it is the least I can do to give back to the Chia community.
+Hopefully, if you are reading this you know what Chia is and what a plot is. I am pretty new to Chia myself but I determined that I needed to come up with a way to manage my plots and hard drives that hold those plots somewhat automatically since my job as a pilot keeps me gone a lot. I <em>am not</em> a programmer, so please, use this code with caution, test it yourself, and provide feedback. This is a working version that is currently running and working for my setup which I will explain below. Hopefully, it will be of some help to others, it is the least I can do to give back to the Chia community.
   
 
 Hopefully, this might provide some inspiration for others in regard to their Chia projects. Contributions are always welcome.</p>
@@ -66,26 +66,26 @@ Hopefully, this might provide some inspiration for others in regard to their Chi
 ### <a name="overview"></a>Overview & Theory of Operation
 <div align="left">
 
-<b><em>In its simplest form, chia_plot_manager bridges the gap between creating a plot, and managing that plot after it has been created.</em></b><br><br>
-This project was designed around my desire to "farm" the Chia crypto currency. In my particular configuration I have a multiple plotting servers (chiaplot01, chiaplot02, etc) creating Chia plots. Once a plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01, chianas02, etc) where it resides while being "farmed". The process of creating the plot is pretty straight forward, but the process of managing that plot once completed was a little more interesting. My plotting servers have the capacity to plot 150 plots a day and that is where I started to have issues.<br><br>
+<b><em>In its simplest form, chia_plot_manager bridges the gap between creating a plot and managing that plot after it has been created.</em></b><br><br>
+This project was designed around my desire to "farm" the Chia cryptocurrency. In my particular configuration, I have multiple plotting servers (chiaplot01, chiaplot02, etc) creating Chia plots. Once a plotting server has completed a plot, this plot then needs to be moved to a storage server (chisnas01, chianas02, etc) where it resides while being "farmed". The process of creating the plot is pretty straightforward, but the process of managing that plot once completed was more interesting. My plotting servers have the capacity to plot 150 plots a day and that is where I started to have issues.<br><br>
 
-One of those issues that I faced was the relative slow speed at which plots could be moved from the plotting server to the storage server. The long and short of it was simple - I could not continue to plot 150 plots a day per plotter as I could not move them off the plotting server fast enough not to run out of insanely expensive NVMe drive space. Even with 10Gbe connections directly between the two devices, using ```mv``` or ```cp``` on an NFS mount was pretty slow, others suggested ```rsync``` which was also pretty slow due to encryption. The same held true for ```scp```. I even went so far as scrapping the ssh that came with Ubunti 20.04 and compiling and installing High Performance SSH from the Pittsburgh Supercomputing Center. While it was faster it did not come close to maxing out my dedicated 10Gbe link. What I did know is that the problem was not the network. Each machine was connected to a dedicated 10Gbe port on a Cisco Nexus 9000 on a dedicated data VLAN specifically for moving those plots. Iperf was able to saturate the 10Gbe link with zero problems. <br>
+One of those issues that I faced was the relatively slow speed at which plots could be moved from the plotting server to the storage server. The long and short of it was simple - I could not continue to plot 150 plots a day per plotter as I could not move them off the plotting server fast enough not to run out of insanely expensive NVMe drive space. Even with 10Gbe connections directly between the two devices, using ```mv``` or ```cp``` on an NFS mount was pretty slow; others suggested ```rsync```, which was also pretty slow due to encryption. The same held true for ```scp```. I even went so far as scrapping the ssh that came with Ubuntu 20.04 and compiling and installing High-Performance SSH from the Pittsburgh Supercomputing Center. While it was faster, it did not come close to maxing out my dedicated 10Gbe link. What I did know is that the problem was not the network. Each machine was connected to a dedicated 10Gbe port on a Cisco Nexus 9000 on a dedicated data VLAN specifically for moving those plots. Iperf was able to saturate the 10Gbe link with zero problems. <br>
 
-Next I wanted to make sure the problem was not related to the media I was copying the data to across the wire. I installed a pair of Intel P3700 PCIe NVMe drives in a strip RAID configuration and did a bunch of tests to and from that mountpoint locally and across the wire. As suspected, locally the drives performed like magic, across the wire, they performed at exactly the same speed as my spinners. Clearly the drive medium was also not the problem. It had to be the network. <br>
+Next I wanted to ensure the problem was not related to the media I copied the data to across the wire. I installed a pair of Intel P3700 PCIe NVMe drives in a strip RAID configuration and did a bunch of tests to and from that mountpoint locally and across the wire. As suspected, locally the drives performed like magic, across the wire, they performed at exactly the same speed as my spinners. Clearly the drive medium was also not the problem. It had to be the network. <br>
 
-I spent a <em>lot</em> of time playing around with all of the network settings, changing kernel parameters, turning on and off jumbo frames and adjusting irqbalancing. In the end some of the changes gave me marginal increases in performance but nothing really helped <em>a lot</em>. It was then that I stated looking at the mechanism I was using to move the files again. In researching I ran across a couple of people with the same situation, network speed on heavily loaded systems and lightly loaded networks where traditional methods of moving files around did not work for them. So they used Netcat instead. <br>
+I spent a <em>lot</em> of time playing around with all of the network settings, changing kernel parameters, turning on and off jumbo frames, and adjusting irqbalancing. In the end, some of the changes gave me marginal increases in performance but nothing really helped <em>a lot</em>. Then, I stated looking at the mechanism I was using to move the files again. In researching, I ran across a couple of people with the same situation, network speed on heavily loaded systems and lightly loaded networks where traditional methods of moving files around did not work for them. So they used Netcat instead. <br>
 
-After reading up on the pros and cons of netcat vs rsync (which most recommended) I decided to give it a test. I tested cp, mv, rsync, scp and HPSSH across NFS, SMB (miserable) and SSH. With the exception of SMB they all pretty much worked the same. I was getting better performance than I had been using the stock Ubuntu ssh after replacing it with the High Perfomance SSH and nuking encryption, but still nothing to write home about. Then I tested Netcat. I was blown away. I went from much less than 1Gbe to peaks of 5Gbe with netcat. 100G files that had been taking 18 minutes to transfer were now transferring in 3 to 4 minutes. Even on my heavily CPU loaded plotter, I was seeing transfers around 6 to 7 minutes.<br>
+After reading up on the pros and cons of Netcat vs rsync (which is most recommended), I decided to give it a test. I tested cp, mv, rsync, scp and HPSSH across NFS, SMB (miserable) and SSH. With the exception of SMB they all pretty much worked the same. I was getting better performance than I had been using the stock Ubuntu ssh after replacing it with the High Performance SSH and nuking encryption, but still, nothing to write home about. Then I tested Netcat. I was blown away. I went from much less than 1Gbe to peaks of 5Gbe with netcat. 100G files that had been taking 18 minutes to transfer were now transferring in 3 to 4 minutes. Even on my heavily CPU-loaded plotter, I saw transfers around 6 to 7 minutes.<br>
 
 It is also very interesting to note that TrueNAS utilizes netcat for replication when you tell it you want to disable encryption for replication. In researching this further and talking with some on the forums, they noted that they found it <em>always</em> outperformed all other transfer methods. That was enough for me to validate my decision!<br>
 
-As far as plots go, most folks recommend not using some type of RAID array to protect your plots from loss. the thought process is that if you lose a single plotting drive, no big deal, toss it in the trash and put a replacement drive in and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine drive RAIDZ2 vdevs in place and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a jbod as suggested by many others. The question was how to manage getting the plots onto the drives and what to do when the drives filled up.<br>
+Regarding plots, most folks recommend not using some RAID array to protect your plots from loss. The thought process is that if you lose a single plotting drive, no big deal; toss it in the trash and put a replacement drive in, and fill it back up with plots. Since I really like FreeNAS, I had just planned on dropping in a new FreeNAS server, throwing a bunch of nine-drive RAIDZ2 vdevs in place, and move forward. But as many pointed out, that was a LOT of wasted space for data pretty easily replaced. And space is the name of the game with Chia. So with that thought in mind, I decided to build out a JBOD as suggested by many others. The question was how to manage to get the plots onto the drives and what to do when the drives filled up.<br>
 
-Welcome to my project! I ended up with basically a client/client/client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to a NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, pretty much all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work.
+Welcome to my project! I ended up with basically a client/client/client/server arrangement. The software on the plotting server would watch for completed plots and then send those plots (using netcat) to a NAS server. The software on the NAS server would automatically monitor all available drives in the system and place the plot where it needed to go, all on its own. As I said earlier, my job as a pilot keeps me in the air a lot and I really needed a hands off approach to make this work.
  
 Beginning with V0.9, the software now supports multiple Harvesters/NASs across the board, both from a reporting standpoint and also from the plotter standpoint. When configured in a multi-harvester mode, the plotter will query each Harvester to find out which one has the most space and send the plot to that Harvester. I have added in network checks and if a Harvester that you have configured fails the check, you will get an immediate notification. If you are running the farm report, it will notify you on the report. If you are running version 0.98 or higher, you can check the health of your remote harvesters from any harvester properly configured by running ```./drive_manager.py -hr```.
  
-Beginning in V0.94, we now fully support portable plot management as well as old style plot replacement with portable pool plots. By replacing your old plots one-at-a-time, you maximize the number of plots you are farming at all times. Also has a feature to fill all of your empty drive space first with your new pool plots before starting to replace your old plots. Includes a low water mark to help manage the process. 
+Beginning in V0.94, we now fully support portable plot management as well as old style plot replacement with portable pool plots. By replacing your old plots one at a time, you maximize the number of plots you are farming. It also has a feature to fill all of your empty drive space first with your new pool plots before starting to replace your old plots. Includes a low water mark to help manage the process. 
  
 <b>On the Plotter side (via cron):</b>
 <ul>
@@ -141,9 +141,9 @@ Beginning in V0.94, we now fully support portable plot management as well as old
 
 ### <a name="dependencies"></a>Dependencies
 
-This was designed and is running on Ubuntu 20.04 for both the Plotter and the Harvester/NAS so pretty much any linux flavor should work. Listed below are the things that I am using on both systems. The one thing to watch out for on the NAS is the version of pySMART you are using. I ran into a bug with the version (1.0) on PyPi and ended up using the version from the TrueNAS Folks. DO NOT use the version from PyPi, it won't work until patched. If you are using my `install.sh` script, the correct version will be installed.<br>
+This was designed and is running on Ubuntu 20.04.3 for both the Plotter and the Harvester/NAS so pretty much any linux flavor should work. Listed below are the things that I am using on both systems. The one thing to watch out for on the NAS is the version of pySMART you are using. I ran into a bug with the version (1.0) on PyPi and ended up using the version from the TrueNAS Folks. DO NOT use the version from PyPi, it won't work until patched. If you are using my `install.sh` script, the correct version will be installed.<br>
 
-I am running on Python 3.8.5 and pretty much everything else came installed with the default Ubuntu Server 20.04 installation. Be sure to install smartmontools ```apt install smartmontools``` as well as the following:
+I am running on Python 3.8.5 and pretty much everything else came installed with the default Ubuntu Server 20.04.3 installation. Be sure to install smartmontools ```apt install smartmontools``` as well as the following:
 
 <ul>
   <li><a href="https://docs.sentry.io/platforms/python/">Sentry-SDK</a> - (Optional, I use it for error tracking)</li>
@@ -163,14 +163,14 @@ I am running on Python 3.8.5 and pretty much everything else came installed with
 
 Here is a very in-depth installation document that I have started: https://docs.google.com/document/d/1T2A8NboiPVpcI9shXrXlRleXiQSZ0s0I7P-F9ssOMhM/edit?usp=sharing
 <br><br>
- <b>UPDATE: The above google doc is <b>WAY</b> out of date, install is much easier now with only a single configuration file to edit. I will make an update to this soon!</b>
+ <b>UPDATE: The above Google doc is <b>WAY</b> out of date, install is much easier now with only a single configuration file to edit. I will make an update to this soon!</b>
  
-The installation of the actual scripts are pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>IN-DEPTH</em> instructions pretty much step-by-step, take a look at the google doc I linked to above. Again, please read the document above for very in-depth instructions.
+The installation of the actual scripts is pretty easy. Just clone the repo and drop it on your server. A <em>lot</em> of what happens is very specific to how I have my systems set up so I will explain my layout in detail along with where in the code you may need to look to make changes to fit your needs. For <em>IN-DEPTH</em> instructions pretty much step-by-step, take a look at the Google doc I linked to above. Again, please read the document above for very in-depth instructions.
 
 #### Network Configuration
 
-Before we get too deep into the installation and configuration of the scripts, I want to explain how ```I``` have my servers and network setup. Everything you read or see here will be based on this network diagram. If you have multiple Harvesters, they would connect the same way the first one does. Something to note, you absolutely should separate your Harvester/NAS traffic from your plotter and that of your farmer traffic to and from your Harvesters. Failure to do so can result in link saturation during plot transfers and your main node falling offline as a result.<br><br> On all of the servers I put host entries in ```/etc/hosts``` for the <em>INTERNAL</em> ip address of each of the servers. I use 10Gbe connections on the back and I want all of the plots to be moved across this network. By creating a separate network (10.200.95.x/24 in my example) without a default gateway, I can guarantee the only traffic on that network is plots being moved around and nothing else. <br><br>
-You could have an entire discussion on network performance and the install script will offer to make some changes for you to your networking parameters if you like. What I have found is that my scripts will generally saturate a 10Gbe link without issue but once you load down your plotter and Harvesters/NAS with massive CPU, memory and I/O tasks, you really don't get utilization of the full 10Gbe. At max CPU load it tends to take between 4 and 7 minutes to move a plot from my plotter to my NAS. Your network may vary. This is a basic network design layout, my current network has three Plotters and seven Harvesters:
+Before we get too deep into the installation and configuration of the scripts, I want to explain how ```I``` have my servers and network set up. Everything you read or see here will be based on this network diagram. If you have multiple Harvesters, they would connect the same way the first one does. Something to note, you absolutely should separate your Harvester/NAS traffic from your plotter and that of your farmer traffic to and from your Harvesters. Failure to do so can result in link saturation during plot transfers and your main node falling offline as a result.<br><br> On all of the servers I put host entries in ```/etc/hosts``` for the <em>INTERNAL</em> ip address of each of the servers. I use 10Gbe connections on the back and I want all of the plots to be moved across this network. By creating a separate network (10.200.95.x/24 in my example) without a default gateway, I can guarantee the only traffic on that network is plots being moved around and nothing else. <br><br>
+You could have an entire discussion on network performance and the install script will offer to make some changes for you to your networking parameters if you like. What I have found is that my scripts will generally saturate a 10Gbe link without issue but once you load down your plotter and Harvesters/NAS with massive CPU, memory, and I/O tasks, you really don't get utilization of the full 10Gbe. At max CPU load, it tends to take between 4 and 7 minutes to move a plot from my plotter to my NAS. Your network may vary. This is a basic network design layout, my current network has three Plotters and seven Harvesters:
  
  <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/v0.9/images/plot_manager_network.jpg" alt="Chia Plot Manager Network"></a><br><br>
  
@@ -178,13 +178,13 @@ You could have an entire discussion on network performance and the install scrip
 
 ### To get started
  
-I recommend installing in ```/root/plot_manager```. If you would like to install elsewhere that is fine, if you want to use a virtual environment, that should work as well. I have not personally tried running these outside of ```/root/plot_manager``` but so long as you have the basic directory structure <em>under</em> your install directory, it should work out of the box. 
+I recommend installing in ```/root/plot_manager```. If you would like to install elsewhere that is fine, if you want to use a virtual environment, that should work as well. I have not personally tried running this outside of ```/root/plot_manager``` but so long as you have the basic directory structure <em>under</em> your install directory, it should work out of the box. 
 
 Assuming a clean install, you can try this:
 
 ```git clone https://github.com/rjsears/chia_plot_manager.git && mv chia_plot_manager plot_manager && cd plot_manager && chmod +x install.sh && ./install.sh help```<br><br>
  
-If you are upgrding from a previous version, simply ```mv plot_manager plot_manager.old``` and then run the command above.
+If you are upgrading from a previous version, simply ```mv plot_manager plot_manager.old``` and then run the command above.
 
 My final directory structure looks like this:
  <br>
@@ -200,7 +200,7 @@ My final directory structure looks like this:
  
 #### Plotter Configuration
 
-Here is the directry structure I use on my plotter for my main plotting and -d drives:
+Here is the directory structure I use on my plotter for my main plotting and -d drives:
 
 ```
 /mnt
@@ -214,13 +214,13 @@ Here is the directry structure I use on my plotter for my main plotting and -d d
 ```
 The ```/mnt/nvme/driveX``` drives are used as my temp drives for plotting. These are Intel DC P4510 NVMe drives capable of running 13 to 15 plots each (based on k32 plot size). The ```/mnt/ssdraid/array0``` is my ```-d``` drive. This is a RAID0 array of HGST 1.6TB Enterprise SSD drives. This is where the completed plots are stored before they are moved by the plot_manager.py script.
 
-While all of my actual plotting is done as the ```chia``` user, I store all of my scripts at ```/root/plot_manager``` I do have a little bit of testing built into the script and that is what the test_plots directory is used for. I simple ```dd``` 10G of zeros into a test plot file and turn on testing in the script to test everything before going live. Eventually I will add a lot more testing capability, but that is down the road. 
+While all of my actual plotting is done as the ```chia``` user, I store all of my scripts at ```/root/plot_manager``` I do have a little bit of testing built into the script and that is what the test_plots directory is used for. I simply ```dd``` 10G of zeros into a test plot file and turn on testing in the script to test everything before going live. Eventually, I will add a lot more testing capability, but that is down the road. 
 
 <br><br>
 
 #### Update ```plot_manager.py``` Configuration File (generally `/root/.config/plot_manager/plot_manager.yaml`)
  
-Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However you do need to make some changes in ```plot_manager.yaml```. Most of these are pretty easy to figure out. Take a look at the file `plot_manager_skel.yaml` for more information and for complete instruction on how to set your configuration options.
+Beginning with Version 0.9, I attempt to autodetect your install path automatically so there is a <em>lot</em> less to do in this version than in previous versions. However, you do need to make some changes in ```plot_manager.yaml```. Most of these are pretty easy to figure out. Take a look at the file `plot_manager_skel.yaml` for more information and for complete instructions on how to set your configuration options.
 
 
 <hr>
@@ -230,7 +230,7 @@ Beginning with Version 0.9, I attempt to autodetect your install path automatica
 The NAS setup is pretty unique to me but it should be pretty easy to reconfigure the script to meet other needs. <br>
 Coming from running three very large Plex systems (PBs worth), I designed my drive layout and naming so that I could at any moment just by looking at a mountpoint go pull a drive if I needed to do so. 
 
-My basic layout is a single SuperMicro storage server with motherboard, 256GB ram and 36 drive bays. This I call ```enclosure0```. This is a Supermicro 847, it has 24 drive bays in front and 12 in the rear. This is my directory structure for that system:
+My basic layout is a single SuperMicro storage server with a motherboard, 256GB ram, and 36 drive bays. This I call ```enclosure0```. This is a Supermicro 847, it has 24 drive bays in front and 12 in the rear. This is my directory structure for that system:
 
 ```
 /mnt/enclosure0
@@ -282,7 +282,7 @@ My basic layout is a single SuperMicro storage server with motherboard, 256GB ra
         └── drive35
 ```       
 
-As you can see just by looking at a mount point I can tell exactly where a drive is located in my system. In addition to that, when I add additional external drive arrays, I just do the same thing with ```enclosure1```, ```enclosure2```, etc and my ```drive_manager.py``` script will work no problem. I plug in a new drive, format it ```XFS```, mount it, add it to ```fstab``` and that's it. The script does everything else.
+As you can see just by looking at a mount point I can tell exactly where a drive is located in my system. In addition to that, when I add additional external drive arrays, I just do the same thing with ```enclosure1```, ```enclosure2```, etc and my ```drive_manager.py``` script will work with no problem. I plug in a new drive, format it ```XFS```, mount it, add it to ```fstab``` and that's it. The script does everything else.
 
 
 I am basically using ``psutil`` to get drive space information and then use that to determine where to put plots. When I call ```psutil``` I just tell it I want it to look at any device that starts with ```/dev/sd``` and any mountpoint that includes ```enclosure``` and ends with the word ```drive```:
@@ -295,7 +295,7 @@ In this manner I will never get swap, temp, boot, home, etc. Nothing at all but 
 
 Once you have that figured out, there are just a couple of other little things that need to be set and configured. All configuration items are now stored in a central yaml configuration file located at `/root/.config/plot_manager.yaml`. There are instruction also located in that directory. If you upgrade to a new version, simply run the install script and it will update your configuration file to the newest settings without changing anything you currently have set.
 
-OK, once you have everything setup, on the <em>plotter</em> you simply run the ```plot_manager.py``` script and if everything is setup correctly you should see something like the following:
+OK, once you have everything set up, on the <em>plotter</em> you simply run the ```plot_manager.py``` script and if everything is setup correctly you should see something like the following:
 
 ```
 2021-03-19 19:20:01,543 - plot_manager:92 - process_plot: DEBUG process_plot() Started
@@ -338,11 +338,11 @@ drive_manager:270 - update_receive_plot: DEBUG Plots left available on configure
  
 #### Notifications
 
-If you want to receive votifications, you need to properly configure your local MTA (install.sh install postfix by default) and test it. In addition, if you want to use Pushbullet ot receive SMS text messages via Twillio you need to configure those accounts and then update ```system_info.py``` with the correct account information. Failure to do so will result in you not getting any notifications.<br><br>
+If you want to receive notifications, you need to properly configure your local MTA (install.sh install postfix by default) and test it. In addition, if you want to use Pushbullet to receive SMS text messages via Twilio you need to configure those accounts and then update ```system_info.py``` with the correct account information. Failure to do so will result in you not getting any notifications.<br><br>
  
 Once you have notifications setup and tested:<br>
 
-When the plot drives does change, you get a nicely formatted email:
+When the plot drives do change, you get a nicely formatted email:
 ```
 Server: chianas01
 New Plot Drive Selected at 10:17:17
@@ -402,14 +402,14 @@ Approx. # of Days to fill all Plot Drives.................23
 <h3>If you are using your NAS as a local plotter as well, read this.....</h3>
 I also use my NAS/Harvester as a local plotter as well, and I need to be able to manage the plots that are created just as I do the remote plots. I use `Plotman` to manage the creation of my plots but it is not really designed with a setup like mine. You can point it to a single rsync location but you have to manage that plot on your own once it gets there. The `-d` drive you point `Plotman` at does not get monitored by `Plotman` (or chia for that matter) and so I learned the hard way that those drives can fill up and cause all of your plotting to fail. So I created `move_local_plots.py`.<br><br>
 This script is very simple, it looks in the location you tell it you are storing completed local plots and moves them to the currently selected plotting drive that is configured by `drive_manager.py`. It then verifies the plot sizes and deletes the plot from the monitored drive. It an attempt to verify that the copy is taking place and not failed, I utilize `Dstat` and a simple shell script that looks at the I/O on the drive you are moving the plot off of. If there is no I/O on the drive, it is assumed that there is no copy process. If the script detects that it thinks there is a copy going on yet there is no drive I/O, it attempts to reset itself and restart the copy, hopefully completing correctly this time around.<br><br>
-Make sure you install `Dstat` before trying to use this script otherwise it will fail. See the beginning of the script for settings.<br><br>
+Make sure you install `Dstat` before trying to use this script otherwise, it will fail. See the beginning of the script for settings.<br><br>
 One word of advice - if you are using one of your drives that `drive_manager.py` would normally use to place plots on as a temp local `-d` drive, you should offline the drive using the `./drive_manager.py --off drivexx` command, otherwise `drive_manager.py` could start placing plots on that drive causing issues.<br><br>
 
 
 
 ### <a name="cli"></a>Command Line Options
 
-Staring with V0.3 (April 4th, 2021) (and updated once again in V0.98) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently the command line options that are availare are:
+Staring with V0.3 (April 4th, 2021) (and updated once again in V0.98) I have started to add in command line options to make getting plot and other information easier and to generate reports on the fly. Currently, the command line options that are available are:
 
 <ul>
  <li><em>-h</em> or <em>--help</em></li>
@@ -454,7 +454,7 @@ desiginated as plot drives and color codes temps based on temperature setting in
  
 <br><br>
 <b> -pr    --plot_report</b><br>
-This options prints out a quick version of the daily plot report to the screen
+This option prints out a quick version of the daily plot report to the screen
 and exits. Utilizing the option ```-pre``` will also email the same report. This
 can also be set in your crontab to get a copy of this new report emailed to you
 each day.
@@ -465,7 +465,7 @@ each day.
  
 <br><br>
 <b> -fr    --farm_report</b><br>
-This options prints out a full farm daily plot report to the screen
+This option prints out a full farm daily plot report to the screen
 and exits. Utilizing the option ```-fre``` will also email the same report.
 This can also be set in your crontab to get a copy of this new report emailed
 to you each day.
@@ -476,7 +476,7 @@ to you each day.
  
 <br><br>
 <b> -uuid    --check_uuid</b><br>
-This options searches all configured harvesters for a specific UUID and returns
+This option searches all configured harvesters for a specific UUID and returns
 the harvester and mountpoint where it was found:
  <br><br>
 <a name="chia_uuid_report" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_uuid_found.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_uuid_found.png" alt="Chia Plot Manager UUID Report"></a>
@@ -497,59 +497,40 @@ This option is really designed to be called from your crontab right before you r
 ```
 
 It is designed to calculate the information necessary for the daily plot report. You can run it anytime
-you want but it will reset this information to the point in time you called it as oppoed to giving you
-a 24 hour view of your system.
+you want but it will reset this information to the point in time you called it as opposed to giving you
+a 24-hour view of your system.
 <br>
 
 
 
-### <a name="coins"></a>Coin Monitor (Only Chia Version 1.1.1 or Higher) - <b> As of Chia 1.2.6 DOES NOT WORK, need to rewrite!</b>
+### <a name="coins"></a>Coin Monitor
 
 I wanted a simple way to keep track of when I won coins and how many I had so I added `coin_monitor.py` to the mix.
-As I said, in my configuration I have three servers, my `plotter`, my `nas` and my `farmer`. Coin Monitor sits on my
-farmer and watches the log files for new coins. When it sees that there is a new coin, it checks the coin logfile 
-(`/root/coin_monitor/logs/new_coins.log`) to make sure we have not already counted those coins. If it is a new coin
-it writes that coin information to the logfile (`new_coins.log`) and depending on what notifications you have setup
-you can receive a notification via SMS, Email and PushBullet. If you have `per_coin_email` set to True/1 in 
+As I said, in my configuration I have three servers, my `plotter`, my `nas`, and my `farmer`. Coin Monitor sits on my
+farm and watches for new coins. When it sees that there is a new coin, it updates the config file and 
+writes that coin information to the logfile (`new_coins.log`), and depending on what notifications you have set up
+you can receive a notification via SMS, Email, and PushBullet. If you have `per_coin_email` set to True/1 in 
 `coin_monitoring_config` you will also receive a nicely formatted email on top of your other notifications.
 
 <img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_new_coin_email.png" alt="You Have Chia" height="250" width="300"></a>
 <br><br>
 
-This is stand alone and can be used in combination with or without my plot_manager scripts. 
+This is stand-alone and can be combined with or without my plot_manager scripts. 
 
-Installation is pretty straight forward. Copy it into your preferred directory and then edit `coinf_monitor.py` and make
-sure that this line is pointing to your correct log file location:<br><br>
-`chia_log = '/home/chia/.chia/mainnet/log/debug.log'`<br><br>
-Also make sure the following line is also correct for your system:<br><br>
-`new_coin_log = '/root/coin_monitor/logs/new_coins.log'`<br><br>
-Lastly, you need to make sure chia is logging in INFO mode and not WARNING otherwise it will not log new coins.
-Look here to verify:<br>
-`/home/chia/.chia/mainnet/config/config.yaml`<br><br>
-You should see something like this:
-```
-logging: &id001
-    log_filename: log/debug.log
-    log_level: INFO
-    log_stdout: false
- ```
- <br><br>
- Just make sure the `log_level` is set to INFO and you should be good. <br><br>
- If you would like to test the script, simply create a test "log" file and put this line in it:<br>
- `2021-04-24T14:16:11.298 wallet chia.wallet.wallet_state_manager: INFO     Confirmed balance amount is 9200000000000`<br><br>
- Save the file and edit the coin_monitor.py script to look at that file and run the script. If everything
- is configured correctly you should get an email (or whatever notification you set up). If you run it again
- you should see this in the coin_monitor debug log:<br>
- `coin_monitor:82 - check_for_chia_coins: DEBUG:    Found coins that were already accounted for in the log!: ['2021-04-24T14:16:11.298', '9200000000000']`<br>
-<br>
-Just make sure to point the script back to the correct logfile after testing!
+Installation is pretty straightforward. Copy it into your preferred directory and then edit `coin_monitor.py` and make
+sure that you set plotnft to True or False and if True, set plotnft_wallet to the correct wallet id:<br><br>
+`plotnft = True` 
+`plotnft_wallet = 2`
+
+I try to autodetect how you installed Chia (via APT on Ubuntu or Git), if it fails or you installed a different way
+or on a different platform, you may have to hardcode the path to your Chia binaries.
 <br>
 <br>
 
 ### <a name="hardware"></a>Hardware I used in my setup
 
 I have had a couple of people ask about the hardware that I used in my setup so I thought I would include it here. 
-Almost everything I purchased was used off eBay. There were minor exceptions but 95% was eBay.
+Almost everything I purchased was used on eBay. There were minor exceptions but 95% was eBay.
 
 <h2> Plotting Servers </h2>
 
@@ -592,15 +573,19 @@ Dual Power supplies
 <h2>Chia Famer Node</h2>
 
 ```
-Ubuntu 20.04 LTS VM running on Proxmox
+Ubuntu 20.04.3 LTS VM running on Proxmox
 ```
 
 My extra drive chassis are empty right now, but as you can see from my drive layout and mounting
-strategy above, it is super easy to add more drives.
+the strategy above, it is super easy to add more drives.
 
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+<b>V0.991 2023-08-22</b>
+   - Created farmer_health_check.py to monitor the status of the farmer and force a reboot if it fails.
+   - Updated coin_monitor.py to support Chia version 1.8.2
+
 <b>V0.99 2023-07-22</b>
    - Updated to support new logging format for reports (current through 1.8.2)
 
