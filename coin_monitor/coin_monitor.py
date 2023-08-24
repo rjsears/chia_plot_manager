@@ -192,7 +192,7 @@ def send_email(recipient, subject, body):
     except subprocess.CalledProcessError as e:
         log.critical(f'send_email error: {e}')
     except Exception as e:
-        log.critical(f'send_email: Unknown Error! Email not sent.')
+        log.critical(f'send_email: Unknown Error! Email not sent. Error: {e}')
 
 # Thank You - https://frankcorso.dev/email-html-templates-jinja-python.html
 def send_template_email(template, recipient, subject, **kwargs):
