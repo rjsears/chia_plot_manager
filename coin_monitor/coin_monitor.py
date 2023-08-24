@@ -75,7 +75,7 @@ def update_config_data(file, section, item, value):
 
 
 # First, let's try and detect how we were installed
-# Depending on how were were installed (APT vs. Git) will
+# Depending on how we were installed (APT vs. Git) will
 # depend on how we call chia. If you installed via Git,
 # it is assumed that you installed at '/home/chia/', if
 # this is incorrect, you need to update the paths below.
@@ -96,7 +96,7 @@ def how_installed():
             exit()
     return (response)
 
-# First we need to check if we have a plotnft balance available and if we do, we need to go ahead and claim those chia.
+# First, we need to check if we have a plotnft balance available, and if we do, we need to go ahead and claim that chia.
 def check_plotnft_balance():
     log.debug('check_plotnft_balance() Started')
     if plotnft:
@@ -127,7 +127,7 @@ def check_plotnft_balance():
     else:
         log.debug('plotnft not configured, skipping!')
 
-# Next we need to see if the claim was successful by seeing if we have more coins in our wallet.
+# Next, we need to see if the claim was successful by seeing if we have more coins in our wallet.
 # This may actually take a few minutes to show up after we claim them.
 def check_for_chia_coins():
     log.debug('check_for_chia_coins() Started')
