@@ -208,15 +208,16 @@ def send_template_email(template, recipient, subject, **kwargs):
 def notify(title, message):
     """ Notify system for email, and sms (via Email to SMS)"""
     log.debug(f'notify() called with Title: {title} and Message: {message}')
-    if (read_config_data('farmer_health_config', 'notifications', 'alerting', True)):
-        if (read_config_data('farmer_health_config', 'notifications', 'email', True)):
+    if (read_config_data('coin_monitor_config', 'notifications', 'alerting', True)):
+        if (read_config_data('coin_monitor_config', 'notifications', 'email', True)):
             for email_address in new_coin_email:
                 send_email(email_address, title, message)
-        if (read_config_data('farmer_health_config', 'notifications', 'sms', True)):
+        if (read_config_data('coin_monitor_config', 'notifications', 'sms', True)):
             for email_address in new_coin_sms:
                 send_email(email_address, title, message)
     else:
         pass
+
 
 
 def main():
