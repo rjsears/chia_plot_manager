@@ -1,7 +1,7 @@
  <h2 align="center">
   <a name="chia_drive_logo" href="https://github.com/rjsears/chia_plot_manager"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chia_plot_manager_new.png" alt="Chia Plot Manager"></a><br>
 
-  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.991 - August 22nd, 2023)
+  Chia Plot, Drive Manager, Coin Monitor & Auto Drive (V0.991a - August 22nd, 2023)
   </h2>
   <p align="center">
 Multi-Server Chia Plot, Drive Management Solution & Coin Monitor
@@ -582,6 +582,9 @@ the strategy above, it is super easy to add more drives.
 <br><hr>
 
 ### <a name="changelog"></a>Changelog
+<b>V0.991a 2023-08-24</b>
+   - Updated farmer_health_check.py to include notifications, better checks and better logging.
+
 <b>V0.991 2023-08-22</b>
    - Created farmer_health_check.py to monitor the status of the farmer and force a reboot if it fails.
    - Updated coin_monitor.py to support Chia version 1.8.2
