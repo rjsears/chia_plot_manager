@@ -11,7 +11,7 @@ VERSION = "V0.991 (2023-08-22)"
 new_coin_email = ['email_one@gmail.com', 'group_one@groups.clicksend.com']
 
 # Use any email-to-text service here
-new_coin_sms = 'group_one@groups.clicksend.com'
+new_coin_sms = ['group_one@groups.clicksend.com']
 
 #Who do our emails come from:
 from_address = 'chianode1@domain.com'
