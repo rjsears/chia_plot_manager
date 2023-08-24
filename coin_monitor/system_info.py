@@ -5,16 +5,16 @@
 system_info.py for use with coin_monitor.py
 """
 
-VERSION = "V0.2 (2021-03-23)"
+VERSION = "V0.991 (2023-08-22)"
 
-## Set Notification Accounts#
-alert_email = ['email_one@gmail.com', 'email_two@gmail.com']
-new_coin_email = ['email_one@gmail.com', 'email_two@gmail.com']
-twilio_from = '+10000000'
-twilio_account = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-twilio_token = 'kjshdkjhfkjshlfkjhkajhfkjahsfdkj'
-twilio_to = ['+17763540098', '+17763540086']
-pushbilletAPI = "o.khjsdfiuwyifkjshkjshkajhdiurieuiufqw"  # pushbullet API token (http://www.pushbullet.com)
+# Clicksend is an email to SMS gateway service
+new_coin_email = ['email_one@gmail.com', 'group_one@groups.clicksend.com']
+
+# Use any email-to-text service here
+new_coin_sms = 'group_one@groups.clicksend.com'
+
+#Who do our emails come from:
+from_address = 'chianode1@domain.com'
 
 
 def main():
