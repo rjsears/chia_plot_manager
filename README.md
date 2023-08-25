@@ -178,7 +178,8 @@ You could have an entire discussion on network performance and the install scrip
 
 ### To get started
  
-I recommend installing in ```/root/plot_manager```. If you would like to install elsewhere that is fine, if you want to use a virtual environment, that should work as well. I have not personally tried running this outside of ```/root/plot_manager``` but so long as you have the basic directory structure <em>under</em> your install directory, it should work out of the box. NOTE: farmer_health_check and coin_monitor are designed to be run from `/home/chia` and installed in the chia user crontab!
+I recommend installing in ```/root/plot_manager```. If you would like to install elsewhere that is fine, if you want to use a virtual environment, that should work as well. I have not personally tried running this outside of ```/root/plot_manager``` but so long as you have the basic directory structure <em>under</em> your install directory, it should work out of the box. 
+<br>NOTE: farmer_health_check and coin_monitor are designed to be run from `/home/chia` and installed in the chia user crontab! To install either of those, simply run the command below inside your `/home/chia` directory.
 
 Assuming a clean install, you can try this:
 
