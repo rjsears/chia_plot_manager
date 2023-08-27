@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.98 (2021-10-15)"
+VERSION = "0.991a (2023-08-27)"
 
 """
 Simple python script that helps to move my chia plots from my plotter to
@@ -14,6 +14,9 @@ that manages the drives themselves and decides based on various criteria where
 the incoming plots will be placed. This script simply sends those plots when
 they are ready to send.
 Updates
+  v0.991a 2023-08-27
+  - Fixed transfer when there was no drive space available but still old plots
+   on receiving NAS.
   v0.98 2021-10-15
   - Minor updates
   v0.97 2021-09-16
@@ -461,7 +464,7 @@ def get_next_nas():
     if chiaplot.remote_harvester_priority == 'fill':
         log.debug('plotter set to prioritize: FILL')
         for server in servers:
-            nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available'], 'remote_transfer_active': server['remote_transfer_active']}
+            nas_server = {'server': server['server'], 'total_empty_space_plots_until_full': server['total_empty_space_plots_until_full'], 'free_space_available': server['free_space_available'], 'remote_transfer_active': server['remote_transfer_active'], 'total_number_of_old_plots': server['total_number_of_old_plots']}
             log.debug(nas_server) # Should log all nas servers that it is configured to check
             if nas_server['free_space_available']:
                 log.debug(f"Free Space found on {nas_server['server']}")
@@ -472,9 +475,9 @@ def get_next_nas():
         if not next_nas: # If we have prioritized filling but there is no more empty drive space available fall back to replacing old plots.
             log.debug('plotter set to prioritize: FILL, however there is no empty space available on configured harvesters, OR transfers are currently taking place. Checking for OLD PLOTS to replace')
             for server in servers:
-                nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full'], 'remote_transfer_active': server['remote_transfer_active']}
+                nas_server = {'server': server['server'], 'total_plots_until_full': server['total_plots_until_full'], 'remote_transfer_active': server['remote_transfer_active'], 'total_number_of_old_plots': server['total_number_of_old_plots']}
                 log.debug(nas_server) # Should log all nas servers that is is configured to check
-                if nas_server['total_plots_until_full'] > 0:
+                if nas_server['total_number_of_old_plots'] > 0:
                     log.debug(f"Old Plots found on {nas_server['server']}")
                     if not nas_server['remote_transfer_active']:
                         next_nas.append(nas_server)
