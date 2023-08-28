@@ -1,9 +1,9 @@
 #! /bin/bash
 
-# Version V0.99 2023-07-25
+# Version V0.991a 2023-08-28
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
-# the system with various tools and things required to run the various
+# the system with various tools and tings required to run the various
 # parts of chia_plot_manager.
 
 # I use this to create new NAS/Plotter servers.
@@ -216,7 +216,7 @@ nuke_snap (){
 update_software_and_system(){
   echo -e "\n\n${green}Updating System Software and Installing Required Packages.........${nc}\n"
   apt update && apt upgrade -y  # Let's do the basic update of our software before we do anything else
-  apt install locate vim wget smartmontools tree unzip net-tools tmux python3-pip pv nmap ncat sysstat postfix mailutils -y
+  apt install locate vim wget smartmontools tree unzip net-tools tmux python3-pip pv nmap ncat sysstat postfix mailutils duf -y
   if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
       apt install openssh-server -y
       systemctl enable openssh
@@ -273,9 +273,9 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 current_directory="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
-if [ $current_directory != '/root/coin_manager' ]; then
+if [ $current_directory != '/home/chia/coin_manager' ]; then
     echo -e "\n ${red}* * * * *${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}${white} IMPORTANT ${red}* * * * *${nc}"
-    echo -e "${green}These scripts assume that they have been installed at ${white}/root/coin_manager${green}"
+    echo -e "${green}These scripts assume that they have been installed at ${white}/home/chia/coin_manager${green}"
     echo -e "and are configured as such. If you are changing the install directory,"
     echo -e "please review all scripts for the proper paths or they ${red}will${green} fail${nc}.\n\n"
 else
@@ -412,7 +412,7 @@ create_check_network_io_script(){
 network_interface=\$1
 
 check_network_traffic(){
-echo -e "check_network_io.sh: Checking for network traffic on \$network_interface"
+echo -e "Checking for network traffic on \$network_interface"
 if [[ -f $current_directory/network_stats.io ]]; then
    echo -e "check_network_io.sh: Found old stats file, deleting...."
    rm $current_directory/network_stats.io
