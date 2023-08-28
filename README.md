@@ -428,7 +428,7 @@ Staring with V0.3 (April 4th, 2021) (and updated once again in V0.98) I have sta
 
 <b> -h --help</b>  and  <b>-v --version</b><br>
 These options print out the help message or version information and exits.<br><br>
-<a name="chia_help_menu" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chianas_help_menu_0991.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chianas_help_menu.png" alt="Chia Plot Manager Help"></a>
+<a name="chia_help_menu" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chianas_help_menu_0991.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chianas_help_menu_0991.png" alt="Chia Plot Manager Help"></a>
  <br>
  
 
