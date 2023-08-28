@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.99 (2023-07-22)"
+VERSION = "0.991a (2023-08-28)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -46,8 +46,11 @@ other things like notifications and stuff.
 
 
  Updates
+   v0.991a 2023-08-28
+   - Added additional drive output
+   
    v0.99 2023-07-22
-   - Updated reporting to meet the new log file output of 1.8.2 to correctly read 
+   - Updated reporting to meet the new log file output of 2.0.0 to correctly read 
     the number of plots currently being farmed.
     
    v0.98 2021-10-15
@@ -411,6 +414,8 @@ program_descripton = f'''
     {green}-dr {nc}or{green} --drive_report{nc}       {blue}Runs the Daily ChiaNAS Report (if configured), and emails
                                 it to you. This can be called from a crontab job as well.{nc}
     
+    {green}-dl {nc}or{green} --drive_listing{nc}       {blue}Outputs a nicely formatted listing of all mounted drives.{nc}
+    
     {green}-ct {nc}or{green} --check_temps{blue}        This will query all of your hard drives using {yellow}smartctl{blue} and
                                 return a list of drive temperatures to you.
     
@@ -465,8 +470,9 @@ def init_argparser() -> any:
     parser = argparse.ArgumentParser(description=program_descripton, formatter_class=RawFormatter)
     parser.add_argument('-v', '--version', action='version', version=f'{parser.prog} {VERSION}')
     parser.add_argument('-dr', '--daily_report', action='store_true', help='Run the ChiaPlot Daily Email Report and exit')
+    parser.add_argument('-dl', '--drive_listing', action='store_true', help='Output formatted drive list and exit')
     parser.add_argument('-hr', '--health_report', action='store_true', help='Remote Harvester Health Report')
-    parser.add_argument('-pre', '--plot_report_email', action='store_true',help='Email Host Report and Exit')
+    parser.add_argument('-pre', '--plot_report_email', action='store_true',help='Email Host Report and exit')
     parser.add_argument('-fre', '--farm_report_email', action='store_true', help='Email Farm Report and exit')
     parser.add_argument('-ct', '--check_temps', action='store_true', help='Return a list of drives and their temperatures and exit')
     parser.add_argument('-pr', '--plot_report', action='store_true', help='Return the total # of plots on the system and total you can add and exit')
@@ -1741,6 +1747,13 @@ def check_if_process_running(processname) -> bool:
             pass
     return False
 
+def output_drive_listing():
+    # Runs duf (if installed)
+        try:
+            subprocess.call(['/usr/bin/duf'])
+        except subprocess.CalledProcessError as e:
+            log.debug(f'Unable to run duf: {e}')
+
 def system_checks() -> None:
     """
     These are the various system checks. Limits are set in the
@@ -1757,6 +1770,8 @@ def main():
     args = parser.parse_args()
     if args.daily_report:
         send_daily_email()
+    elif args.drive_listing:
+        output_drive_listing()
     elif args.plot_report_email:
         send_farm_update_email('host')
     elif args.farm_report_email:
