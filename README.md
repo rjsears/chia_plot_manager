@@ -438,6 +438,14 @@ This option outputs the HTML version of the Daily Drive Report email to the scre
 This only works if configured. If this notification is set to off, this will do nothing.<br>
 
 <br>
+<b> -dl    --drive_listing</b><br>
+This options prints out a nice listing of all mounted hard drives find special devices on your system..
+<br><br>
+<a name="chia_drive_listing" href="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_listing.png"><img src="https://github.com/rjsears/chia_plot_manager/blob/main/images/chiaplot_drive_listing.png" alt="Chia Plot Manager Drive Listing"></a>
+ <br>
+
+
+<br>
 <b> -ct    --check_temps</b><br>
 This options prints the serial number, device name, drive number and temperature of all devices
 desiginated as plot drives and color codes temps based on temperature setting in your config file.
