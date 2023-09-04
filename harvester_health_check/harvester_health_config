@@ -1,0 +1,8 @@
+[system_logging]
+logging = True
+log_level = DEBUG
+
+[notifications]
+alerting = True
+email = True
+sms = True
