@@ -1,9 +1,9 @@
 #! /bin/bash
 
-# Version V0.991a 2023-08-28
+# Version V0.991c 2023-09-11
 
 # Simple Install script for NEW clean Ubuntu 20.04 install, updates
-# the system with various tools and tings required to run the various
+# the system with various tools and things required to run the various
 # parts of chia_plot_manager.
 
 # I use this to create new NAS/Plotter servers.
@@ -223,12 +223,6 @@ update_software_and_system(){
       systemctl start openssh
   fi
   pip3 install -r $current_directory/chianas/requirements.txt
-  cd $current_directory
-  git clone https://github.com/truenas/py-SMART.git
-  cd py-SMART
-  python3 setup.py install
-  cd ..
-  rm -rf $current_directory/py-SMART
   apt autoremove -y
   echo -e "${green}DONE${nc}\n"
 }
