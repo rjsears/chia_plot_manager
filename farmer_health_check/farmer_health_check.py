@@ -12,7 +12,7 @@ the linux mail command.
 
 """
 
-VERSION = "V0.99 (2023-08-24)"
+VERSION = "V0.991b (2023-09-11)"
 
 import subprocess
 import apt
@@ -100,6 +100,8 @@ def is_farmer_running():
             log.debug('We are Farming')
         else:
             if "Farming status: Not synced or not connected to peers" in output:
+                log.debug('We are Syncing')
+            elif "Farming status: Syncing" in output:
                 log.debug('We are Syncing')
             else:
                 notify('Farmer Error', f'Farmer {host} is NOT Running, attempting a restart!')
