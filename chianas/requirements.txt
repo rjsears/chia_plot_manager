@@ -9,3 +9,4 @@ flatten-dict==0.4.0
 rich==10.11.0
 pySMART==1.2.5
 inotify==0.2.10
+GPUtil==1.4.0
