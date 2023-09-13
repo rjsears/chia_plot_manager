@@ -64,9 +64,8 @@ debug = True
 
 
 if integrated:
-    from drivemanager_classes import DriveManager, PlotManager
+    from drivemanager_classes import DriveManager
     chianas = DriveManager.read_configs()
-    chiaplots = PlotManager.get_plot_info()
     directory_glob = chianas.directory_glob
     compression_size = chianas.compression_in_use
     hostname = chianas.hostname
