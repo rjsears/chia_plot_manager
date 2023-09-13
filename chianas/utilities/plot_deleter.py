@@ -190,7 +190,7 @@ if __name__ == "__main__":
         delete_portable_plots(directory)
         portable_plots_deleted += 1
 
-    if portable_plots_deleted > 0:
+    if portable_plots_deleted < 1:
         if not test_mode:
             message = f'All portable plots have been deleted from {portable_plots_deleted} mountpoints on {hostname}.'
             notify('No more Portable Plots', message)
