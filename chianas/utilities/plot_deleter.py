@@ -179,7 +179,9 @@ def delete_portable_plots(directory):
 
 if __name__ == "__main__":
     if test_mode:
-         notify(f'Test from {hostname}', f'Testing the notify system on {hostname}')
+        notify(f'Test from {hostname}', f'Testing the notify system on {hostname}')
+
+    portable_plots_exist = False
 
     directories = glob.glob(directory_glob)
     portable_plots_deleted = 0
@@ -190,7 +192,9 @@ if __name__ == "__main__":
         delete_portable_plots(directory)
         portable_plots_deleted += 1
 
-    if portable_plots_deleted < 1:
-        if not test_mode:
-            message = f'All portable plots have been deleted from {portable_plots_deleted} mountpoints on {hostname}.'
-            notify('No more Portable Plots', message)
+        # Check if there are any portable plots left
+        portable_plots_exist = any(glob.glob(os.path.join(directory, file_glob)) for directory in directories)
+
+    if not portable_plots_exist:
+        message = f'All portable plots have been deleted from {portable_plots_deleted} mountpoints on {hostname}.'
+        notify('No more Portable Plots', message)
