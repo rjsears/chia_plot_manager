@@ -178,7 +178,7 @@ def delete_portable_plots(directory):
 
 
 if __name__ == "__main__":
-        if test_mode:
+    if test_mode:
         notify(f'Test from {hostname}', f'Testing the notify system on {hostname}')
 
     portable_plots_exist = False
