@@ -1981,7 +1981,7 @@ def main():
             if chianas.plot_movement_internal:
                 system_checks()
                 nas_report_export()
-                generate_uuid_dict()d
+                generate_uuid_dict()
                 send_new_plot_notification()
                 update_receive_plot()
             else:
