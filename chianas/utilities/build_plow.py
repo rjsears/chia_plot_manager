@@ -100,9 +100,12 @@ def main():
     directory_blob = server_info[0]
     mount_dests, non_mount_dests = generate_dest_lists(hostname, directory_blob)
 
+    # Extract the drive numbers from the mount paths and sort by drive number
+    sorted_mount_dests = sorted(mount_dests, key=lambda x: int(x.split("drive")[-1]))
+
     print("DESTS = [")
-    for i, mount_dest in enumerate(mount_dests):
-        if i == len(mount_dests) - 1:
+    for i, mount_dest in enumerate(sorted_mount_dests):
+        if i == len(sorted_mount_dests) - 1:
             print(f"    '{hostname}:{mount_dest}'")
         else:
             print(f"    '{hostname}:{mount_dest}',")
