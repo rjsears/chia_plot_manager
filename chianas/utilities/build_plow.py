@@ -27,16 +27,16 @@ do NOT want to put into Plow lest you crash your server like I did.
 Sample Output:
 
 DESTS = [
-    'chianas03:/mnt/enclosure1/front/column3/drive58',
-    'chianas03:/mnt/enclosure1/front/column3/drive59',
+    'chianas03:/mnt/enclosure1/front/column3/drive55',
+    'chianas03:/mnt/enclosure1/front/column3/drive56',
     'chianas03:/mnt/enclosure1/front/column3/drive57',
-    'chianas03:/mnt/enclosure1/front/column3/drive55'
+    'chianas03:/mnt/enclosure1/front/column3/drive58'
     ]
     
 Non-Mount Point DESTS = [
+    'chianas03:/mnt/enclosure1/rear/column3/drive74',
     'chianas03:/mnt/enclosure1/rear/column3/drive75',
-    'chianas03:/mnt/enclosure1/rear/column3/drive77',
-    'chianas03:/mnt/enclosure1/rear/column2/drive74'
+    'chianas03:/mnt/enclosure1/rear/column2/drive77'
 ]
 """
 
