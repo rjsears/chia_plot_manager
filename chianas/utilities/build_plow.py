@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "1.0.0a (2023-09-28)"
+VERSION = "1.0.0a (2023-09-29)"
 
 """
 build_plow.py
@@ -34,7 +34,7 @@ to include in plow.py as it would fill your root filesystem.
 
 root@chianas08:~/plot_manager# ./build_plow.py
 Enter the number of drives per set: 3
-
+Enter 'True' for debug mode (shows available space), or 'False': F
 
 DESTS = [
     'chianas08:/mnt/enclosure2/front/column0/drive213',
@@ -51,13 +51,58 @@ DESTS = [
     'chianas08:/mnt/enclosure2/front/column0/drive220',
     'chianas08:/mnt/enclosure2/front/column0/drive221'
 ]
-    
+
 Non-Mount Point DESTS = [
     'chianas03:/mnt/enclosure1/rear/column3/drive74',
     'chianas03:/mnt/enclosure1/rear/column3/drive75',
     'chianas03:/mnt/enclosure1/rear/column2/drive77'
 ]
+
+
+
+If you choose to show drive space, this is a quick test to verify 
+that build_plow.py is correcting detecting what compression you 
+have set, it will output the drive space. You CANNOT use this
+output for plow, if course.
+
+
+root@chianas08:~/plot_manager# ./build_plow.py                                                                                   
+Enter the number of drives per set: 3                        
+Enter 'True' for debug mode (shows available space), or 'False': t
+DESTS = [                                                    
+'chianas08:/mnt/enclosure2/front/column0/drive219', 173.47GB,
+'chianas08:/mnt/enclosure2/front/column0/drive220', 113.70GB,
+'chianas08:/mnt/enclosure2/front/column0/drive221', 154.19GB 
+]                                                            
+DESTS = [                                                    
+'chianas08:/mnt/enclosure2/front/column0/drive222', 174.96GB,
+'chianas08:/mnt/enclosure2/front/column0/drive223', 94.43GB,
+'chianas08:/mnt/enclosure2/front/column0/drive224', 114.97GB 
+]                                                            
+DESTS = [                                                    
+'chianas08:/mnt/enclosure2/front/column0/drive225', 101.83GB,
+'chianas08:/mnt/enclosure2/front/column0/drive226', 141.83GB,
+'chianas08:/mnt/enclosure2/front/column0/drive227', 121.95GB 
+]  
+
+
+Regardless, at the end it also output any non-mounted paths in 
+your directory glob. These paths, if written to, would fill your
+root file system, so you would want to make sure NONE of these
+are in your plow.py
+
+
+Non-Mount Point DESTS = [                                    
+    'chianas08:/mnt/enclosure3/front/column0/drive315',      
+    'chianas08:/mnt/enclosure3/front/column0/drive347',      
+    'chianas08:/mnt/enclosure3/front/column0/drive357',      
+    'chianas08:/mnt/enclosure3/front/column0/drive330',      
+    'chianas08:/mnt/enclosure3/front/column0/drive338'
+    [
+
+
 """
+
 
 
 
@@ -65,7 +110,23 @@ import os
 import glob
 
 # Read from main config files and classes?
-integrated = False
+integrated = True
+
+# Set this as a buffer ABOVE your compression value for how
+# much space must be available on a drive. This is designed
+# to be a little buffer. Adjust as needed.
+plot_size_buffer = 2
+
+# Define the compression sizes (bladebit_plots)
+compression_sizes = {
+    'c01': 87.5,
+    'c02': 86,
+    'c03': 84.5,
+    'c04': 82.9,
+    'c05': 81.3,
+    'c06': 79.6,
+    'c07': 78
+}
 
 def check_integrated():
     if integrated:
@@ -73,7 +134,8 @@ def check_integrated():
         chianas = DriveManager.read_configs()
         directory_glob = chianas.directory_glob
         hostname = chianas.hostname
-        return directory_glob, hostname
+        compression_size = chianas.compression_in_use
+        return directory_glob, hostname, compression_size
     else:
         # Set these variables if you are NOT using the integrated configuration
         # of plot and drive manager.
@@ -81,19 +143,17 @@ def check_integrated():
         directory_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/'
         # Who are we?
         hostname = 'chianas01'
-        return directory_glob, hostname
-
-
-
+        compression_size = 'c05'
+        return directory_glob, hostname, compression_size
 
 def is_actual_mount(directory):
     try:
-        # Here we check if the directory is a mount point by comparing device numbers
+        # Here we check if the directory is a mount point by comparing device numbers - prevents filling root file system
         return os.path.ismount(directory) and os.stat(directory).st_dev != os.stat('/').st_dev
     except FileNotFoundError:
         return False
 
-# Create and populate our lists: 
+# Create and populate our lists:
 def generate_dest_lists(hostname, directory_blob):
     mount_dests = []
     non_mount_dests = []
@@ -101,8 +161,8 @@ def generate_dest_lists(hostname, directory_blob):
 
     for directory in directories:
         if (
-            directory.startswith('/mnt/') and
-            os.path.isdir(directory)
+                directory.startswith('/mnt/') and
+                os.path.isdir(directory)
         ):
             if is_actual_mount(directory):
                 mount_dests.append(directory.rstrip('/'))
@@ -110,7 +170,6 @@ def generate_dest_lists(hostname, directory_blob):
                 non_mount_dests.append(directory.rstrip('/'))
 
     return mount_dests, non_mount_dests
-
 
 # Here we put it all together:
 def main():
@@ -120,7 +179,7 @@ def main():
     mount_dests, non_mount_dests = generate_dest_lists(hostname, directory_blob)
 
     drives_per_set = int(input("Enter the number of drives per set: "))
-    
+
     if drives_per_set < 1:
         print("Number of drives per set should be 1 or more.")
         return
@@ -128,38 +187,39 @@ def main():
     # Sort the mount_dests in numerical order
     mount_dests.sort(key=lambda x: int(x.split("drive")[-1]))
 
-    num_sets = len(mount_dests) // drives_per_set
-    remaining_drives = len(mount_dests) % drives_per_set
+    compression_size = server_info[2]  # Get the compression size from the server_info
 
-    start_idx = 0
+    debug_input = input("Enter 'True' for debug mode (shows available space), or 'False': ").strip().lower()
+    if debug_input in ['true', 't', '1']:
+        debug = True
+    else:
+        debug = False
 
-    for i in range(num_sets):
-        end_idx = start_idx + drives_per_set
-        if remaining_drives > 0:
-            remaining_drives -= 1
+    required_space_gb = (compression_sizes[compression_size] + plot_size_buffer)
 
-        set_mount_dests = mount_dests[start_idx:end_idx]
+    sets = [mount_dests[i:i + drives_per_set] for i in range(0, len(mount_dests), drives_per_set)]
 
-        print("DESTS = [")
+    dests_exist = False  # Flag to check if any DESTS have been printed
+
+    for set_idx, set_mount_dests in enumerate(sets):
+        filtered_dests = []  # Collect the filtered destinations
+
         for i, mount_dest in enumerate(set_mount_dests):
-            if i == len(set_mount_dests) - 1:
-                print(f"    '{hostname}:{mount_dest}'")
-            else:
-                print(f"    '{hostname}:{mount_dest}',")
-        print("]")
+            free_space_gb = get_free_space_gb(mount_dest)
+            if free_space_gb >= required_space_gb:
+                if debug:
+                    filtered_dests.append(f"'{hostname}:{mount_dest}', {free_space_gb:.2f}GB")
+                else:
+                    filtered_dests.append(f"'{hostname}:{mount_dest}'")
 
-        start_idx = end_idx
+        if len(filtered_dests) == drives_per_set:
+            print("DESTS = [")
+            print(',\n'.join(filtered_dests))  # Print the filtered destinations
+            print("]")
+            dests_exist = True  # Set the flag to True
 
-    if remaining_drives > 0:
-        set_mount_dests = mount_dests[-remaining_drives:]
-        
-        print("DESTS = [")
-        for i, mount_dest in enumerate(set_mount_dests):
-            if i == len(set_mount_dests) - 1:
-                print(f"    '{hostname}:{mount_dest}'")
-            else:
-                print(f"    '{hostname}:{mount_dest}',")
-        print("]")
+    if not dests_exist:
+        print("No suitable drives found.")
 
     print("Non-Mount Point DESTS = [")
     for i, non_mount_dest in enumerate(non_mount_dests):
@@ -168,6 +228,12 @@ def main():
         else:
             print(f"    '{hostname}:{non_mount_dest}',")
     print("]")
+
+def get_free_space_gb(directory):
+    # Function to get free space in GB for a given directory
+    statvfs = os.statvfs(directory)
+    free_space_gb = (statvfs.f_frsize * statvfs.f_bavail) / (1024 ** 3)
+    return free_space_gb
 
 if __name__ == "__main__":
     main()
