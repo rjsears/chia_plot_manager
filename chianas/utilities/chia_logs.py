@@ -19,7 +19,9 @@ white='\033[0;37m'
 blue='\033[0;34m'
 nc='\033[0m'
 
-# Default chia_log_directory paths
+# Default chia_log_directory paths. These are two pretty common file locations, 
+# but if your logs are somewhere else, just update the first entry here to 
+# match your location.
 chia_log_directory = "/home/chia/.chia/mainnet/log/"
 fallback_log_directory = "/root/chia/.chia/mainnet/log/"
 
