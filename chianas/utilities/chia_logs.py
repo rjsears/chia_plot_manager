@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "1.0.0a (2023-09-27)"
+VERSION = "1.0.0a (2023-09-29)"
 
 import os
 import re
@@ -65,6 +65,8 @@ program_descripton = f'''
     {green}-er {nc}or{green} --error{blue}         This will look for any lines with {yellow}ERROR{blue} in them.{nc}
     
     {green}-fr {nc}or{green} --free  {blue}        This will look for any lines that include your free form entry.{nc}
+    
+    {green}-sp {nc}or{green} --signage  {blue}     This will look for Signage Points.{nc}
                                 
 
    
@@ -78,6 +80,7 @@ def init_argparser() -> any:
     parser.add_argument('-el', '--eligible', action='store_true', help='Look for any line with [0-9] plots were eligible for farming')
     parser.add_argument('-wa', '--warning', action='store_true', help='Look for any line that includes WARNING')
     parser.add_argument('-er', '--error', action='store_true',help='Look for any line that includes ERROR')
+    parser.add_argument('-si', '--signage', action='store_true', help='Monitor Signage Points')
     parser.add_argument('-fr', '--free', action='store_true', help='Look for any line that you specify')
     return parser
 
@@ -120,7 +123,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
-    if not (args.proofs or args.eligible or args.warning or args.error or args.free):
+    if not (args.proofs or args.eligible or args.warning or args.error or args.signage or args.free):
         print(f"{red}No operation specified! {yellow}try ./chia_logs.py -h")
         exit(1)
 
@@ -173,6 +176,14 @@ if __name__ == "__main__":
         pattern = "ERROR"
         run_command(tail_or_cat, pattern)
 
+    elif args.signage:
+        if log_file == "debug.log":
+            tail_or_cat = ask_tail_or_cat()
+        else:
+            tail_or_cat = False
+        pattern = "Finished signage point"
+        run_command(tail_or_cat, pattern)
+
     elif args.free:
         if log_file == "debug.log":
             tail_or_cat = ask_tail_or_cat()
@@ -180,3 +191,4 @@ if __name__ == "__main__":
             tail_or_cat = False
         pattern = get_input()
         run_command(tail_or_cat, pattern)
+
