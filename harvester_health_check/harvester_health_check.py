@@ -175,7 +175,7 @@ def send_email(recipient, subject, body):
 def notify(title, message):
     """ Notify system for email, and sms (via Email to SMS)"""
     log.debug(f'notify() called with Title: {title} and Message: {message}')
-    if (read_config_data('farmer_health_config', 'notifications', 'alerting', True)):
+    if (read_config_data('harvester_health_config', 'notifications', 'alerting', True)):
         if (read_config_data('harvester_health_config', 'notifications', 'email', True)):
             for email_address in notify_email_address:
                 send_email(email_address, title, message)
@@ -184,8 +184,6 @@ def notify(title, message):
                 send_email(email_address, title, message)
     else:
         pass
-
-
 
 
 def main():
