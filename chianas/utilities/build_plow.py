@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "1.0.0a (2023-09-29)"
+VERSION = "1.0.0a (2023-10-08)"
 
 """
 build_plow.py
@@ -101,13 +101,17 @@ Non-Mount Point DESTS = [
     [
 
 
+Finally, if you call it with '--next-mountpoint' it will simply output
+the next available moutpoint that has available space. Good for calling
+from another script.
+
+
 """
-
-
-
 
 import os
 import glob
+import argparse
+import subprocess
 
 # Read from main config files and classes?
 integrated = True
@@ -153,8 +157,9 @@ def is_actual_mount(directory):
     except FileNotFoundError:
         return False
 
-# Create and populate our lists:
+
 def generate_dest_lists(hostname, directory_blob):
+    rsync_mountpoints = get_rsync_mountpoints()
     mount_dests = []
     non_mount_dests = []
     directories = glob.glob(directory_blob)
@@ -165,14 +170,60 @@ def generate_dest_lists(hostname, directory_blob):
                 os.path.isdir(directory)
         ):
             if is_actual_mount(directory):
-                mount_dests.append(directory.rstrip('/'))
+                # Exclude mountpoints used by rsync
+                if directory not in rsync_mountpoints:
+                    mount_dests.append(directory.rstrip('/'))
             else:
                 non_mount_dests.append(directory.rstrip('/'))
-
     return mount_dests, non_mount_dests
 
-# Here we put it all together:
+
+
+def get_rsync_mountpoints():
+    rsync_mountpoints = set()
+    try:
+        # Run the ps command to get rsync processes
+        ps_output = subprocess.check_output(["ps", "aux"])
+        ps_lines = ps_output.decode("utf-8").split("\n")
+
+        # Extract mountpoints from rsync processes
+        for line in ps_lines:
+            if "rsync --server" in line:
+                parts = line.split("--server")
+                if len(parts) > 1:
+                    mountpoint = parts[1].strip()  # Extract the mountpoint after "--server"
+                    rsync_mountpoints.add(mountpoint)
+    except Exception as e:
+        print(f"Error getting rsync mountpoints: {e}")
+
+    return rsync_mountpoints
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Build PLOW mountpoints")
+    parser.add_argument("--next-mountpoint", action="store_true", help="Output the next available mountpoint")
+    return parser.parse_args()
+
 def main():
+    args = parse_arguments()
+    if args.next_mountpoint:
+        server_info = check_integrated()
+        hostname = server_info[1]
+        directory_blob = server_info[0]
+        mount_dests, _ = generate_dest_lists(hostname, directory_blob)
+
+        mount_dests.sort(key=lambda x: int(x.split("drive")[-1]))
+
+        for mount_dest in mount_dests:
+            free_space_gb = get_free_space_gb(mount_dest)
+            required_space_gb = (compression_sizes[server_info[2]] + plot_size_buffer)
+
+            if free_space_gb >= required_space_gb:
+                print(f"{hostname}:{mount_dest}")
+                break
+        return
+
+
     server_info = check_integrated()
     hostname = server_info[1]
     directory_blob = server_info[0]
@@ -184,10 +235,9 @@ def main():
         print("Number of drives per set should be 1 or more.")
         return
 
-    # Sort the mount_dests in numerical order
     mount_dests.sort(key=lambda x: int(x.split("drive")[-1]))
 
-    compression_size = server_info[2]  # Get the compression size from the server_info
+    compression_size = server_info[2]
 
     debug_input = input("Enter 'True' for debug mode (shows available space), or 'False': ").strip().lower()
     if debug_input in ['true', 't', '1']:
@@ -199,10 +249,11 @@ def main():
 
     sets = [mount_dests[i:i + drives_per_set] for i in range(0, len(mount_dests), drives_per_set)]
 
-    dests_exist = False  # Flag to check if any DESTS have been printed
+    selected_drives = []
+    suitable_drives_found = False  # Flag to track if any suitable drives are found
 
     for set_idx, set_mount_dests in enumerate(sets):
-        filtered_dests = []  # Collect the filtered destinations
+        filtered_dests = []
 
         for i, mount_dest in enumerate(set_mount_dests):
             free_space_gb = get_free_space_gb(mount_dest)
@@ -212,14 +263,19 @@ def main():
                 else:
                     filtered_dests.append(f"'{hostname}:{mount_dest}'")
 
-        if len(filtered_dests) == drives_per_set:
-            print("DESTS = [")
-            print(',\n'.join(filtered_dests))  # Print the filtered destinations
-            print("]")
-            dests_exist = True  # Set the flag to True
+        if len(filtered_dests) > 0:
+            selected_drives.extend(filtered_dests)
+            suitable_drives_found = True
 
-    if not dests_exist:
+    if suitable_drives_found:
+        while selected_drives:
+            print("DESTS = [")
+            print(',\n'.join(selected_drives[:drives_per_set]))
+            print("]")
+            selected_drives = selected_drives[drives_per_set:]
+    else:
         print("No suitable drives found.")
+
 
     print("Non-Mount Point DESTS = [")
     for i, non_mount_dest in enumerate(non_mount_dests):
@@ -230,7 +286,6 @@ def main():
     print("]")
 
 def get_free_space_gb(directory):
-    # Function to get free space in GB for a given directory
     statvfs = os.statvfs(directory)
     free_space_gb = (statvfs.f_frsize * statvfs.f_bavail) / (1024 ** 3)
     return free_space_gb
