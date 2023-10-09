@@ -171,7 +171,7 @@ def generate_dest_lists(hostname, directory_blob):
         ):
             if is_actual_mount(directory):
                 # Exclude mountpoints used by rsync
-                if directory not in rsync_mountpoints:
+                if directory.rstrip('/') not in rsync_mountpoints:
                     mount_dests.append(directory.rstrip('/'))
             else:
                 non_mount_dests.append(directory.rstrip('/'))
