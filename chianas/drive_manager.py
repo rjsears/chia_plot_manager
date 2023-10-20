@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "1.0.0a (2023-09-17)"
+VERSION = "1.0.0b (2023-10-18)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -188,8 +188,9 @@ from drivemanager_classes import DriveManager, PlotManager, config_file
 from rich.console import Console
 from rich.table import Table
 import GPUtil as GPU
-import glob
 import re
+
+from datetime import datetime, timedelta
 
 console = Console(record=True)
 chianas = DriveManager.read_configs()
@@ -1289,7 +1290,9 @@ def space_report() -> str:
         Function that creates the space report from the command line. Also stores the report via console.export_html()
         and returns it for emailing out if needed.
         """
+    plot_proof_timing = get_plot_timing(chianas.chia_log_file, chianas.minutes_of_log_to_return)
     harvester_info = get_chia_harvester_info()
+
     total_plots_harvesting = harvester_info[chianas.my_local_ip_address]['Total Plots']
     total_harvesting_plot_size = harvester_info[chianas.my_local_ip_address]['Total Size (TiB)']
     total_plots_all_harvesters = harvester_info['Plot count for all harvesters']
@@ -1363,7 +1366,7 @@ def space_report() -> str:
         table.add_row(f'Total Number of [red]PORTABLE[/] Plots on [green]{chianas.hostname}[/]', f'[yellow]{chiaplots.number_of_portable_plots}[/]', end_section=True)
     # Old way - need to clean up
     #table.add_row(f'Total Amount of Drive Space (TiB) [green]Chia[/] is Farming', f'[yellow]{check_plots()[1]}[/]')
-    table.add_row(f'Drive Space (TiB) [green]{chianas.hostname}[/] is Harvesting (Reported by [green]{chianas.farmer_ip_address}[/])', f'[yellow]{total_harvesting_plot_size}[/]')
+    table.add_row(f'Drive Space (PiB|TiB) [green]{chianas.hostname}[/] is Harvesting (Reported by [green]{chianas.farmer_ip_address}[/])', f'[yellow]{total_harvesting_plot_size}[/]')
     table.add_row(f'Total Number of Systemwide Plots Drives', f'[yellow]{get_all_available_system_space("total")[0]}[/]')
     if compressed_plots:
         table.add_row(f'Total Number of k32 [green]{compression_in_use}[/] Plots until full', f'[yellow]{get_all_available_system_space("free")[1]}[/]')
@@ -1376,6 +1379,9 @@ def space_report() -> str:
         table.add_row(f'Average Plots per Hour', f'[yellow]{round(chianas.compressed_plots_daily / 24, 1)}[/]')
         table.add_row(f'Average Plotting Speed Last 24 Hours (TiB/Day)', f'[yellow]{round((chianas.compressed_plots_daily * int(plot_size_g) / 1000), 2)}[/]')
         table.add_row(f'Days to fill/replace all current drives/plots', f'[yellow]{days_to_fill}[/]', end_section=True)
+    table.add_row(f'Total Chia Log file minutes examined:', f'[yellow]{chianas.minutes_of_log_to_return}[/]')
+    table.add_row(f'Total number of plots eligible for farming in the last [yellow]{chianas.minutes_of_log_to_return}[/] minutes:', f'[green]{plot_proof_timing[0]}[/]')
+    table.add_row(f'Average Harvester Latency (in seconds) over the last [yellow]{chianas.minutes_of_log_to_return}[/] minutes:', f'[green]{plot_proof_timing[1]}[/]', end_section=True)
     table.add_row(f'Total Number of Plots Harvesting Farmwide (Reported by [green]{chianas.farmer_ip_address}[/])', f'[yellow]{total_plots_all_harvesters}[/]')
     table.add_row(f'Total Drive Space (PiB) Harvesting Farmwide (Reported by [green]{chianas.farmer_ip_address}[/])', f'[yellow]{total_plot_space_all_harvesters}[/]', end_section=True)
 
@@ -1584,6 +1590,44 @@ def temperature_report() -> None:
             table.add_row(f'{Device(drive[1]).serial}', f'{drive[1]}', f'{((get_drive_by_mountpoint(drive[0])))}',f'[green]{Device(drive[1]).temperature}[/]°C')
     print('')
     console.print(table)
+
+
+def get_plot_timing(logfile, minutes):
+    # Initialize variables
+    start_time = datetime.now() - timedelta(minutes=minutes)
+    total_time_seconds = 0
+    total_plots = 0
+    count = 0
+
+    # Open the log file and read line by line
+    with open(logfile, "r") as log_file:
+        for line in log_file:
+            if "Found" in line and "plots were eligible for farming" in line:
+                try:
+                    timestamp_str = line.split(" ")[0]
+                    timestamp = datetime.strptime(timestamp_str, "%Y-%m-%dT%H:%M:%S.%f")
+
+                    # Check if the timestamp is within the last 'minutes' minutes
+                    if timestamp >= start_time:
+                        count += 1
+                        time_str = line.split("Time: ")[1].split(" s")[0]
+                        time_seconds = float(time_str)
+                        total_time_seconds += time_seconds
+
+                        plots_str = line.split(" plots were eligible for farming")[0]
+                        plots = int(plots_str.split(" ")[-1])
+                        total_plots += plots
+                except ValueError:
+                    pass
+
+    # Calculate the average time in seconds
+    average_time_seconds = total_time_seconds / count if count > 0 else 0
+
+    return total_plots, round(average_time_seconds, 5)
+
+
+
+
 
 
 # You should run this once per day to see total daily plots
@@ -1882,7 +1926,7 @@ def parse_chia_output(chia_output):
             if match:
                 total_plots_for_all_harvesters = int(match.group(1))
         elif is_remote_harvester and "plots of size:" in line:
-            match = re.search(r"(\d+) plots of size: (\d+\.\d+) TiB on-disk", line)
+            match = re.search(r"(\d+) plots of size: (\d+\.\d+) (PiB|TiB) on-disk", line)
             if match:
                 total_plots = int(match.group(1))
                 total_size_str = match.group(2)
@@ -2002,5 +2046,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
