@@ -1,4 +1,4 @@
-# v1.0.0a 2023-11-13
+# v1.0.0a 2023-10-20
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -39,7 +39,8 @@ drive_temperature_limit: 30
 
 # Are we plotting for pools? This has nothing to do with the actual plotting of
 # plots but rather just naming of the new plots and eventually the replacing of
-# old plots with portable plots.
+# old plots with portable plots. If you are doing compressed plots, this would
+# generally be set to False since bladebit only does portable plots.
 pools:
   active: False
   # Do we want to replace non-pool plots with new plots
@@ -84,7 +85,9 @@ remote_harvester_reports:
 # main plotter. Also stores information about our current plots
 # on our server. The total plot high water warning is the number
 # of plots left when the alert will be sent. When you have LESS
-# than this number of plots, you will get an alert.
+# than this number of plots, you will get an alert. The first
+# 5 entries you can leave as they are, if you are running
+# compressed plots these do nothing.
 harvester:
   current_plotting_drive: /mnt/enclosure1/front/column1/drive36
   current_total_plots_midnight: 1
@@ -98,15 +101,20 @@ harvester:
     gpu_decompression: False
     compression_in_use: c05
     replace_noncompressed_plots: True
-    compressed_plots_midnight: 800
-    compressed_plots_daily: 300
-
+    compressed_plots_midnight: 0
+    compressed_plots_daily: 0
+  # When we are looking at plot proof information, this is how many minutes
+  # we will look at from the logfile. Too long and it will just look at the
+  # entire log file. Too short and you might now get any valuable information.
+  minutes_of_log_to_return: 60
 
   # List of 'offlined' drives that we do not want plots written to
   # for any reason. In this case maybe 'drive0' and 'drive1' are our
   # OS drives, or maybe they are throwing errors and we don't want to
   # use them until they are replaced. If you have no offlined drives,
-  # this line should look like this:   offlined_drives: []
+  # this line should look like this:   offlined_drives: []. Unless
+  # local_plotter and/or plot_movement_internal are True, this does
+  # nothing.
   offlined_drives:
     - drive0
     - drive1
@@ -164,19 +172,19 @@ notifications:
     email: True
     sms: False
   types:
-    new_plot_drive: True
-    daily_update: True
-    farm_update: True
+    new_plot_drive: False
+    daily_update: False
+    farm_update: False
     per_plot: False
     warnings: True
   # What email addresses will get the emails?
   emails:
-    - someone@gmail.com
-    - someoneelse@gmail.com
+    - your_email@gmail.com
+    - your_other_email@gmail.com
 
   # What phones numbers will received the SMS text messages? Include '+1'
   phones:
-    - '+18584150987'
+    - '+18585551212'
 
   # These are your notification account settings. For email, you must configure
   # your locate MTA. Installer installs Postfix by default. Twilio (SMS) requires
@@ -194,4 +202,4 @@ notifications:
 remote_farmer:
   ip_address: '10.200.90.10'
   user: 'chia'
-  password: 'super_secret_password'
+  password: 'super-secret-password'
