@@ -51,7 +51,7 @@ class DriveManager:
     else:
         def __init__(self, configured, hostname, plot_movement_internal, drive_temperature_limit, pools, replace_non_pool_plots, compressed_plots, gpu_decompression, fill_empty_drives_first,
                      empty_drives_low_water_mark, chia_log_file, chia_config_file, compression_in_use, remote_harvester_reports, remote_harvesters, notifications, pb, email, sms, directory_glob,
-                     daily_update, farm_update, new_plot_drive, per_plot, local_plotter, temp_dirs, temp_dirs_critical, temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical,
+                     daily_update, farm_update, new_plot_drive, per_plot, local_plotter, temp_dirs, temp_dirs_critical, temp_dirs_critical_alert_sent, dst_dirs, dst_dirs_critical, minutes_of_log_to_return,
                      dst_dirs_critical_alert_sent, warnings, emails, phones, twilio_from, twilio_account, twilio_token, pb_api, replace_noncompressed_plots, compressed_plots_midnight,
                      current_internal_drive, current_plotting_drive, total_plot_highwater_warning, total_plots_alert_sent, plot_receive_interface_threshold, compressed_plots_daily,
                      current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level, plot_receive_interface, farmer_ip_address, farmer_user, farmer_password,
@@ -78,6 +78,7 @@ class DriveManager:
             self.pb = pb
             self.email = email
             self.sms = sms
+            self.minutes_of_log_to_return = minutes_of_log_to_return
             self.daily_update = daily_update
             self.farm_update = farm_update
             self.new_plot_drive = new_plot_drive
@@ -159,6 +160,7 @@ class DriveManager:
                     dst_dirs_critical_alert_sent=server['local_plotter']['dst_dirs']['critical_alert_sent'],
                     current_internal_drive=server['local_plotter']['current_internal_drive'],
                     current_plotting_drive=server['harvester']['current_plotting_drive'],
+                    minutes_of_log_to_return=server['harvester']['minutes_of_log_to_return'],
                     compressed_plots=server['harvester']['compression']['compressed_plots'],
                     gpu_decompression=server['harvester']['compression']['gpu_decompression'],
                     compression_in_use=server['harvester']['compression']['compression_in_use'],
