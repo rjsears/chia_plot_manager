@@ -30,8 +30,12 @@ import apt
 
 # Gigahorse in use?
 # If you are farming or plotting/farming with GigaHorse, set this to 'True'. If
-# you do not know what Gigahorse is, set this to 'False'
+# you do not know what Gigahorse is, set this to 'False'.
+
+# IMPORTANT: We assume Gigihorse is installed at `/home/chia/gigahorse', if it 
+# is installed elsewhere, please make the necessary changes to the code.
 gigahorse = True
+
 
 # Pooling
 # Do we participate in a pool (flexpool, SpacePool, etc?). DO not confuse this with
@@ -88,8 +92,8 @@ def update_config_data(file, section, item, value):
 
 
 # First, let's try and detect how we were installed
-# Depending on how we were installed (APT vs. Git) will
-# depend on how we call chia. If you installed via Git,
+# Depending on how we were installed (APT vs. Git vs. Gigahorse)
+# will depend on how we call chia. If you installed via Git,
 # it is assumed that you installed at '/home/chia/', if
 # this is incorrect, you need to update the paths below.
 # This works for Ubuntu so it may not work for your distro!
