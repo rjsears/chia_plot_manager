@@ -3,11 +3,13 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "0.991 (2023-08-24)"
+VERSION = "1.000a (2023-12-02)"
 
 # Simple script to check to see if we have any new Chia coins.
 # This does assume that you installed in '/home/chia/coin_monitor'
 # Adjust as necessary if you have installed elsewhere.
+
+# Updated to add support for Gigahorse.
 
 
 import sys
@@ -26,12 +28,23 @@ import time
 import apt
 
 
+# Gigahorse in use?
+# If you are farming or plotting/farming with GigaHorse, set this to 'True'. If
+# you do not know what Gigahorse is, set this to 'False'
+gigahorse = True
+
+# Pooling
+# Do we participate in a pool (flexpool, SpacePool, etc?). DO not confuse this with
+# plotnft below. Set this to 'True' only if you are NOT self pooling.
+pooling = 'True'
+
 # Set config
 config = configparser.ConfigParser()
 
 # Are we utilizing pooling plots? If set to True, this will run a plotnft check
 # to see if we have additional chia and claim them if we do. Make sure to set
-# your correct plotnft wallet id as a string, not an int!
+# your correct plotnft wallet id as a string, not an int! If pooling is set
+# to 'True' above, this has no effect.
 plotnft = True
 
 # The Plotnft Wallet is actually a string, not an int.
@@ -83,26 +96,35 @@ def update_config_data(file, section, item, value):
 
 def how_installed():
     log.debug('how_installed() Started')
-    cache = apt.Cache()
-    cache.open()
-    response = "apt"
-    try:
-        cache['chia-blockchain'].is_installed or cache['chia-blockchain-cli'].is_installed
-    except KeyError:
-        if os.path.isfile('/home/chia/chia-blockchain/venv/bin/chia'):
-            response = "venv"
-        else:
-            log.debug('A Chia Installation was not found. Exiting!')
-            exit()
+    if gigahorse:
+        response = 'gigahorse'
+    else:
+        cache = apt.Cache()
+        cache.open()
+        response = "apt"
+        try:
+            cache['chia-blockchain'].is_installed or cache['chia-blockchain-cli'].is_installed
+        except KeyError:
+            if os.path.isfile('/home/chia/chia-blockchain/venv/bin/chia'):
+                response = "venv"
+            else:
+                log.debug('A Chia Installation was not found. Exiting!')
+                exit()
+    log.debug(f'how_installed() returned: {response}')
     return (response)
 
-# First, we need to check if we have a plotnft balance available, and if we do, we need to go ahead and claim that chia.
+# First we need to check if we have a plotnft balance available and if we do, we need to go ahead and claim those chia.
 def check_plotnft_balance():
     log.debug('check_plotnft_balance() Started')
+    if pooling:
+        log.debug('check_plotnft_balance(): Pooling Enabled, skipping plotnft check!')
+        return
     if plotnft:
         log.debug('plotnft configured, checking for pooling coins')
         try:
-            if how_installed() == 'apt':
+            if how_installed() == 'gigahorse':
+                check_plotnft_balance_output = subprocess.check_output(['/home/chia/gigahorse/chia.bin', 'plotnft', 'show'])
+            elif how_installed() == 'apt':
                 check_plotnft_balance_output = subprocess.check_output(['/usr/bin/chia', 'plotnft', 'show'])
             else:
                 check_plotnft_balance_output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'plotnft', 'show'])
@@ -115,7 +137,9 @@ def check_plotnft_balance():
                         log.debug(f'You have {claimable_balance} new coins! We will claim them!')
                         log.critical(f'You have {claimable_balance} new coins! We will claim them!')
                         notify('PlotNFT Coins Found', f'PlotNFT: {claimable_balance} found, attempting to claim!')
-                        if how_installed() == 'apt':
+                        if how_installed() == 'gigahorse':
+                            subprocess.check_output(['/home/chia/gigahorse/chia.bin', 'plotnft', 'claim', '-i', plotnft_wallet])
+                        elif how_installed() == 'apt':
                             subprocess.check_output(['/usr/bin/chia', 'plotnft', 'claim', '-i', plotnft_wallet])
                         else:
                             subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'plotnft', 'claim', '-i', plotnft_wallet])
@@ -127,7 +151,7 @@ def check_plotnft_balance():
     else:
         log.debug('plotnft not configured, skipping!')
 
-# Next, we need to see if the claim was successful by seeing if we have more coins in our wallet.
+# Next we need to see if the claim was successful by seeing if we have more coins in our wallet.
 # This may actually take a few minutes to show up after we claim them.
 def check_for_chia_coins():
     log.debug('check_for_chia_coins() Started')
@@ -143,7 +167,9 @@ def check_for_chia_coins():
 
 def get_total_chia_balance():
     log.debug('get_total_chia_balance() Started')
-    if how_installed() == 'apt':
+    if how_installed() == 'gigahorse':
+        check_total_chia_balance_output = subprocess.check_output(['/home/chia/gigahorse/chia.bin', 'wallet', 'show', '-w', 'standard_wallet'])
+    elif how_installed() == 'apt':
         check_total_chia_balance_output = subprocess.check_output(['/usr/bin/chia', 'wallet', 'show', '-w', 'standard_wallet'])
     else:
         check_total_chia_balance_output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'wallet', 'show', '-w', 'standard_wallet'])
@@ -217,7 +243,6 @@ def notify(title, message):
                 send_email(email_address, title, message)
     else:
         pass
-
 
 
 def main():
