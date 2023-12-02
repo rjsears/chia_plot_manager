@@ -12,7 +12,7 @@ the linux mail command.
 
 """
 
-VERSION = "V0.991b (2023-09-11)"
+VERSION = "V1.00a (2023-12-02)"
 
 import subprocess
 import apt
@@ -24,6 +24,15 @@ from system_logging import read_logging_config
 from datetime import datetime
 import time
 from system_info import notify_email_address, notify_sms_address, from_address, host
+
+# Gigahorse in use?
+# If you are farming or plotting/farming with GigaHorse, set this to 'True'. If
+# you do not know what Gigahorse is, set this to 'False'.
+
+# IMPORTANT: We assume Gigihorse is installed at `/home/chia/gigahorse', if it
+# is installed elsewhere, please make the necessary changes to the code.
+gigahorse = True
+
 
 # Set config
 config = configparser.ConfigParser()
@@ -64,25 +73,30 @@ def update_config_data(file, section, item, value):
     cfgfile.close()
 
 # First, let's try and detect how we were installed
-# Depending on how we were installed (APT vs. Git) will
-# depend on how we call chia. If you installed via Git,
+# Depending on how we were installed (APT vs. Git vs. Gigahorse)
+# will depend on how we call chia. If you installed via Git,
 # it is assumed that you installed at '/home/chia/', if
 # this is incorrect, you need to update the paths below.
+# This works for Ubuntu so it may not work for your distro!
+
 
 def how_installed():
-    log.debug('how_installed() called')
-    cache = apt.Cache()
-    cache.open()
-    response = "apt"
-    try:
-        cache['chia-blockchain'].is_installed or cache['chia-blockchain-cli'].is_installed
-    except KeyError:
-        log.debug('A Binary APT installation of Chia was not found, falling back to VENV!')
-        if os.path.isfile('/home/chia/chia-blockchain/venv/bin/chia'):
-            response = "venv"
-        else:
-            log.debug('A Chia Installation was not found. Exiting!')
-            exit()
+    log.debug('how_installed() Started')
+    if gigahorse:
+        response = 'gigahorse'
+    else:
+        cache = apt.Cache()
+        cache.open()
+        response = "apt"
+        try:
+            cache['chia-blockchain'].is_installed or cache['chia-blockchain-cli'].is_installed
+        except KeyError:
+            if os.path.isfile('/home/chia/chia-blockchain/venv/bin/chia'):
+                response = "venv"
+            else:
+                log.debug('A Chia Installation was not found. Exiting!')
+                exit()
+    log.debug(f'how_installed() returned: {response}')
     return (response)
 
 
@@ -91,7 +105,9 @@ def is_farmer_running():
     # Check to see how we were installed and make sure we were actually installed before running!
     installed = how_installed()
     try:
-        if installed == 'apt':
+        if installed == 'gigahorse':
+            output = subprocess.check_output(['/home/chia/gigahorse/chia.bin', 'farm', 'summary'])
+        elif installed == 'apt':
             output = subprocess.check_output(['/usr/bin/chia', 'farm', 'summary'])
         else:
             output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'farm', 'summary'])
@@ -107,7 +123,9 @@ def is_farmer_running():
                 notify('Farmer Error', f'Farmer {host} is NOT Running, attempting a restart!')
                 log.critical(f'Farmer {host} is DOWN')
                 time.sleep(10) # Let's check a second time before we force reboot the farmer!
-                if installed == 'apt':
+                if installed == 'gigahorse':
+                    output = subprocess.check_output(['/home/chia/gigahorse/chia.bin', 'farm', 'summary'])
+                elif installed == 'apt':
                     output = subprocess.check_output(['/usr/bin/chia', 'farm', 'summary'])
                 else:
                     output = subprocess.check_output(['/home/chia/chia-blockchain/venv/bin/chia', 'farm', 'summary'])
