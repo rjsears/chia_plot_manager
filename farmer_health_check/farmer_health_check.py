@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-Simple script that checks to make sure our chia_farmer is running and if not
-attempts to (re)start it. Sends notifications when necessary via email to text.
+Simple script that checks to make sure our chia_farmer is running and if not,
+attempts to reboot it. Sends notifications when necessary via email to text.
+
+I run my farmer on a proxmox node so reboots are very fast, this may not be the
+best solution for you situation. I have found attempting to stop the chia process
+and restarting it does not always work, so I went with a reboot.
 
 Set the email address and hostname below and load in your chia user crontab.
 
