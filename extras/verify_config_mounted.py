@@ -7,8 +7,8 @@ VERSION = "1.0.0a (2023-12-25)"
 
 
 '''
-Simple script that looks at your config.yaml (update your path in main()
-and matched the list of plot directories listed there against the 
+Simple script that looks at your config.yaml (update your path in main())
+and matches the list of plot directories listed there against the 
 directory glob (also set in main()) on your harvester. Outputs a list of 
 directories that are in your yaml that are not mounted and a list of 
 directories that are mounted but not in your yaml file. 
