@@ -17,7 +17,7 @@ This script is intended to make my life easier. It is ONLY
 designed to 1) work with unformatted drives with no existing
 partitions, and 2) utilizing the directory structure found
 in the readme.
-This script WILL NOT work if you are utilizing hard drives wiht
+This script WILL NOT work if you are utilizing hard drives with
 no partitions as we would have no way to determine if the drive
 is newly added.
 It can be modified, of course, to do other things.
