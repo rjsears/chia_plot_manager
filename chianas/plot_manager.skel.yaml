@@ -1,4 +1,4 @@
-# v1.0.0a 2023-10-20
+# v1.0.0a 2024-02-02
 # Once you have made the necessary modifications to this file, change this to
 # True.
 configured: False
@@ -97,16 +97,17 @@ harvester:
   # Are we running compressed plots? Currently, I only support a single
   # compression level from c01 - c07. Checked at runtime.
   compression:
+    compression_type: gigahorse # set `bladebit' or 'gigahorse'
     compressed_plots: True
-    gpu_decompression: False
-    compression_in_use: c05
+    gpu_decompression: True
+    compression_in_use: c17
     replace_noncompressed_plots: True
     compressed_plots_midnight: 0
     compressed_plots_daily: 0
   # When we are looking at plot proof information, this is how many minutes
   # we will look at from the logfile. Too long and it will just look at the
   # entire log file. Too short and you might now get any valuable information.
-  minutes_of_log_to_return: 60
+  minutes_of_log_to_return: 15
 
   # List of 'offlined' drives that we do not want plots written to
   # for any reason. In this case maybe 'drive0' and 'drive1' are our
