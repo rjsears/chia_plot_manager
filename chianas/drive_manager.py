@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Richard J. Sears'
-VERSION = "1.0.0b (2023-10-18)"
+VERSION = "1.0.0a (2024-02-02)"
 
 """
 NOTE NOTE NOTE NOTE NOTE NOTE NOTE
@@ -267,15 +267,38 @@ global_uuid_export_file = script_path.joinpath(f'export/{chianas.hostname}_globa
 # If we are using compression, set the correct plot size:
 def get_plot_size():
     if chianas.compressed_plots:
-        compression_sizes = {
-            'c01': 87.5,
-            'c02': 86,
-            'c03': 84.5,
-            'c04': 82.9,
-            'c05': 81.3,
-            'c06': 79.6,
-            'c07': 78
-        }
+        if chianas.compression_type == 'bladebit':
+            compression_sizes = {
+                'c01': 87.5,
+                'c02': 86,
+                'c03': 84.5,
+                'c04': 82.9,
+                'c05': 81.3,
+                'c06': 79.6,
+                'c07': 78
+            }
+        else:
+            compression_sizes = {
+                'c01': 84.2,
+                'c02': 82.6,
+                'c03': 81.0,
+                'c04': 79.4,
+                'c05': 77.8,
+                'c06': 76.2,
+                'c07': 74.6,
+                'c08': 71.3,
+                'c09': 68.1,
+                'c11': 85.7,
+                'c12': 82.5,
+                'c13': 78.9,
+                'c14': 74.7,
+                'c15': 71.6,
+                'c16': 64.8,
+                'c17': 63.0,
+                'c18': 59.7,
+                'c19': 56.4,
+                'c20': 53.1
+            }
         compression_in_use = chianas.compression_in_use
         plot_size_g = compression_sizes.get(compression_in_use, None)
         if plot_size_g is None:
@@ -1338,9 +1361,9 @@ def space_report() -> str:
     table.add_column(f'{current_date} @ {report_time}' ,justify="left", width=75)
     table.add_column('Status',justify="right", width=12)
     if replace_noncompressed_plots:
-        table.add_row('Replace [green]UNCOMPRESSED[/] Plots in Progress?', '[bold][green]True[/][/]', end_section=True)
+        table.add_row('Replace [green]c05 COMPRESSED[/] Plots in Progress?', '[bold][green]True[/][/]', end_section=True)
     else:
-        table.add_row('Replace [green]UNCOMPRESSED[/] Plots in Progress?', '[bold][red]False[/][/]', end_section=True)
+        table.add_row('Replace [green]c05 COMPRESSED[/] Plots in Progress?', '[bold][red]False[/][/]', end_section=True)
     if compressed_plots:
         if gpu_decompression:
             table.add_row('[green]Compression[/] Harvesting in Progress?', '[bold][green]True[/][/]')
@@ -1374,7 +1397,7 @@ def space_report() -> str:
         table.add_row(f'Total Number of k32 Plots until full', f'[yellow]{get_all_available_system_space("free")[1]}[/]')
     table.add_row(f'Maximum # of [green]{chianas.compression_in_use}[/] plots when full', f'[yellow]{get_all_available_system_space("total")[1]}[/]', end_section=True)
     if replace_noncompressed_plots:
-        table.add_row(f'Total Number of [red]UNCOMPRESSED[/] Plots on [green]{chianas.hostname}[/]', f'[yellow]{chiaplots.plot_count[2]}[/]')
+        table.add_row(f'Total Number of [red]c05 COMPRESSED[/] Plots on [green]{chianas.hostname}[/]', f'[yellow]{chiaplots.plot_count[2]}[/]')
         table.add_row(f'[green]Compressed[/] Plots completed in the last 24 Hours', f'[yellow]{chianas.compressed_plots_daily}[/]')
         table.add_row(f'Average Plots per Hour', f'[yellow]{round(chianas.compressed_plots_daily / 24, 1)}[/]')
         table.add_row(f'Average Plotting Speed Last 24 Hours (TiB/Day)', f'[yellow]{round((chianas.compressed_plots_daily * int(plot_size_g) / 1000), 2)}[/]')
@@ -1784,7 +1807,7 @@ def send_new_plot_notification() -> None:
             notify('New Plot Received', 'New Plot Received')
         os.remove('new_plot_received')
 
-def check_plots() -> tuple:   # new chia version changed the way they report things in the debug file! (works with 1.8.2)
+def check_plots() -> tuple:   # new chia version changed the way they report things in the debug file! (works with 2.1.1)
     with open(chianas.chia_log_file, 'rb', 0) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         i = m.rfind(b'plots:')
@@ -1949,7 +1972,10 @@ def parse_chia_output(chia_output):
 
 # Connect to our remote farmer and query it for our harvester data
 def get_chia_harvester_info():
-    command = "chia farm summary"
+    if chianas.compression_type == "gigahorse":
+        command = "/home/chia/gigahorse/chia.bin farm summary"
+    else:
+        command = "chia farm summary"
     chia_output = ssh_run_command(chianas.farmer_ip_address, chianas.farmer_user, chianas.farmer_password, command)
     if chia_output:
         return parse_chia_output(chia_output)
