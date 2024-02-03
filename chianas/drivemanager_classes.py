@@ -6,7 +6,7 @@ Part of drive_manager. These classes are for reading and updating out yaml
 config file.
 """
 
-VERSION = "1.0.0a (2023-09-13)"
+VERSION = "1.0.0a (2024-02-02)"
 
 import yaml
 from pathlib import Path
@@ -55,7 +55,7 @@ class DriveManager:
                      dst_dirs_critical_alert_sent, warnings, emails, phones, twilio_from, twilio_account, twilio_token, pb_api, replace_noncompressed_plots, compressed_plots_midnight,
                      current_internal_drive, current_plotting_drive, total_plot_highwater_warning, total_plots_alert_sent, plot_receive_interface_threshold, compressed_plots_daily,
                      current_total_plots_midnight, current_total_plots_daily, offlined_drives, logging, log_level, plot_receive_interface, farmer_ip_address, farmer_user, farmer_password,
-                     current_portable_plots_midnight, current_portable_plots_daily, current_plot_replacement_drive, local_move_error, local_move_error_alert_sent, my_local_ip_address):
+                     current_portable_plots_midnight, current_portable_plots_daily, current_plot_replacement_drive, local_move_error, local_move_error_alert_sent, my_local_ip_address, compression_type):
             self.configured = configured
             self.hostname = hostname
             self.plot_movement_internal = plot_movement_internal
@@ -118,6 +118,7 @@ class DriveManager:
             self.farmer_password = farmer_password
             self.my_local_ip_address = my_local_ip_address
             self.directory_glob = directory_glob
+            self.compression_type = compression_type
 
         @classmethod
         def read_configs(cls):
@@ -185,7 +186,8 @@ class DriveManager:
                     farmer_user=server['remote_farmer']['user'],
                     farmer_password=server['remote_farmer']['password'],
                     directory_glob=server['directory_glob'],
-                    my_local_ip_address=server['my_local_ip_address'])
+                    my_local_ip_address=server['my_local_ip_address'],
+                    compression_type=server['harvester']['compression']['compression_type'])
 
 
         def toggle_notification(self, notification):
@@ -413,7 +415,8 @@ def get_next_plot_replacement(type):
             return False, 0
     elif type == 'portable':
         try:
-            file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/portable*'
+            #file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/portable*'
+            file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/plot-k32-c05*'
             d = {abspath(d): d for d in glob(file_path_glob)}
             old_plot_count = len(d)
             return natsorted([p for p in d])[0], old_plot_count
@@ -421,7 +424,7 @@ def get_next_plot_replacement(type):
             return False, 0
     elif type == 'compressed':
         try:
-            file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/plot-k32-c*'
+            file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/plot-k32-c05*'
             d = {abspath(d): d for d in glob(file_path_glob)}
             compressed_plot_count = len(d)
             return natsorted([p for p in d])[0], compressed_plot_count
@@ -429,7 +432,7 @@ def get_next_plot_replacement(type):
             return False, 0
     else:
         try:
-            file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/plot-*'
+            file_path_glob = '/mnt/enclosure[0-9]/*/column[0-9]/*/plot-k32*'
             d = {abspath(d): d for d in glob(file_path_glob)}
             old_plot_count = len(d)
             return natsorted([p for p in d], reverse=True)[0], old_plot_count
@@ -457,10 +460,10 @@ def number_of_plots_in_system(type):
 
 # The count_plots() function returns a list:
 # [8717, 1, 8716, 0, 0, 0, 0, 1, 0, 0]
-# Total # of Plots, # Compressed Plots, # Portable Plots, c01 plots, c02 plots, c03 plots, c04 plots, c05 plots, c06 plots, c07 plots)
+# Total # of Plots, # Compressed Plots, # Portable Plots, c01 plots, c02 plots, c03 plots, c04 plots, c05 plots, c06 plots, c07 plots.....c20 plots)
 def count_plots(directory_structure_glob):
     directories = glob(directory_structure_glob)
-    compression_levels = ['c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07']
+    compression_levels = ['c01', 'c02', 'c03', 'c04', 'c06', 'c07','c08', 'c09', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20'] #removed `c05` to remove that from count to make this work during replotting.
     counts = {level: 0 for level in compression_levels}
     total_plots = 0
     total_compressed_plots = 0
@@ -475,7 +478,8 @@ def count_plots(directory_structure_glob):
                         if file.startswith(f"plot-k32-{level}"):
                             counts[level] += 1
                             total_compressed_plots += 1
-                if file.startswith("portable.plot-k32"):
+                if file.startswith("plot-k32-c05"):
+                #if file.startswith("portable.plot-k32"):
                     total_portable_plots += 1
 
     return [total_plots, total_compressed_plots, total_portable_plots] + [counts[level] for level in compression_levels]
