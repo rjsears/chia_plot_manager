@@ -1933,7 +1933,7 @@ def parse_chia_output(chia_output):
 
     for line in lines:
         if line.startswith("Total size of plots:"):
-            match = re.search(r"([\d.]+) (PiB|TiB), ([\d.]+) (PiB|TiB)", line)
+            match = re.search(r"([\d.]+) (GiB|PiB|TiB), ([\d.]+) (GiB|PiB|TiB)", line)
             if match:
                 total_size = {
                     "Total Size (PiB)": float(match.group(1)) if match.group(2) == "PiB" else float(match.group(1)) / 1024,
@@ -1949,7 +1949,7 @@ def parse_chia_output(chia_output):
             if match:
                 total_plots_for_all_harvesters = int(match.group(1))
         elif is_remote_harvester and "plots of size:" in line:
-            match = re.search(r"(\d+) plots of size: (\d+\.\d+) (PiB|TiB) on-disk", line)
+            match = re.search(r"(\d+) plots of size: (\d+\.\d+) (GiB|PiB|TiB) on-disk", line)
             if match:
                 total_plots = int(match.group(1))
                 total_size_str = match.group(2)
@@ -1968,7 +1968,6 @@ def parse_chia_output(chia_output):
         harvester_info["Plot count for all harvesters"] = total_plots_for_all_harvesters
 
     return harvester_info
-
 
 # Connect to our remote farmer and query it for our harvester data
 def get_chia_harvester_info():
