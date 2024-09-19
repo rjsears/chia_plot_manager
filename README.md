@@ -738,4 +738,15 @@ the strategy above, it is super easy to add more drives.
 <h2>In Closing....</h2>
 I still have a <em><b>lot</b></em> that I want to do with these scripts. I need to do a lot more error checking and management, additional notification capabilities and types and eventually add a web driven interface via Flask. I am <em><b>not</b></em> a programmer, I do it for fun so I am sure there may be better ways to do some of the stuff I did here, but it works for me, and hopefully may work for someone else as well. 
 
+## Author
+**Richard J. Sears** - *richardjsears@gmail.com* - [The RS Technical Group, Inc.](http://github.com/rjsears)
+
+## License
+This project is licensed under the MIT License - see the MIT License for details
+
+## Acknowledgments
+* **My Amazing and loving family!** My wonderful wife and kids put up with all my coding and automation projects and encouraged me in everything. Without them, this project would not be possible.
+* And last but not least, my brother James, who is a continual source of inspiration to me and others. Everyone should have a brother as awesome as mine!
+
+
 </p>
