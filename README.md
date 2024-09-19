@@ -746,7 +746,7 @@ This project is licensed under the MIT License - see the MIT License for details
 
 ## Acknowledgments
 * **My Amazing and loving family!** My wonderful wife and kids put up with all my coding and automation projects and encouraged me in everything. Without them, this project would not be possible.
-* And last but not least, my brother James, who is a continual source of inspiration to me and others. Everyone should have a brother as awesome as mine!
+* **My brother James**, who is a continual source of inspiration to me and others. Everyone should have a brother as awesome as mine!
 
 
 </p>
